@@ -2,12 +2,12 @@ import { map, slice, unwrappedAccessorToDataProperty } from "../util/index.js";
 import {
   DoubleReferenceNode,
   DoublyNodeOption,
+  LinkListType,
   LinkType,
   Node,
   NodeOption,
   NodePosition,
   NodeReference,
-  SingleDirectedNode,
   SingleReferenceNode,
   SinglyLinkedList,
   SinglyNodeOption,
@@ -61,8 +61,8 @@ interface TranverseLink {
   <LinkNode extends Node<any>>(
     linkedNode: LinkNode,
     traversal: TranversalFn<LinkNode>,
-    initialNodePosition?: number,
-    linkOptions?: Partial<LinkOption>
+    linkOptions?: Partial<LinkOption>,
+    initialNodePosition?: number
   ): void;
 }
 let tranverseNode: TranverseLink;
@@ -76,8 +76,8 @@ let tranverseNode: TranverseLink;
   tranverseNode = function tranverseLink<LinkNode extends Node<any>>(
     linkedNode: LinkNode,
     traversal: TranversalFn<LinkNode>,
-    initialNodePosition?: number,
-    linkOptions?: Partial<LinkOption>
+    linkOptions?: Partial<LinkOption>,
+    initialNodePosition?: number
   ) {
     const direction =
       (linkOptions && linkOptions.direction) || defaulLinkOptions.direction;
@@ -151,7 +151,7 @@ type CustomFunction = (...args: any[]) => void;
 
 export function createImmutableStructure<T>(
   args: Array<CustomFunction>,
-  mapNode: <U>(fn: (value: T) => U, mutable?: boolean) => SinglyLinkedList<U>
+  mapNode: <U>(fn: (value: T) => U, mutable?: boolean) => LinkListType<U>
 ) {
   return map(args, function addImmutableOnAllow(fn) {
     if (!fn.name) {
@@ -179,8 +179,8 @@ export function createImmutableStructure<T>(
         }
         return (<CustomFunction>fn)(...args);
       },
-    ];
-  });
+    ] as const;
+  }) as [keyof LinkListType<T>, (...args: any[]) => unknown];
 }
 
 export function sortNodeRemoval(nodePos: Set<NodePosition>) {
@@ -214,18 +214,26 @@ export function _positionsBaseRemoval(
 }
 
 export function derefLastNode<T>(
-  node: SingleDirectedNode<T>,
+  rootNode: NodeReference<T>,
   isCircular?: boolean
 ) {
-  let rootNode = isCircular ? node : null;
-  tranverseNode(node, (curNode, _, exitTraversal) => {
-    if (rootNode && rootNode === curNode) {
-      return void exitTraversal();
-    }
-    if (curNode.next && curNode.next.next === null) {
-      curNode.next = null;
+  let lastNode = rootNode;
+  tranverseNode(rootNode, (curNode, _, exitTraversal) => {
+    if ([rootNode, null].includes(curNode.next)) {
+      switch (isCircular) {
+        case true: {
+          lastNode.next = rootNode;
+          if (isLinkDouble(rootNode) && isLinkDouble(lastNode)) {
+            rootNode.prev = lastNode;
+          }
+        }
+        case false: {
+          lastNode.next = null;
+        }
+      }
       exitTraversal();
     }
+    lastNode = curNode;
   });
 }
 
@@ -261,7 +269,7 @@ function connectLinkNodes<T>(
   let last = root;
   for (let sibling of slice(refs, 1)) {
     last.next = sibling;
-    if (isLinkDouble(type, sibling) && isLinkDouble(type, last)) {
+    if (isLinkDouble(sibling) && isLinkDouble(last)) {
       sibling.prev = last;
     }
     last = sibling;
@@ -269,7 +277,7 @@ function connectLinkNodes<T>(
 
   if (isCircular) {
     last.next = root;
-    if (isLinkDouble(type, last) && isLinkDouble(type, root)) {
+    if (isLinkDouble(last) && isLinkDouble(root)) {
       root.prev = last;
     }
   }
@@ -277,10 +285,9 @@ function connectLinkNodes<T>(
 }
 
 export function isLinkDouble<T>(
-  type: LinkType,
   node: NodeReference<T>
 ): node is DoubleReferenceNode<T> {
-  return type === "double" && "prev" in node;
+  return "prev" in node;
 }
 
 function createNode<T>(
@@ -310,7 +317,6 @@ export function getNodeTail<Node extends NodeReference<any>>(
         lastNode = curNode;
       }
     },
-    1,
     options
   );
   return lastNode;

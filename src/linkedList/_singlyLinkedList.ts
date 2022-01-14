@@ -88,8 +88,8 @@ export function _createSinglyLinkedList<T>(
           }
           beforeNode = curNode;
         },
-        curPosition,
-        nodeOption
+        nodeOption,
+        curPosition
       );
     }
   }
@@ -99,7 +99,7 @@ export function _createSinglyLinkedList<T>(
       head = createLinkNode({ ...nodeOption, initialData: data });
     } else {
       const tailNode = getNodeTail(head, {
-        isCircular: Boolean(nodeOption.isCircular),
+        isCircular: nodeOption.isCircular,
         direction: "next",
       });
       tailNode.next = createLinkNode({ ...nodeOption, initialData: data });
@@ -137,7 +137,6 @@ export function _createSinglyLinkedList<T>(
 
   function mapNode<U>(mapFn: (value: T) => U) {
     const { initialData, ...delegateConfig } = nodeOption;
-
     const newLinks = _createSinglyLinkedList<U>(delegateConfig);
 
     if (head) {
@@ -146,7 +145,6 @@ export function _createSinglyLinkedList<T>(
         (curNode) => {
           newLinks.appendNode(mapFn(curNode.data));
         },
-        1,
         delegateConfig
       );
     }
@@ -172,7 +170,7 @@ export function _createSinglyLinkedList<T>(
       return void 0;
     }
     if (head) {
-      derefLastNode(head);
+      derefLastNode(head, nodeOption.isCircular);
     }
   }
 

@@ -74,7 +74,7 @@ export interface SinglyLinkedList<T>
 }
 
 export interface CircularLinkedList<T>
-  extends LinkedListMethods<T, CircularDirectedNode<T>, SinglyLinkedList<T>> {
+  extends LinkedListMethods<T, CircularDirectedNode<T>, CircularLinkedList<T>> {
   mapNode<U>(fn: (value: T) => U, mutable?: boolean): CircularLinkedList<U>;
 }
 export interface DoublyLinkedList<T>
@@ -104,3 +104,9 @@ export type SinglyNodeOption<T> = LinkedListInitial<T> & {
 };
 
 export type NodeOption<T> = SinglyNodeOption<T> | DoublyNodeOption<T>;
+
+export type LinkListType<T> =
+  | SinglyLinkedList<T>
+  | CircularLinkedList<T>
+  | DoublyLinkedList<T>
+  | CircularDoublyLinkedList<T>;

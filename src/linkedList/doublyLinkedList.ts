@@ -5,7 +5,7 @@ export function createDoublyLinkedList<T>(
   initialData?: T | Array<T>
 ): DoublyLinkedList<T> {
   return _createDoublyLinkedList<T>({
-    isCircular: true,
+    isCircular: false,
     ...(initialData ? { initialData: initialData } : null),
   });
 }

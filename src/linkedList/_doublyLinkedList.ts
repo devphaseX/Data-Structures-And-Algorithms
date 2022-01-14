@@ -6,10 +6,8 @@ import {
   tranverseNode,
   createLinkNode,
   _positionsBaseRemoval,
-  isLinkDouble,
 } from "./util.js";
 import {
-  DoubleDirectedNode,
   DoubleReferenceNode,
   DoublyLinkedList,
   DoublyNodeOption,
@@ -61,8 +59,8 @@ export function _createDoublyLinkedList<T>(
         tail = null;
       } else {
         head = head.next;
-        head.prev = tail;
-        tail!.next = head;
+        head.prev = nodeOption.isCircular ? tail : null;
+        tail!.next = nodeOption.isCircular ? head : null;
       }
 
       if (stopOnFirstOccurence) {
@@ -92,6 +90,7 @@ export function _createDoublyLinkedList<T>(
           }
           beforeNode = curNode;
         },
+        nodeOption,
         curPosition
       );
     }
@@ -102,12 +101,11 @@ export function _createDoublyLinkedList<T>(
       head = createLinkNode({ ...nodeOption, initialData: data });
       tail = head;
     } else {
-      let lastNode: DoubleDirectedNode<T> = tail!;
+      let lastNode = tail!;
       lastNode.next = createLinkNode({ ...nodeOption, initialData: data });
-
       lastNode.next.prev = lastNode;
 
-      if (isLinkDouble(nodeOption.type, lastNode)) {
+      if (nodeOption.isCircular) {
         lastNode.next.prev = head;
       }
     }
@@ -125,7 +123,7 @@ export function _createDoublyLinkedList<T>(
     head.prev = newHead;
     head = newHead;
 
-    if (isLinkDouble(nodeOption.type, newHead)) {
+    if (nodeOption.isCircular) {
       newHead.prev = tail;
       tail!.next = newHead;
     }
@@ -148,7 +146,6 @@ export function _createDoublyLinkedList<T>(
         (curNode) => {
           newLinks.appendNode(mapFn(curNode.data));
         },
-        1,
         delegateConfig
       );
     }
@@ -171,7 +168,7 @@ export function _createDoublyLinkedList<T>(
       return void 0;
     }
     if (head) {
-      derefLastNode(head);
+      derefLastNode(head, nodeOption.isCircular);
     }
   }
 
