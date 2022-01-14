@@ -1,3 +1,5 @@
 # ignore any thing in the dist folder
 
 /dist
+
+/src/old

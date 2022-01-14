@@ -16,7 +16,7 @@ export function unwrappedAccessorToDataProperty<T extends Record<any, any>>(
       Object.defineProperty(obj, key, {
         enumerable: propertyDescriptor?.enumerable,
         configurable: propertyDescriptor?.configurable,
-        writable: propertyDescriptor?.writable,
+        writable: true,
         value: obj[key],
       });
     }
@@ -92,7 +92,7 @@ export function _chain<T>(value: Array<T>) {
 
 const nativeArrayPrototype = Array.prototype;
 
-function map<T, U>(list: Array<T>, fn: (value: T, index: number) => U) {
+export function map<T, U>(list: Array<T>, fn: (value: T, index: number) => U) {
   return nativeArrayPrototype.map.call(list, fn);
 }
 

@@ -1,11 +1,11 @@
-import { SinglyLinkedList } from "./type";
+import { CircularLinkedList } from "./type";
 import { _createSinglyLinkedList } from "./_singlyLinkedList.js";
 
-export function createSinglyLinkedList<T>(
-  initialData?: T
-): SinglyLinkedList<T> {
+export function createCircularLinkedList<T>(
+  initialData?: T | Array<T>
+): CircularLinkedList<T> {
   return _createSinglyLinkedList<T>({
-    isCircular: false,
+    isCircular: true,
     ...(initialData ? { initialData: initialData } : null),
   });
 }
