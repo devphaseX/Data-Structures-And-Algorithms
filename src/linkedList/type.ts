@@ -50,10 +50,10 @@ export type NodePosition = number;
 
 export interface LinkedListMethods<T, Head, Self> {
   head: Head | null;
-  appendNode(value: T): void;
-  appendNode(value: T, mutable: true): Self;
-  prependNode(value: T): void;
-  prependNode(value: T, mutable: true): Self;
+  appendNode(value: T | Array<T>): void;
+  appendNode(value: T | Array<T>, mutable: true): Self;
+  prependNode(value: T | Array<T>): void;
+  prependNode(value: T | Array<T>, mutable: true): Self;
   removeNode(predicate: PredicateFn<T>): void;
   removeNode(predicate: PredicateFn<T>, mutable: true): Self;
   removeNodes(predicate: PredicateFn<T>): void;
@@ -66,20 +66,24 @@ export interface LinkedListMethods<T, Head, Self> {
   removeFirstNode(mutable: true): Self;
   removeLastNode(): void;
   removeLastNode(mutable: true): Self;
+  getNodeList(): Array<T>;
 }
 
 export interface SinglyLinkedList<T>
   extends LinkedListMethods<T, SingleDirectedNode<T>, SinglyLinkedList<T>> {
   mapNode<U>(fn: (value: T) => U, mutable?: boolean): SinglyLinkedList<U>;
+  forEach(traverseFn: LinkTraversalFn<T>): void;
 }
 
 export interface CircularLinkedList<T>
   extends LinkedListMethods<T, CircularDirectedNode<T>, CircularLinkedList<T>> {
   mapNode<U>(fn: (value: T) => U, mutable?: boolean): CircularLinkedList<U>;
+  forEach(traverseFn: LinkTraversalFn<T>): void;
 }
 export interface DoublyLinkedList<T>
   extends LinkedListMethods<T, DoubleDirectedNode<T>, SinglyLinkedList<T>> {
   mapNode<U>(fn: (value: T) => U, mutable?: boolean): DoublyLinkedList<U>;
+  forEach(startPoint: "head" | "tail", traverseFn: LinkTraversalFn<T>): void;
 }
 
 export interface CircularDoublyLinkedList<T>
@@ -89,6 +93,7 @@ export interface CircularDoublyLinkedList<T>
     SinglyLinkedList<T>
   > {
   mapNode<U>(fn: (value: T) => U, mutable?: boolean): DoublyLinkedList<U>;
+  forEach(startPoint: "head" | "tail", traverseFn: LinkTraversalFn<T>): void;
 }
 export type PredicateFn<T> = (data: T, index: number) => unknown;
 
@@ -110,3 +115,14 @@ export type LinkListType<T> =
   | CircularLinkedList<T>
   | DoublyLinkedList<T>
   | CircularDoublyLinkedList<T>;
+
+export interface LinkBoundary<Node> {
+  root: Node;
+  tail: Node;
+}
+
+export type LinkTraversalFn<T> = (
+  value: T,
+  position: number,
+  stopTraverse: () => void
+) => void;

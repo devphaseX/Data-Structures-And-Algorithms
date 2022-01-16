@@ -2,14 +2,14 @@ import { map, slice, unwrappedAccessorToDataProperty } from "../util/index.js";
 import {
   DoubleReferenceNode,
   DoublyNodeOption,
+  LinkBoundary,
   LinkListType,
-  LinkType,
+  LinkTraversalFn,
   Node,
   NodeOption,
   NodePosition,
   NodeReference,
   SingleReferenceNode,
-  SinglyLinkedList,
   SinglyNodeOption,
 } from "./type";
 
@@ -241,30 +241,81 @@ export function createLinkNode<T>(
   nodeOptions: SinglyNodeOption<T>
 ): SingleReferenceNode<T>;
 export function createLinkNode<T>(
+  nodeOptions: SinglyNodeOption<T>,
+  isBoundAllow: true
+): LinkBoundary<SingleReferenceNode<T>>;
+export function createLinkNode<T>(
+  nodeOptions: SinglyNodeOption<T>,
+  isBoundAllow?: boolean
+): LinkBoundary<SingleReferenceNode<T>> | SingleReferenceNode<T>;
+export function createLinkNode<T>(
   nodeOptions: DoublyNodeOption<T>
 ): DoubleReferenceNode<T>;
 
+export function createLinkNode<T>(
+  nodeOptions: DoublyNodeOption<T>,
+  isBoundAllow: true
+): LinkBoundary<DoubleReferenceNode<T>>;
+
+export function createLinkNode<T>(
+  nodeOptions: SinglyNodeOption<T>,
+  isBoundAllow?: boolean
+): LinkBoundary<DoubleReferenceNode<T>> | DoubleReferenceNode<T>;
+
 export function createLinkNode<T>(nodeOptions: NodeOption<T>): NodeReference<T>;
-export function createLinkNode<T>(nodeOptions: NodeOption<T>) {
+export function createLinkNode<T>(
+  nodeOptions: NodeOption<T>,
+  isBoundAllow?: boolean
+): NodeReference<T> | LinkBoundary<NodeReference<T>>;
+
+export function createLinkNode<T>(
+  nodeOptions: NodeOption<T>,
+  isBoundAllow?: boolean
+): NodeReference<T> | LinkBoundary<NodeReference<T>> {
   const { initialData, ...nodeOption } = nodeOptions;
 
   if (!Array.isArray(initialData)) {
-    return createNode(initialData, nodeOption);
+    const node = createNode(initialData, nodeOption);
+    if (isBoundAllow) {
+      return { root: node, tail: node };
+    } else {
+      return node;
+    }
+  }
+
+  if (initialData.length < 1) {
+    throw new TypeError("Node can't can created from an empty list");
   }
 
   let nodes = initialData.map((data) =>
     createLinkNode({ initialData: data, ...nodeOption })
   );
-  if (initialData.length === 0) return null;
 
-  return connectLinkNodes(nodes, nodeOption.type, nodeOption.isCircular);
+  return connectLinkNodes(nodes, nodeOption.isCircular, Boolean(isBoundAllow));
 }
 
 function connectLinkNodes<T>(
   refs: Array<NodeReference<T>>,
-  type: LinkType,
   isCircular: boolean
-): NodeReference<T> {
+): NodeReference<T>;
+
+function connectLinkNodes<T>(
+  refs: Array<NodeReference<T>>,
+  isCircular: boolean,
+  isBoundAllow: true
+): LinkBoundary<NodeReference<T>>;
+
+function connectLinkNodes<T>(
+  refs: Array<NodeReference<T>>,
+  isCircular: boolean,
+  isBoundAllow: boolean
+): NodeReference<T> | LinkBoundary<NodeReference<T>>;
+
+function connectLinkNodes<T>(
+  refs: Array<NodeReference<T>>,
+  isCircular: boolean,
+  isBoundAllow?: boolean
+): NodeReference<T> | LinkBoundary<NodeReference<T>> {
   let root = refs[0];
   let last = root;
   for (let sibling of slice(refs, 1)) {
@@ -280,6 +331,10 @@ function connectLinkNodes<T>(
     if (isLinkDouble(last) && isLinkDouble(root)) {
       root.prev = last;
     }
+  }
+
+  if (isBoundAllow) {
+    return { root, tail: last };
   }
   return root;
 }
@@ -320,4 +375,16 @@ export function getNodeTail<Node extends NodeReference<any>>(
     options
   );
   return lastNode;
+}
+
+export function hasInvalidRange(range: number) {
+  return range < 1 || Number.isNaN(range) || !Number.isFinite(range);
+}
+
+export function unwrapLinkDataForExternal<T, Node extends NodeReference<T>>(
+  traversalFn: LinkTraversalFn<T>
+) {
+  return function (node: Node, position: number, stopTraversal: () => void) {
+    return void traversalFn(node.data, position, stopTraversal);
+  };
 }
