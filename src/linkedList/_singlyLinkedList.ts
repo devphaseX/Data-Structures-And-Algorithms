@@ -6,8 +6,8 @@ import {
   SinglyNodeOption,
   CircularLinkedList,
   LinkTraversalFn,
-} from "./type";
-import { sealObject } from "../util/index.js";
+} from './type';
+import { sealObject } from '../util/index.js';
 import {
   createImmutableStructure,
   derefLastNode,
@@ -15,8 +15,10 @@ import {
   createLinkNode,
   _positionsBaseRemoval,
   hasInvalidRange,
-  unwrapLinkDataForExternal,
-} from "./util.js";
+  guardNodeReveal,
+  TranversalFn,
+  iterableLinkNode,
+} from './util.js';
 
 interface SinglyNodeConfig<T> {
   initialData?: T | Array<T>;
@@ -32,12 +34,13 @@ export function _createSinglyLinkedList<T>(
 export function _createSinglyLinkedList<T>(
   option: SinglyNodeConfig<T>
 ): SinglyLinkedList<T> | CircularLinkedList<T> {
-  const nodeOption = <SinglyNodeOption<T>>{ ...option, type: "single" };
+  const nodeOption = <SinglyNodeOption<T>>{ ...option, type: 'single' };
   let head: SingleReferenceNode<T> | null = null;
   let tail: SingleReferenceNode<T> | null = head;
+  let size = 0;
   if (nodeOption.initialData) {
     const nodeLink = createLinkNode(nodeOption, true);
-    ({ root: head, tail: tail } = nodeLink);
+    ({ root: head, tail: tail, size } = nodeLink);
   }
 
   function derefNode(
@@ -52,6 +55,7 @@ export function _createSinglyLinkedList<T>(
     if (predicate(head.data, curPosition ?? 1)) {
       if (!head.next) {
         head = tail = null;
+        size = 0;
       } else {
         head = head.next;
         if (nodeOption.isCircular) {
@@ -59,6 +63,7 @@ export function _createSinglyLinkedList<T>(
             tail.next = head;
           }
         }
+        size -= 1;
       }
       if (stopOnFirstOccurence) {
         return void 0;
@@ -67,28 +72,30 @@ export function _createSinglyLinkedList<T>(
       }
     }
 
-    if (head) {
-      let beforeNode = head;
-      tranverseNode(
-        head,
-        (curNode, position, abortTraverse) => {
-          if (predicate(curNode.data, position)) {
-            beforeNode.next = curNode.next;
-
-            if (stopOnFirstOccurence) {
-              return abortTraverse();
-            }
+    const detachMatchNode = (
+      initial: NonNullable<typeof head>
+    ): TranversalFn<typeof initial> => {
+      let beforeNode = initial;
+      return function (curNode, position, abortTraverse) {
+        if (predicate(curNode.data, position)) {
+          beforeNode.next = curNode.next;
+          size -= 1;
+          if (stopOnFirstOccurence) {
+            return abortTraverse();
           }
-          beforeNode = curNode;
-        },
-        nodeOption,
-        curPosition
-      );
+        }
+        beforeNode = curNode;
+      };
+    };
+
+    if (head) {
+      tranverseNode(head, detachMatchNode(head), nodeOption, curPosition);
     }
   }
 
   function appendNode(data: T) {
     const nodeLink = createLinkNode({ ...nodeOption, initialData: data }, true);
+    size += nodeLink.size;
     if (!head) {
       ({ root: head, tail } = nodeLink);
     } else {
@@ -102,6 +109,7 @@ export function _createSinglyLinkedList<T>(
 
   const prependNode = function (data: T) {
     const nodeLink = createLinkNode({ ...nodeOption, initialData: data }, true);
+    size += nodeLink.size;
     if (!head) {
       ({ root: head, tail } = nodeLink);
       return void 0;
@@ -147,7 +155,7 @@ export function _createSinglyLinkedList<T>(
 
   function forEach(traverseFn: LinkTraversalFn<T>) {
     if (head) {
-      return void tranverseNode(head, unwrapLinkDataForExternal(traverseFn));
+      return void tranverseNode(head, guardNodeReveal(traverseFn));
     }
   }
 
@@ -164,6 +172,7 @@ export function _createSinglyLinkedList<T>(
   function positionsBaseRemoval(nodePosition: Set<NodePosition>) {
     return _positionsBaseRemoval(nodePosition, positionBaseRemoval);
   }
+
   function removeFirstNode() {
     return positionBaseRemoval(1);
   }
@@ -171,35 +180,39 @@ export function _createSinglyLinkedList<T>(
   function removeLastNode() {
     if (head && !head.next) {
       head = null;
+      size = 0;
       return void 0;
     }
     if (head) {
+      size -= 1;
       derefLastNode(head, nodeOption.isCircular);
     }
   }
 
-  const mutableOpVariant = createImmutableStructure(
-    [
-      appendNode,
-      prependNode,
-      mapNode,
-      removeNode,
-      removeNodes,
-      positionBaseRemoval,
-      positionsBaseRemoval,
-      removeFirstNode,
-      removeLastNode,
-    ],
-    mapNode
-  );
+  const mutableStateFns = [
+    appendNode,
+    prependNode,
+    mapNode,
+    removeNode,
+    removeNodes,
+    positionBaseRemoval,
+    positionsBaseRemoval,
+    removeFirstNode,
+    removeLastNode,
+  ];
 
+  const immutableFnVariant = createImmutableStructure(mutableStateFns, mapNode);
   const linkOperation = sealObject({
     get head() {
       return head;
     },
+    get size() {
+      return size;
+    },
     forEach,
+    [Symbol.iterator]: iterableLinkNode<T>(() => head, nodeOption.isCircular),
     getNodeList,
-    ...Object.fromEntries(mutableOpVariant as any),
+    ...Object.fromEntries(immutableFnVariant as any),
   }) as SinglyLinkedList<T>;
 
   return linkOperation;

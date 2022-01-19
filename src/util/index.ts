@@ -6,12 +6,17 @@ export function sealObject<T extends Record<any, any>>(obj: T) {
   return Object.seal(obj);
 }
 
-export function unwrappedAccessorToDataProperty<T extends Record<any, any>>(
-  obj: T
-) {
+export function isPropertyOwn(value: any, key: PropertyKey) {
+  return Object.prototype.hasOwnProperty.call(value, key);
+}
+
+export function normaliseAccessorProps<T extends Record<any, any>>(obj: T) {
   for (let key in obj) {
-    if (Object.prototype.hasOwnProperty.call(obj, key)) {
+    if (isPropertyOwn(obj, key)) {
       const propertyDescriptor = Object.getOwnPropertyDescriptor(obj, key);
+      if (propertyDescriptor?.set && !propertyDescriptor.get) {
+        continue;
+      }
 
       Object.defineProperty(obj, key, {
         enumerable: propertyDescriptor?.enumerable,
@@ -80,7 +85,7 @@ export function _chain<T>(value: Array<T>) {
       ]),
 
       [
-        "value",
+        'value',
         function () {
           return valueFn() as any;
         },

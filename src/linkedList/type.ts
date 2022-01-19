@@ -1,4 +1,4 @@
-export type LinkType = "single" | "double";
+export type LinkType = 'single' | 'double';
 export type Node<T, IsDouble extends boolean = false> = IfElse<
   IsDouble,
   DoubleDirectedNode<T>,
@@ -18,12 +18,12 @@ export interface DoubleDirectedNode<T> {
 
 export interface CircularDirectedNode<T> {
   data: T;
-  next: CircularDirectedNode<T> | null;
+  next: CircularDirectedNode<T>;
 }
 export interface DoubleCircularDirectedNode<T> {
   data: T;
-  next: DoubleCircularDirectedNode<T> | null;
-  prev: DoubleCircularDirectedNode<T> | null;
+  next: DoubleCircularDirectedNode<T>;
+  prev: DoubleCircularDirectedNode<T>;
 }
 
 export type SingleReferenceNode<T> =
@@ -50,6 +50,7 @@ export type NodePosition = number;
 
 export interface LinkedListMethods<T, Head, Self> {
   head: Head | null;
+  size: number;
   appendNode(value: T | Array<T>): void;
   appendNode(value: T | Array<T>, mutable: true): Self;
   prependNode(value: T | Array<T>): void;
@@ -67,6 +68,7 @@ export interface LinkedListMethods<T, Head, Self> {
   removeLastNode(): void;
   removeLastNode(mutable: true): Self;
   getNodeList(): Array<T>;
+  [Symbol.iterator](): IterableIterator<T>;
 }
 
 export interface SinglyLinkedList<T>
@@ -83,7 +85,7 @@ export interface CircularLinkedList<T>
 export interface DoublyLinkedList<T>
   extends LinkedListMethods<T, DoubleDirectedNode<T>, SinglyLinkedList<T>> {
   mapNode<U>(fn: (value: T) => U, mutable?: boolean): DoublyLinkedList<U>;
-  forEach(startPoint: "head" | "tail", traverseFn: LinkTraversalFn<T>): void;
+  forEach(startPoint: 'head' | 'tail', traverseFn: LinkTraversalFn<T>): void;
 }
 
 export interface CircularDoublyLinkedList<T>
@@ -93,18 +95,18 @@ export interface CircularDoublyLinkedList<T>
     SinglyLinkedList<T>
   > {
   mapNode<U>(fn: (value: T) => U, mutable?: boolean): DoublyLinkedList<U>;
-  forEach(startPoint: "head" | "tail", traverseFn: LinkTraversalFn<T>): void;
+  forEach(startPoint: 'head' | 'tail', traverseFn: LinkTraversalFn<T>): void;
 }
 export type PredicateFn<T> = (data: T, index: number) => unknown;
 
 export type NodeReference<T> = DoubleReferenceNode<T> | SingleReferenceNode<T>;
 
 export type DoublyNodeOption<T> = LinkedListInitial<T> & {
-  type: "double";
+  type: 'double';
   isCircular: boolean;
 };
 export type SinglyNodeOption<T> = LinkedListInitial<T> & {
-  type: "single";
+  type: 'single';
   isCircular: boolean;
 };
 
@@ -119,6 +121,7 @@ export type LinkListType<T> =
 export interface LinkBoundary<Node> {
   root: Node;
   tail: Node;
+  size: number;
 }
 
 export type LinkTraversalFn<T> = (

@@ -1,4 +1,4 @@
-import { map, slice, unwrappedAccessorToDataProperty } from "../util/index.js";
+import { map, slice, normaliseAccessorProps } from '../util/index.js';
 import {
   DoubleReferenceNode,
   DoublyNodeOption,
@@ -11,7 +11,7 @@ import {
   NodeReference,
   SingleReferenceNode,
   SinglyNodeOption,
-} from "./type";
+} from './type';
 
 function createSingleNode<T>(
   data: T,
@@ -47,11 +47,11 @@ function createDoubleNode<T>(
 }
 
 export type LinkOption = {
-  direction: "next" | "prev";
+  direction: 'next' | 'prev';
   isCircular: boolean;
 };
 
-type TranversalFn<LinkNode> = (
+export type TranversalFn<LinkNode> = (
   node: LinkNode,
   position: number,
   abortTraversel: () => void
@@ -69,7 +69,7 @@ let tranverseNode: TranverseLink;
 
 {
   const defaulLinkOptions: LinkOption = {
-    direction: "next",
+    direction: 'next',
     isCircular: false,
   };
 
@@ -88,7 +88,7 @@ let tranverseNode: TranverseLink;
 
     function traverseNodes(
       node: LinkNode | null,
-      direction: "next" | "prev",
+      direction: 'next' | 'prev',
       isCircular: boolean,
       traversal: TranversalFn<LinkNode>,
       position: number,
@@ -108,9 +108,11 @@ let tranverseNode: TranverseLink;
       const nextNode = node.next;
       let isTraverseAbort = false;
 
-      traversal(node, position, () => {
+      function abortTarversal() {
         isTraverseAbort = true;
-      });
+      }
+
+      traversal(node, position, abortTarversal);
 
       if (isTraverseAbort) {
         return;
@@ -120,7 +122,7 @@ let tranverseNode: TranverseLink;
 
       if (nextNode !== node.next) {
         throw new TypeError(
-          "Mutation of linked node during traversal is void, to prevent infinite loop."
+          'Mutation of linked node during traversal is void, to prevent infinite loop.'
         );
       }
 
@@ -161,18 +163,21 @@ export function createImmutableStructure<T>(
       fn.name,
       function decideImmutable(...args: any[]) {
         const immutableArg = args[args.length - 1] as boolean;
-        if (typeof immutableArg === "boolean" && immutableArg) {
+        if (typeof immutableArg === 'boolean' && immutableArg) {
           return immutableOperation();
           function immutableOperation() {
             const clone = mapNode((v) => v);
             args.pop();
 
-            type SinglyOperationKey = keyof typeof clone;
-            const mutableMethod = clone[
-              fn.name as SinglyOperationKey
-            ] as CustomFunction;
-            if (typeof mutableMethod === "function") {
+            const actionType = <keyof typeof clone>fn.name;
+            const mutableMethod = <CustomFunction>clone[actionType];
+            if (typeof mutableMethod === 'function') {
               mutableMethod(...args);
+            } else {
+              throw TypeError(
+                `This property value isnt calleable, value return the type ${typeof mutableMethod},
+                expected function type.`
+              );
             }
             return clone;
           }
@@ -277,7 +282,7 @@ export function createLinkNode<T>(
   if (!Array.isArray(initialData)) {
     const node = createNode(initialData, nodeOption);
     if (isBoundAllow) {
-      return { root: node, tail: node };
+      return { root: node, tail: node, size: 1 };
     } else {
       return node;
     }
@@ -334,7 +339,7 @@ function connectLinkNodes<T>(
   }
 
   if (isBoundAllow) {
-    return { root, tail: last };
+    return { root, tail: last, size: refs.length };
   }
   return root;
 }
@@ -342,49 +347,50 @@ function connectLinkNodes<T>(
 export function isLinkDouble<T>(
   node: NodeReference<T>
 ): node is DoubleReferenceNode<T> {
-  return "prev" in node;
+  return 'prev' in node;
 }
 
 function createNode<T>(
   initial: T,
-  nodeOption: Omit<NodeOption<T>, "initialData">
+  nodeOption: Omit<NodeOption<T>, 'initialData'>
 ): DoubleReferenceNode<T> | SingleReferenceNode<T> {
-  if (nodeOption.type === "single") {
-    return unwrappedAccessorToDataProperty(
-      createSingleNode(initial, nodeOption.isCircular)
-    );
+  let nodeReference: NodeReference<T>;
+  if (nodeOption.type === 'single') {
+    nodeReference = createSingleNode(initial, nodeOption.isCircular);
   } else {
-    return unwrappedAccessorToDataProperty(
-      createDoubleNode(initial, nodeOption.isCircular)
-    );
+    nodeReference = createDoubleNode(initial, nodeOption.isCircular);
   }
-}
-
-export function getNodeTail<Node extends NodeReference<any>>(
-  node: Node,
-  options?: LinkOption
-) {
-  let lastNode = node;
-  tranverseNode(
-    node,
-    (curNode) => {
-      if (!curNode.next) {
-        lastNode = curNode;
-      }
-    },
-    options
-  );
-  return lastNode;
+  return normaliseAccessorProps(nodeReference);
 }
 
 export function hasInvalidRange(range: number) {
   return range < 1 || Number.isNaN(range) || !Number.isFinite(range);
 }
 
-export function unwrapLinkDataForExternal<T, Node extends NodeReference<T>>(
+export function guardNodeReveal<T, Node extends NodeReference<T>>(
   traversalFn: LinkTraversalFn<T>
 ) {
   return function (node: Node, position: number, stopTraversal: () => void) {
     return void traversalFn(node.data, position, stopTraversal);
+  };
+}
+
+export function iterableLinkNode<
+  T = unknown,
+  Node extends NodeReference<T> = NodeReference<T>
+>(closeOverLinkFn: () => Node | null, isCircular: boolean) {
+  return function* iterator(): Generator<T> {
+    let currentNode = closeOverLinkFn();
+    do {
+      if (!currentNode) {
+        break;
+      }
+      yield currentNode.data;
+      currentNode = currentNode.next as Node;
+    } while (
+      currentNode &&
+      ((isCircular && currentNode.next !== closeOverLinkFn()) ||
+        currentNode.next)
+    );
   };
 }
