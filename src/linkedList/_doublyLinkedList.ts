@@ -15,6 +15,7 @@ import {
   DoubleReferenceNode,
   DoublyLinkedList,
   DoublyNodeOption,
+  LinkListEntry,
   LinkTraversalFn,
   LinkType,
   NodePosition,
@@ -149,7 +150,7 @@ export function _createDoublyLinkedList<T>(
     const { initialData, ...delegateConfig } = nodeOption;
     const newLinks = _createDoublyLinkedList<U>(delegateConfig);
 
-    forEach('head', (data) => newLinks.appendNode(mapFn(data)));
+    forEach((data) => newLinks.appendNode(mapFn(data)));
     return newLinks;
   }
 
@@ -166,10 +167,7 @@ export function _createDoublyLinkedList<T>(
     });
   }
 
-  function forEach(
-    startPoint: 'head' | 'tail',
-    traverseFn: LinkTraversalFn<T>
-  ) {
+  function forEach(traverseFn: LinkTraversalFn<T>, startPoint?: LinkListEntry) {
     const direction = startPoint === 'tail' ? 'prev' : 'next';
     const startNode = direction === 'prev' ? tail : head;
     if (startNode) {
@@ -183,11 +181,27 @@ export function _createDoublyLinkedList<T>(
   function getNodeList() {
     const dataList: Array<T> = [];
     if (head) {
-      forEach('head', (data) => {
+      forEach((data) => {
         dataList.push(data);
       });
     }
     return dataList;
+  }
+
+  function getNodeData(position: number): T | null;
+  function getNodeData(predicate: PredicateFn<T>): T | null;
+  function getNodeData(type: number | PredicateFn<T>) {
+    let outerData: T | null = null;
+    forEach((data, position) => {
+      if (typeof type === 'number') {
+        position === type && (outerData = data);
+      } else {
+        if (type(data, position)) {
+          outerData = data;
+        }
+      }
+    });
+    return outerData;
   }
 
   function removeFirstNode() {
@@ -210,6 +224,11 @@ export function _createDoublyLinkedList<T>(
     return _positionsBaseRemoval(nodePosition, positionBaseRemoval);
   }
 
+  function emptyLinkedList() {
+    head = tail = null;
+    size = 0;
+  }
+
   const mutableStateFns = [
     appendNode,
     prependNode,
@@ -220,6 +239,7 @@ export function _createDoublyLinkedList<T>(
     positionsBaseRemoval,
     removeFirstNode,
     removeLastNode,
+    emptyLinkedList,
   ];
 
   const immutableFnVariant = createImmutableStructure(mutableStateFns, mapNode);
@@ -232,6 +252,7 @@ export function _createDoublyLinkedList<T>(
       return size;
     },
     getNodeList,
+    getNodeData,
     forEach,
     [Symbol.iterator]: iterableLinkNode<T>(() => head, nodeOption.isCircular),
     ...Object.fromEntries(immutableFnVariant as any),

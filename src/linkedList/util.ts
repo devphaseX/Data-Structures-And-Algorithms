@@ -4,8 +4,9 @@ import {
   DoublyNodeOption,
   LinkBoundary,
   LinkListType,
+  LinkOption,
   LinkTraversalFn,
-  Node,
+  LinkTraverseDirection,
   NodeOption,
   NodePosition,
   NodeReference,
@@ -46,11 +47,6 @@ function createDoubleNode<T>(
   return { data, prev: null, next: null };
 }
 
-export type LinkOption = {
-  direction: 'next' | 'prev';
-  isCircular: boolean;
-};
-
 export type TranversalFn<LinkNode> = (
   node: LinkNode,
   position: number,
@@ -58,7 +54,7 @@ export type TranversalFn<LinkNode> = (
 ) => void;
 
 interface TranverseLink {
-  <LinkNode extends Node<any>>(
+  <LinkNode extends NodeReference<any>>(
     linkedNode: LinkNode,
     traversal: TranversalFn<LinkNode>,
     linkOptions?: Partial<LinkOption>,
@@ -73,7 +69,7 @@ let tranverseNode: TranverseLink;
     isCircular: false,
   };
 
-  tranverseNode = function tranverseLink<LinkNode extends Node<any>>(
+  tranverseNode = function tranverseLink<LinkNode extends NodeReference<any>>(
     linkedNode: LinkNode,
     traversal: TranversalFn<LinkNode>,
     linkOptions?: Partial<LinkOption>,
@@ -88,7 +84,7 @@ let tranverseNode: TranverseLink;
 
     function traverseNodes(
       node: LinkNode | null,
-      direction: 'next' | 'prev',
+      direction: LinkTraverseDirection,
       isCircular: boolean,
       traversal: TranversalFn<LinkNode>,
       position: number,
@@ -127,7 +123,7 @@ let tranverseNode: TranverseLink;
       }
 
       return traverseNodes(
-        node[direction as keyof Node<any>],
+        node[direction as keyof NodeReference<any>],
         direction,
         isCircular,
         traversal,
@@ -171,15 +167,16 @@ export function createImmutableStructure<T>(
 
             const actionType = <keyof typeof clone>fn.name;
             const mutableMethod = <CustomFunction>clone[actionType];
+            let data;
             if (typeof mutableMethod === 'function') {
-              mutableMethod(...args);
+              data = mutableMethod(...args);
             } else {
               throw TypeError(
                 `This property value isnt calleable, value return the type ${typeof mutableMethod},
                 expected function type.`
               );
             }
-            return clone;
+            return { data, newList: clone };
           }
         }
         return (<CustomFunction>fn)(...args);
@@ -222,9 +219,12 @@ export function derefLastNode<T>(
   rootNode: NodeReference<T>,
   isCircular?: boolean
 ) {
+  let data!: T;
   let lastNode = rootNode;
   tranverseNode(rootNode, (curNode, _, exitTraversal) => {
     if ([rootNode, null].includes(curNode.next)) {
+      data = curNode.data;
+
       switch (isCircular) {
         case true: {
           lastNode.next = rootNode;
@@ -238,8 +238,10 @@ export function derefLastNode<T>(
       }
       exitTraversal();
     }
+
     lastNode = curNode;
   });
+  return data;
 }
 
 export function createLinkNode<T>(
@@ -375,22 +377,40 @@ export function guardNodeReveal<T, Node extends NodeReference<T>>(
   };
 }
 
-export function iterableLinkNode<
-  T = unknown,
-  Node extends NodeReference<T> = NodeReference<T>
->(closeOverLinkFn: () => Node | null, isCircular: boolean) {
-  return function* iterator(): Generator<T> {
+export function iterableLinkNode<T = unknown>(
+  closeOverLinkFn: () => NodeReference<T> | null,
+  isCircular: boolean
+) {
+  return function* iterator() {
     let currentNode = closeOverLinkFn();
     do {
       if (!currentNode) {
         break;
       }
       yield currentNode.data;
-      currentNode = currentNode.next as Node;
+      currentNode = currentNode.next;
     } while (
       currentNode &&
       ((isCircular && currentNode.next !== closeOverLinkFn()) ||
-        currentNode.next)
+        (!isCircular && currentNode.next))
     );
+  };
+}
+
+export function dataKeeper<T>() {
+  let values: Array<T> | null = [];
+  return {
+    deref() {
+      values = null;
+    },
+    currentValues() {
+      return values && slice(values, 0);
+    },
+    collect(value: T | Array<T>) {
+      values ||= Array.isArray(value) ? [...value] : [value];
+      values &&= Array.isArray(value)
+        ? [...values, ...value]
+        : [...values, value];
+    },
   };
 }

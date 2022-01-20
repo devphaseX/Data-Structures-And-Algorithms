@@ -59,6 +59,8 @@ export interface LinkedListMethods<T, Head, Self> {
   removeNode(predicate: PredicateFn<T>, mutable: true): Self;
   removeNodes(predicate: PredicateFn<T>): void;
   removeNodes(predicate: PredicateFn<T>, mutable: true): Self;
+  emptyLinkedList(): void;
+  emptyLinkedList(): Self;
   positionBaseRemoval(nodePosition: NodePosition): void;
   positionBaseRemoval(nodePosition: NodePosition, mutable: true): Self;
   positionsBaseRemoval(nodesPosition: Set<NodePosition>): void;
@@ -68,7 +70,9 @@ export interface LinkedListMethods<T, Head, Self> {
   removeLastNode(): void;
   removeLastNode(mutable: true): Self;
   getNodeList(): Array<T>;
-  [Symbol.iterator](): IterableIterator<T>;
+  getNodeData(position: number): T | null;
+  getNodeData(predicate: PredicateFn<T>): T | null;
+  [Symbol.iterator](): Generator<T>;
 }
 
 export interface SinglyLinkedList<T>
@@ -85,7 +89,7 @@ export interface CircularLinkedList<T>
 export interface DoublyLinkedList<T>
   extends LinkedListMethods<T, DoubleDirectedNode<T>, SinglyLinkedList<T>> {
   mapNode<U>(fn: (value: T) => U, mutable?: boolean): DoublyLinkedList<U>;
-  forEach(startPoint: 'head' | 'tail', traverseFn: LinkTraversalFn<T>): void;
+  forEach(traverseFn: LinkTraversalFn<T>, startPoint?: 'head' | 'tail'): void;
 }
 
 export interface CircularDoublyLinkedList<T>
@@ -95,7 +99,7 @@ export interface CircularDoublyLinkedList<T>
     SinglyLinkedList<T>
   > {
   mapNode<U>(fn: (value: T) => U, mutable?: boolean): DoublyLinkedList<U>;
-  forEach(startPoint: 'head' | 'tail', traverseFn: LinkTraversalFn<T>): void;
+  forEach(traverseFn: LinkTraversalFn<T>, startPoint: 'head' | 'tail'): void;
 }
 export type PredicateFn<T> = (data: T, index: number) => unknown;
 
@@ -103,12 +107,10 @@ export type NodeReference<T> = DoubleReferenceNode<T> | SingleReferenceNode<T>;
 
 export type DoublyNodeOption<T> = LinkedListInitial<T> & {
   type: 'double';
-  isCircular: boolean;
-};
+} & Omit<LinkOption, 'direction'>;
 export type SinglyNodeOption<T> = LinkedListInitial<T> & {
   type: 'single';
-  isCircular: boolean;
-};
+} & Omit<LinkOption, 'direction'>;
 
 export type NodeOption<T> = SinglyNodeOption<T> | DoublyNodeOption<T>;
 
@@ -129,3 +131,12 @@ export type LinkTraversalFn<T> = (
   position: number,
   stopTraverse: () => void
 ) => void;
+
+export type LinkTraverseDirection = 'next' | 'prev';
+
+export type LinkListEntry = 'head' | 'tail';
+
+export type LinkOption = {
+  direction: 'next' | 'prev';
+  isCircular: boolean;
+};

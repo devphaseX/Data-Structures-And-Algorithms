@@ -155,7 +155,7 @@ export function _createSinglyLinkedList<T>(
 
   function forEach(traverseFn: LinkTraversalFn<T>) {
     if (head) {
-      return void tranverseNode(head, guardNodeReveal(traverseFn));
+      return void tranverseNode(head, guardNodeReveal(traverseFn), nodeOption);
     }
   }
 
@@ -167,6 +167,22 @@ export function _createSinglyLinkedList<T>(
       });
     }
     return dataList;
+  }
+
+  function getNodeData(position: number): T | null;
+  function getNodeData(predicate: PredicateFn<T>): T | null;
+  function getNodeData(type: number | PredicateFn<T>) {
+    let outerData: T | null = null;
+    forEach((data, position) => {
+      if (typeof type === 'number') {
+        position === type && (outerData = data);
+      } else {
+        if (type(data, position)) {
+          outerData = data;
+        }
+      }
+    });
+    return outerData;
   }
 
   function positionsBaseRemoval(nodePosition: Set<NodePosition>) {
@@ -189,6 +205,11 @@ export function _createSinglyLinkedList<T>(
     }
   }
 
+  function emptyLinkedList() {
+    head = tail = null;
+    size = 0;
+  }
+
   const mutableStateFns = [
     appendNode,
     prependNode,
@@ -199,6 +220,7 @@ export function _createSinglyLinkedList<T>(
     positionsBaseRemoval,
     removeFirstNode,
     removeLastNode,
+    emptyLinkedList,
   ];
 
   const immutableFnVariant = createImmutableStructure(mutableStateFns, mapNode);
@@ -210,8 +232,9 @@ export function _createSinglyLinkedList<T>(
       return size;
     },
     forEach,
-    [Symbol.iterator]: iterableLinkNode<T>(() => head, nodeOption.isCircular),
     getNodeList,
+    getNodeData,
+    [Symbol.iterator]: iterableLinkNode<T>(() => head, nodeOption.isCircular),
     ...Object.fromEntries(immutableFnVariant as any),
   }) as SinglyLinkedList<T>;
 
