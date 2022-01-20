@@ -1,4 +1,4 @@
-import { map, slice, normaliseAccessorProps } from '../util/index.js';
+import { map, slice, normaliseAccessorProps } from '../../util/index.js';
 import {
   DoubleReferenceNode,
   DoublyNodeOption,

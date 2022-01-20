@@ -7,7 +7,7 @@ import {
   CircularLinkedList,
   LinkTraversalFn,
 } from './type';
-import { sealObject } from '../util/index.js';
+import { sealObject } from '../../util/index.js';
 import {
   createImmutableStructure,
   derefLastNode,

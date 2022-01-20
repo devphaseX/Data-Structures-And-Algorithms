@@ -1,4 +1,4 @@
-import { sealObject } from '../util/index.js';
+import { sealObject } from '../../util/index.js';
 import {
   createImmutableStructure,
   derefLastNode,

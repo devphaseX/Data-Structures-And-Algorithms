@@ -1,5 +1,6 @@
-import { createCircularDoublyLinkedList } from '../linkedList/circularDoubleLinkedList.js';
-import createStack from '../stack/index.js';
+import { createCircularDoublyLinkedList } from '../data_structure/linkedList/circularDoubleLinkedList.js';
+import createStack from '../data_structure/stack/index.js';
+import sortByBubble from '../sorting/bubble.js';
 
 const doubly = createCircularDoublyLinkedList([1, 2, 3, 5, 6]);
 doubly.prependNode(0);
@@ -27,3 +28,11 @@ stack.push(3);
 stack.forEach((value) => {
   console.log(value);
 });
+
+const list = sortByBubble([0, 4, 5, 1, -1, 2], (x, y) => {
+  return y > x
+    ? { first: 'after', second: 'behind' }
+    : { first: 'behind', second: 'behind' };
+});
+
+console.log(list);
