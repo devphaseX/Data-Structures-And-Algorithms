@@ -1,3 +1,5 @@
+import { ListItemEntry } from './type';
+
 export function cloneObject<T extends Record<any, any>>(obj: T) {
   return { ...obj };
 }
@@ -187,3 +189,35 @@ const copyWithin = function <T>(
   const newList = concat(list, []);
   return newList.copyWithin(target, offset, end);
 };
+
+export const lastListItem = <T>(list: Array<T>) => {
+  return list[list.length - 1];
+};
+export function swapItem<T>(
+  source: Array<T>,
+  itemOne: ListItemEntry<T>,
+  itemTwo: ListItemEntry<T>
+) {
+  const { item: itemOneData, position: itemOnePosition } = itemOne;
+  const { item: itemTwoData, position: itemTwoPosition } = itemTwo;
+  source.splice(itemOnePosition, 1, itemTwoData);
+  source.splice(itemTwoPosition, 1, itemOneData);
+  return source;
+}
+
+export function createItemEntry<T>(
+  item: T,
+  position: number
+): ListItemEntry<T> {
+  return { item, position };
+}
+
+export function rangeLoop(
+  start: number,
+  end: number,
+  ranger: (i: number, j: number) => void
+) {
+  for (let i = start; i < end; i++) {
+    ranger(i, i + 1);
+  }
+}
