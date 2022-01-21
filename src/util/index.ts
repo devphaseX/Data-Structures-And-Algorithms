@@ -215,9 +215,18 @@ export function createItemEntry<T>(
 export function rangeLoop(
   start: number,
   end: number,
-  ranger: (i: number, j: number) => void
+  ranger: (i: number, j: number, breakLoop: () => void) => void
 ) {
-  for (let i = start; i < end; i++) {
-    ranger(i, i + 1);
+  let isLoopBreak = false;
+
+  function breakLoop() {
+    isLoopBreak = true;
+  }
+
+  loop: for (let i = start; i < end; i++) {
+    ranger(i, i + 1, breakLoop);
+    if (isLoopBreak) {
+      break loop;
+    }
   }
 }
