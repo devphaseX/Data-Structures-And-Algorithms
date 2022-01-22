@@ -3,4 +3,5 @@
 /dist
 
 /src/old
-/src/example/singlyLinkedList.ts
+/src/example/*
+/examples

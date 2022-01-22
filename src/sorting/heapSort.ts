@@ -1,12 +1,13 @@
-import createHeap from '../data_structure/heap/heap.js';
+import createHeap, {
+  Heap,
+  HeapDataOrder,
+} from '../data_structure/heap/heap.js';
 
-function heapSort(list: Array<number>, order: 0 | 1) {
-  const _heap = createHeap(order === 0 ? 'max' : 'min');
-  list.forEach((item) => {
-    _heap.insert(item);
-  });
-
-  return list.map((_) => _heap.delete(0));
+function heapSort(strucrure: Heap): Array<number>;
+function heapSort(list: Array<number>, order: HeapDataOrder): Array<number>;
+function heapSort(value: Array<number> | Heap, order?: HeapDataOrder) {
+  const heap = Array.isArray(value) ? createHeap(order ?? 'min', value) : value;
+  return Array.from({ length: heap.size }, () => heap.delete());
 }
 
 export default heapSort;
