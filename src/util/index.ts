@@ -234,3 +234,11 @@ export function rangeLoop(
 export function unshiftLastItemWithFirst<T>(list: Array<T>) {
   return list.splice(0, 1, list.pop()!)[0];
 }
+
+export function getItemBoundary(range: { min: number; max: number }) {
+  return range.max - range.min + 1;
+}
+
+export function getListBoundary(list: Array<number>) {
+  return { min: Math.min.apply(null, list), max: Math.max.apply(null, list) };
+}
