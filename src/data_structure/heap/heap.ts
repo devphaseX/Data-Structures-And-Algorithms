@@ -65,6 +65,38 @@ function createHeap(order: HeapDataOrder, data?: number): Heap {
     return type === 'max' ? isFirstArgMax : isFirstArgMin;
   }
 
+  function makeParentComplyToHeapStructure(
+    currentHeap: Array<number>,
+    type: HeapDataOrder,
+    parentId: number
+  ): Array<number> {
+    const leftChildPosition = getLeftChildPosition(parentId);
+    if (leftChildPosition >= heapList.length) {
+      return currentHeap;
+    }
+    const rightChildPosition = getRightChildPosition(parentId);
+
+    const selectedChildEntry = getSelectedChildEntry(currentHeap, type, {
+      leftPosition: leftChildPosition,
+      rightPosition: rightChildPosition,
+    });
+
+    const parentEntry = createItemEntry(currentHeap[parentId], parentId);
+
+    if (!getComparisonFn(type)(parentEntry.item, selectedChildEntry.item)) {
+      swapItem(currentHeap, parentEntry, selectedChildEntry);
+      if (selectedChildEntry.position < heapList.length) {
+        return makeParentComplyToHeapStructure(
+          currentHeap,
+          type,
+          selectedChildEntry.position
+        );
+      }
+    }
+
+    return currentHeap;
+  }
+
   function selectChildEntryByStructure(
     heapDS: Array<number>,
     itemOnePosition: number,
@@ -79,49 +111,18 @@ function createHeap(order: HeapDataOrder, data?: number): Heap {
       : itemTwo;
   }
 
-  function getComparisonChildEntry(
+  function getSelectedChildEntry(
     heapDS: Array<number>,
     type: HeapDataOrder,
-    rightPosition: number,
-    leftPosition: number
+    childPosition: {
+      leftPosition: number;
+      rightPosition: number;
+    }
   ) {
+    const { leftPosition, rightPosition } = childPosition;
     return rightPosition < heapDS.length
-      ? selectChildEntryByStructure(heapDS, rightPosition, rightPosition, type)
-      : createItemEntry(heapDS[rightPosition], leftPosition);
-  }
-
-  function makeParentComplyToHeapStructure(
-    heapDS: Array<number>,
-    type: HeapDataOrder,
-    parentId: number
-  ): Array<number> {
-    const leftChildPosition = getLeftChildPosition(parentId);
-    if (leftChildPosition >= heapDS.length) {
-      return heapDS;
-    }
-    const rightChildPosition = getRightChildPosition(parentId);
-
-    const selectedChildEntry = getComparisonChildEntry(
-      heapDS,
-      type,
-      leftChildPosition,
-      rightChildPosition
-    );
-
-    const parentEntry = createItemEntry(heapDS[parentId], parentId);
-
-    if (!getComparisonFn(type)(parentEntry.item, selectedChildEntry.item)) {
-      swapItem(heapDS, parentEntry, selectedChildEntry);
-      if (selectedChildEntry.position < heapList.length) {
-        return makeParentComplyToHeapStructure(
-          heapDS,
-          type,
-          selectedChildEntry.position
-        );
-      }
-    }
-
-    return heapDS;
+      ? selectChildEntryByStructure(heapDS, leftPosition, rightPosition, type)
+      : createItemEntry(heapDS[leftPosition], leftPosition);
   }
 
   function makeChildComplyToHeapStructure(
@@ -168,7 +169,10 @@ export default createHeap;
 
 function heapify(list: Array<number>, order: HeapDataOrder) {
   const heap = createHeap(order);
-  list.forEach(heap.insert);
+  list.forEach((item) => {
+    heap.insert(item);
+  });
+
   return heap;
 }
 
