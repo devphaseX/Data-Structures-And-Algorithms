@@ -1,5 +1,5 @@
 import heapSort from '../../sorting/heapSort.js';
-import { slice } from '../../util/index.js';
+import { slice, unshiftLastItemWithFirst } from '../../util/index.js';
 import {
   heapify,
   Heap,
@@ -29,9 +29,9 @@ function createHeap(order: HeapDataOrder, data?: number | Array<number>): Heap {
 
     let topMostItem: number;
     if (heapList.length > 1) {
-      topMostItem = heapList.splice(0, 1, heapList.pop()!)[0];
+      topMostItem = unshiftLastItemWithFirst(heapList);
     } else {
-      topMostItem = heapList.splice(0, 1)[0];
+      topMostItem = heapList.pop()!;
     }
     if (heapList.length > 1) {
       heapList = makeParentComplyToHeapStructure(slice(heapList, 0), order, 0);

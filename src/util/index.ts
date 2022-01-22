@@ -171,7 +171,7 @@ export const slice = function <T>(
   return nativeArrayPrototype.slice.call(list, start, end);
 };
 
-const splice = function <T>(
+export const splice = function <T>(
   list: Array<T>,
   start: number,
   length: number,
@@ -229,4 +229,8 @@ export function rangeLoop(
       break loop;
     }
   }
+}
+
+export function unshiftLastItemWithFirst<T>(list: Array<T>) {
+  return list.splice(0, 1, list.pop()!)[0];
 }
