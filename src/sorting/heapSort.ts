@@ -10,11 +10,3 @@ function heapSort(list: Array<number>, order: 0 | 1) {
 }
 
 export default heapSort;
-
-/* [-1, 1, 2, 10, 15, 9, 16, 11]
-              -1
-        1              2
-    10     15        9   16
-11
-
-*/
