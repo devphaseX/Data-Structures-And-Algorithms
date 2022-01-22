@@ -1,6 +1,4 @@
-import { rangeLoop, slice } from './../../util/index.js';
-import { createItemEntry, swapItem } from '../../util/index.js';
-import heapSort from '../../sorting/heapSort.js';
+import { createItemEntry, rangeLoop, swapItem } from './../../util/index.js';
 
 export interface Heap {
   heap: Record<number, number>;
@@ -11,111 +9,59 @@ export interface Heap {
 }
 
 export type HeapDataOrder = 'max' | 'min';
-function createHeap(order: HeapDataOrder, data?: number | Array<number>): Heap {
-  let heapList: Array<number> = [];
 
-  if (data) {
-    heapList = [data].flat(1);
-    heapify(heapList, order);
-  }
+export function makeChildComplyToHeapStructure(
+  currentHeap: Array<number>,
+  type: HeapDataOrder,
+  newlyItemIndex: number
+): Array<number> {
+  const parentId = getParentPosition(newlyItemIndex);
+  const parent = currentHeap[parentId];
+  const child = currentHeap[newlyItemIndex];
 
-  function insert(data: number) {
-    const lastItemPosition = heapList.length;
-    heapList.push(data);
-    if (heapList.length === 1) return;
-    heapList = makeChildComplyToHeapStructure(
-      slice(heapList, 0),
-      order,
-      lastItemPosition
+  const comparisonFnType = getComparisonFn(type);
+
+  if (!comparisonFnType(parent, child)) {
+    swapItem(
+      currentHeap,
+      createItemEntry(parent, parentId),
+      createItemEntry(child, newlyItemIndex)
     );
+
+    if (parentId > 0) {
+      return makeChildComplyToHeapStructure(currentHeap, type, parentId);
+    }
   }
 
-  function _delete() {
-    if (heapList.length === 0) {
-      throw new TypeError("Can't delete from an empty heap.");
-    }
-
-    let topMostItem: number;
-    if (heapList.length > 1) {
-      topMostItem = heapList.splice(0, 1, heapList.pop()!)[0];
-    } else {
-      topMostItem = heapList.splice(0, 1)[0];
-    }
-    if (heapList.length > 1) {
-      heapList = makeParentComplyToHeapStructure(slice(heapList, 0), order, 0);
-    }
-    return topMostItem;
-  }
-
-  function makeChildComplyToHeapStructure(
-    currentHeap: Array<number>,
-    type: HeapDataOrder,
-    newlyItemIndex: number
-  ): Array<number> {
-    const parentId = getParentPosition(newlyItemIndex);
-    const parent = currentHeap[parentId];
-    const child = currentHeap[newlyItemIndex];
-
-    const comparisonFnType = getComparisonFn(type);
-
-    if (!comparisonFnType(parent, child)) {
-      swapItem(
-        currentHeap,
-        createItemEntry(parent, parentId),
-        createItemEntry(child, newlyItemIndex)
-      );
-
-      if (parentId > 0) {
-        return makeChildComplyToHeapStructure(currentHeap, type, parentId);
-      }
-    }
-
-    return currentHeap;
-  }
-
-  function sort() {
-    return heapSort(heapList, order);
-  }
-
-  return {
-    get heap() {
-      return { ...heapList };
-    },
-    insert,
-    delete: _delete,
-    sort,
-    get size() {
-      return heapList.length;
-    },
-  };
+  return currentHeap;
 }
 
-function getParentPosition(index: number) {
+export function getParentPosition(index: number) {
   if (index === 0) return index;
   return Math.abs(Math.trunc(index / 2) - ((index + 1) % 2));
 }
 
-function getLeftChildPosition(parentPosition: number) {
+export function getLeftChildPosition(parentPosition: number) {
   return parentPosition * 2 + 1;
 }
 
-function getRightChildPosition(parentPosition: number) {
+export function getRightChildPosition(parentPosition: number) {
   return getLeftChildPosition(parentPosition) + 1;
 }
 
-function isFirstArgMin(first: number, second: number) {
+export function isFirstArgMin(first: number, second: number) {
   return first <= second;
 }
 
-function isFirstArgMax(first: number, second: number) {
+export function isFirstArgMax(first: number, second: number) {
   return first >= second;
 }
 
-function getComparisonFn(type: HeapDataOrder) {
+export function getComparisonFn(type: HeapDataOrder) {
   return type === 'max' ? isFirstArgMax : isFirstArgMin;
 }
 
-function makeParentComplyToHeapStructure(
+export function makeParentComplyToHeapStructure(
   currentHeap: Array<number>,
   type: HeapDataOrder,
   parentId: number
@@ -147,7 +93,7 @@ function makeParentComplyToHeapStructure(
   return currentHeap;
 }
 
-function getSelectedChildEntry(
+export function getSelectedChildEntry(
   heapDS: Array<number>,
   type: HeapDataOrder,
   childPosition: {
@@ -161,7 +107,7 @@ function getSelectedChildEntry(
     : createItemEntry(heapDS[leftPosition], leftPosition);
 }
 
-function selectChildEntryByHierachy(
+export function selectChildEntryByHierachy(
   heapDS: Array<number>,
   itemOnePosition: number,
   itemTwoPosition: number,
@@ -172,8 +118,6 @@ function selectChildEntryByHierachy(
 
   return getComparisonFn(type)(itemOne.item, itemTwo.item) ? itemOne : itemTwo;
 }
-
-export default createHeap;
 
 function heapify(list: Array<number>, order: HeapDataOrder) {
   if (list.length === 1) return list;

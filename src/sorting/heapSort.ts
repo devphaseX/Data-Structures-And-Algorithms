@@ -1,7 +1,5 @@
-import createHeap, {
-  Heap,
-  HeapDataOrder,
-} from '../data_structure/heap/heap.js';
+import { Heap, HeapDataOrder } from '../data_structure/heap/heap.js';
+import createHeap from '../data_structure/heap/index.js';
 
 function heapSort(strucrure: Heap): Array<number>;
 function heapSort(list: Array<number>, order: HeapDataOrder): Array<number>;
