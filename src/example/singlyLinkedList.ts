@@ -1,8 +1,11 @@
 import { heapify } from '../data_structure/heap/heap.js';
 import createHeap from '../data_structure/heap/index.js';
 import { createCircularDoublyLinkedList } from '../data_structure/linkedList/circularDoubleLinkedList.js';
+import sortByBubble from '../sorting/bubble.js';
 import countSort from '../sorting/count.js';
 import heapSort from '../sorting/heapSort.js';
+import mergeSort from '../sorting/merge.js';
+import { _defaultSort } from '../util/index.js';
 
 const doubly = createCircularDoublyLinkedList([1, 2, 3, 5, 6]);
 doubly.prependNode(0);
@@ -66,4 +69,6 @@ console.log(heapify([-2, 6, 0, 4, 5, 1, -1, 2], 'max'));
 
 //[6, 5, 1, 4, -2, 0, -1, 2]
 
-console.log(countSort([-2, 6, 0, 4, 5, 1, -1, 2]));
+console.log('count', countSort([-2, 6, 0, 4, 5, 1, -1, 2]));
+console.log(mergeSort([-2, 6, 0, 4, 5, 1, -1, 2]));
+console.log(sortByBubble([-2, 6, 0, 4, 5, 1, -1, 2]));

@@ -1,6 +1,15 @@
-import { createItemEntry, slice, swapItem } from '../util/index.js';
+import {
+  createItemEntry,
+  slice,
+  swapItem,
+  _isPreSortedBySize,
+} from '../util/index.js';
 
 function quickSort(list: Array<number>) {
+  if (_isPreSortedBySize(list)) {
+    return slice(list, 0);
+  }
+
   function partition(list: Array<number>, low: number, high: number) {
     const pivot = list[low];
 

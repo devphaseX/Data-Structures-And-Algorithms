@@ -4,9 +4,14 @@ import {
   rangeLoop,
   getItemBoundary,
   getListBoundary,
+  _isPreSortedBySize,
+  createArrayAndInitialize,
 } from './../util/index.js';
 
 export default function countSort(list: Array<number>) {
+  if (_isPreSortedBySize(list)) {
+    return slice(list, 0);
+  }
   const itemBoundary = getListBoundary(list);
   let isNormalizeApplied = false;
 
@@ -26,23 +31,22 @@ export default function countSort(list: Array<number>) {
     : sortedList;
 }
 
-type Sign = number;
-function _makeNegativeNumberSorted(rangeSigner: () => Sign) {
+function _negativeNumberNormalizer(rangeSigner: () => number) {
   return function normalizeList(list: Array<number>, lowBound: number) {
     lowBound = rangeSigner() * Math.abs(lowBound);
     return list.map((item) => lowBound + item);
   };
 }
 
-const normalizeNegativeValues = _makeNegativeNumberSorted(() => 1);
-const revertNormalizeNegativeValues = _makeNegativeNumberSorted(() => -1);
+const normalizeNegativeValues = _negativeNumberNormalizer(() => 1);
+const revertNormalizeNegativeValues = _negativeNumberNormalizer(() => -1);
 
 function placeItemInSortPositions(
   list: Array<number>,
   freqBoundary: Array<number>,
   listSize: number
 ) {
-  const sortedList: Array<number> = Array(listSize);
+  const sortedList = createArrayAndInitialize(listSize, 0);
 
   rangeLoop(0, listSize, (i) => {
     const backIndex = listSize - i - 1;
@@ -59,7 +63,7 @@ function createItemFrequency(list: Array<number>, boundary: number) {
   return list.reduce((countRecord, item) => {
     countRecord[item]++;
     return countRecord;
-  }, Array(boundary).fill(0) as number[]);
+  }, createArrayAndInitialize(boundary, 0));
 }
 
 function computeItemFreqBoundary(itemFrequency: Array<number>) {

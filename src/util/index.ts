@@ -1,4 +1,4 @@
-import { ListItemEntry } from './type';
+import { ListItemEntry, ValueFn, Chain } from './type';
 
 export function cloneObject<T extends Record<any, any>>(obj: T) {
   return { ...obj };
@@ -33,27 +33,6 @@ export function normaliseAccessorProps<T extends Record<any, any>>(obj: T) {
 
 export function unwindProcess() {
   throw void 0;
-}
-
-interface ValueFn<T> {
-  (): Array<T>;
-}
-
-interface Chain<T> {
-  map<U>(fn: (value: T, index: number) => U): Chain<U>;
-  filter(predicate: (value: T) => unknown): Chain<T>;
-  filter<U extends T>(predicate: (value: T) => value is U): Chain<U>;
-  slice(start: number, end: number): Chain<T>;
-  splice(start: number, length: number, ...placement: Array<T>): Chain<T>;
-  push(value: T): Chain<T>;
-  pop(): Chain<T>;
-  unshift(value: T): Chain<T>;
-  shift(): Chain<T>;
-  copyWithin(target: number, start: number, end?: number): Chain<T>;
-  fill(target: number, start: number, end?: number): Chain<T>;
-  reverse(): Chain<T>;
-  sort(comparator: (first: T, second: T) => number | boolean): Chain<T>;
-  value: () => Array<T>;
 }
 
 export function _chain<T>(value: Array<T>) {
@@ -241,4 +220,51 @@ export function getItemBoundary(range: { min: number; max: number }) {
 
 export function getListBoundary(list: Array<number>) {
   return { min: Math.min.apply(null, list), max: Math.max.apply(null, list) };
+}
+
+export function _isPreSortedBySize<T>(list: Array<T>) {
+  return [0, 1].includes(list.length);
+}
+
+export function getMiddlePoint(lb: number, ub: number) {
+  return Math.trunc((lb + ub) / 2);
+}
+
+/**
+ *If dataone is greater than dateTwo the value 1 get returned which denote that
+ *the first value is ahead of the second, while -1 denote behind
+ */
+export function _defaultSort(dataOne: number, dataTwo: number) {
+  return dataOne > dataTwo ? 1 : -1;
+}
+
+export function _handleNumericSortBasedPredicate(
+  condition: number | boolean,
+  order: 'ascend' | 'descend'
+) {
+  if (typeof condition === 'boolean') {
+    return condition;
+  }
+  switch (order) {
+    case 'ascend': {
+      return condition < 0 ? true : false;
+    }
+    case 'descend': {
+      return condition > 0 ? false : true;
+    }
+
+    default:
+      return true;
+  }
+}
+
+export function _numericalAscendPredicate<T>(
+  itemOne: ListItemEntry<T>,
+  itemTwo: ListItemEntry<T>
+) {
+  return itemOne.item > itemTwo.item;
+}
+
+export function createArrayAndInitialize<T>(size: number, _initialData: T) {
+  return <Array<T>>Array(size).fill(_initialData);
 }

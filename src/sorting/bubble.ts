@@ -1,7 +1,18 @@
-import { createItemEntry, swapItem, slice, rangeLoop } from '../util/index.js';
-import { SortPredicateFn } from '../util/type';
+import {
+  createItemEntry,
+  swapItem,
+  slice,
+  rangeLoop,
+  _isPreSortedBySize,
+  _handleNumericSortBasedPredicate,
+  _numericalAscendPredicate,
+} from '../util/index.js';
 
-function sortByBubble<T>(list: Array<T>, predicateFn: SortPredicateFn<T>) {
+function sortByBubble<T>(list: Array<T>) {
+  if (_isPreSortedBySize(list)) {
+    return slice;
+  }
+
   function _bubbleSort(
     list: Array<T>,
     isSortedBeforePassEnd = false,
@@ -14,7 +25,7 @@ function sortByBubble<T>(list: Array<T>, predicateFn: SortPredicateFn<T>) {
       const currentItemEntry = createItemEntry(list[i], i);
       const nextItemEntry = createItemEntry(list[j], j);
 
-      if (predicateFn(currentItemEntry, nextItemEntry)) {
+      if (_numericalAscendPredicate(currentItemEntry, nextItemEntry)) {
         swapItem(list, currentItemEntry, nextItemEntry);
         swapFlag = 1;
       }
@@ -32,7 +43,7 @@ function sortByBubble<T>(list: Array<T>, predicateFn: SortPredicateFn<T>) {
         const currentItemEntry = createItemEntry(list[i], i);
         const nextItemEntry = createItemEntry(list[j], j);
 
-        if (predicateFn(currentItemEntry, nextItemEntry)) {
+        if (_numericalAscendPredicate(currentItemEntry, nextItemEntry)) {
           swapItem(list, currentItemEntry, nextItemEntry);
           swapFlag = 1;
         }
