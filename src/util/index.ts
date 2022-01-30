@@ -1,4 +1,10 @@
-import { ListItemEntry, ValueFn, Chain } from './type';
+import {
+  ListItemEntry,
+  ValueFn,
+  Chain,
+  GetAllFunctionValueKey,
+  ImmutablePreserverFn,
+} from './type';
 
 export function cloneObject<T extends Record<any, any>>(obj: T) {
   return { ...obj };
@@ -267,4 +273,45 @@ export function _numericalAscendPredicate<T>(
 
 export function createArrayAndInitialize<T>(size: number, _initialData: T) {
   return <Array<T>>Array(size).fill(_initialData);
+}
+
+export function createImmutableAction<
+  Object extends Record<PropertyKey, any>,
+  R
+>(mutables: Object, immutablePreserver: ImmutablePreserverFn<keyof Object, R>) {
+  function isImmutableAllowed(dependencies: any[]) {
+    let immutableSigner = lastListItem(dependencies);
+    return isBoolean(immutableSigner) && immutableSigner;
+  }
+
+  function createImmutableWrapper<
+    FunKey extends GetAllFunctionValueKey<Object>
+  >(key: FunKey) {
+    return function (...dependencies: any[]) {
+      if (isImmutableAllowed(dependencies)) {
+        return immutablePreserver(key, dependencies);
+      } else {
+        return mutables[key](...dependencies);
+      }
+    };
+  }
+
+  return new Proxy(mutables, {
+    get(target, key, receiver) {
+      const retrievedValue = Reflect.get(target, key, receiver);
+      if (isFunction(retrievedValue)) {
+        return createImmutableWrapper(key as any);
+      } else {
+        return retrievedValue;
+      }
+    },
+  });
+}
+
+export function isFunction(value: any) {
+  return typeof value === 'function';
+}
+
+export function isBoolean(value: any) {
+  return typeof value === 'boolean';
 }

@@ -1,4 +1,10 @@
-import { map, slice, normaliseAccessorProps } from '../../util/index.js';
+import {
+  map,
+  slice,
+  normaliseAccessorProps,
+  createImmutableAction,
+} from '../../util/index.js';
+import { Fun } from '../../util/type';
 import {
   DoubleReferenceNode,
   DoublyNodeOption,
@@ -413,4 +419,15 @@ export function dataKeeper<T>() {
         : [...values, value];
     },
   };
+}
+
+export function createLinkListImmutableAction<
+  Value,
+  LinkedList extends LinkListType<Value>
+>(linkedList: LinkedList, mapper: (fn: (value: Value) => Value) => LinkedList) {
+  return createImmutableAction(linkedList, function (methodKey, dependencies) {
+    const clone = mapper((v) => v);
+    ((clone as any)[methodKey] as Fun)(slice(dependencies, 0, -1));
+    return clone;
+  });
 }

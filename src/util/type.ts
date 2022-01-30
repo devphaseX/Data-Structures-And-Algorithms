@@ -27,3 +27,15 @@ export interface Chain<T> {
   sort(comparator: (first: T, second: T) => number | boolean): Chain<T>;
   value: () => Array<T>;
 }
+
+export type Fun = (...value: any[]) => any;
+
+export type ImmutablePreserverFn<F, R> = (fn: F, dependencies: any[]) => R;
+
+export type GetAllFunctionValueKey<
+  ActionableObject extends Record<PropertyKey, any>
+> = {
+  [Key in keyof ActionableObject]: ActionableObject[Key] extends Fun
+    ? Key
+    : never;
+}[keyof ActionableObject];

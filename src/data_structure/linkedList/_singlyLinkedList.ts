@@ -9,7 +9,6 @@ import {
 } from './type';
 import { sealObject } from '../../util/index.js';
 import {
-  createImmutableStructure,
   derefLastNode,
   tranverseNode,
   createLinkNode,
@@ -18,7 +17,9 @@ import {
   guardNodeReveal,
   TranversalFn,
   iterableLinkNode,
+  createLinkListImmutableAction,
 } from './util.js';
+import { Fun } from '../../util/type';
 
 interface SinglyNodeConfig<T> {
   initialData?: T | Array<T>;
@@ -210,7 +211,7 @@ export function _createSinglyLinkedList<T>(
     size = 0;
   }
 
-  const mutableStateFns = [
+  const mutableStateFns = {
     appendNode,
     prependNode,
     mapNode,
@@ -221,9 +222,8 @@ export function _createSinglyLinkedList<T>(
     removeFirstNode,
     removeLastNode,
     emptyLinkedList,
-  ];
+  };
 
-  const immutableFnVariant = createImmutableStructure(mutableStateFns, mapNode);
   const linkOperation = sealObject({
     get head() {
       return head;
@@ -234,9 +234,12 @@ export function _createSinglyLinkedList<T>(
     forEach,
     getNodeList,
     getNodeData,
+    ...mutableStateFns,
     [Symbol.iterator]: iterableLinkNode<T>(() => head, nodeOption.isCircular),
-    ...Object.fromEntries(immutableFnVariant as any),
   }) as SinglyLinkedList<T>;
 
-  return linkOperation;
+  return createLinkListImmutableAction<T, SinglyLinkedList<T>>(
+    linkOperation,
+    mapNode
+  );
 }

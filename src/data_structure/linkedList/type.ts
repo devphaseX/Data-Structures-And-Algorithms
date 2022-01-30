@@ -1,3 +1,5 @@
+import { Fun } from '../../util/type';
+
 export type LinkType = 'single' | 'double';
 export type Node<T, IsDouble extends boolean = false> = IfElse<
   IsDouble,
@@ -48,6 +50,7 @@ export interface LinkedListInitial<T> {
 
 export type NodePosition = number;
 
+type ImmutableResult<Data, Self> = { data: Data; structure: Self };
 export interface LinkedListMethods<T, Head, Self> {
   head: Head | null;
   size: number;
@@ -140,3 +143,8 @@ export type LinkOption = {
   direction: 'next' | 'prev';
   isCircular: boolean;
 };
+
+export type StateFulFnRecord = Record<
+  string,
+  { fn: Fun; validReturnStatus: boolean }
+>;

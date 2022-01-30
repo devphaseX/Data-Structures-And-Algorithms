@@ -1,6 +1,5 @@
 import { sealObject } from '../../util/index.js';
 import {
-  createImmutableStructure,
   derefLastNode,
   tranverseNode,
   createLinkNode,
@@ -9,6 +8,7 @@ import {
   guardNodeReveal,
   TranversalFn,
   iterableLinkNode,
+  createLinkListImmutableAction,
 } from './util.js';
 import {
   CircularDoublyLinkedList,
@@ -242,8 +242,6 @@ export function _createDoublyLinkedList<T>(
     emptyLinkedList,
   ];
 
-  const immutableFnVariant = createImmutableStructure(mutableStateFns, mapNode);
-
   const linkOperation = sealObject({
     get head() {
       return head;
@@ -254,9 +252,12 @@ export function _createDoublyLinkedList<T>(
     getNodeList,
     getNodeData,
     forEach,
+    ...(mutableStateFns as any),
     [Symbol.iterator]: iterableLinkNode<T>(() => head, nodeOption.isCircular),
-    ...Object.fromEntries(immutableFnVariant as any),
   }) as DoublyLinkedList<T>;
 
-  return linkOperation;
+  return createLinkListImmutableAction<T, DoublyLinkedList<T>>(
+    linkOperation,
+    mapNode
+  );
 }
