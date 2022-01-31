@@ -8,7 +8,9 @@ import { Fun } from '../../util/type';
 import {
   DoubleReferenceNode,
   DoublyNodeOption,
+  GetLinkedListDataType,
   LinkBoundary,
+  LinkListMapperFn,
   LinkListType,
   LinkOption,
   LinkTraversalFn,
@@ -382,9 +384,11 @@ export function dataKeeper<T>() {
 }
 
 export function createLinkListImmutableAction<
-  T,
-  LinkedList extends LinkListType<T>
->(linkedList: LinkedList, mapper: (fn: (value: T) => T) => LinkedList) {
+  LinkedList extends LinkListType<any>
+>(
+  linkedList: LinkedList,
+  mapper: (fn: LinkListMapperFn<LinkedList>) => LinkedList
+) {
   function removeDepValue(deps: any[]) {
     return slice(deps, 0, -1);
   }

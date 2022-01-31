@@ -238,8 +238,5 @@ export function _createSinglyLinkedList<T>(
     [Symbol.iterator]: iterableLinkNode<T>(() => head, nodeOption.isCircular),
   }) as SinglyLinkedList<T>;
 
-  return createLinkListImmutableAction<T, SinglyLinkedList<T>>(
-    linkOperation,
-    mapNode
-  );
+  return createLinkListImmutableAction(linkOperation, mapNode);
 }

@@ -256,8 +256,5 @@ export function _createDoublyLinkedList<T>(
     [Symbol.iterator]: iterableLinkNode<T>(() => head, nodeOption.isCircular),
   }) as DoublyLinkedList<T>;
 
-  return createLinkListImmutableAction<T, DoublyLinkedList<T>>(
-    linkOperation,
-    mapNode
-  );
+  return createLinkListImmutableAction(linkOperation, mapNode);
 }

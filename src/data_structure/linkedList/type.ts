@@ -148,3 +148,11 @@ export type StateFulFnRecord = Record<
   string,
   { fn: Fun; validReturnStatus: boolean }
 >;
+
+export type GetLinkedListDataType<Link> = Link extends LinkListType<infer U>
+  ? U
+  : any;
+
+export type LinkListMapperFn<Link> = (
+  nodeValue: GetLinkedListDataType<Link>
+) => GetLinkedListDataType<Link>;
