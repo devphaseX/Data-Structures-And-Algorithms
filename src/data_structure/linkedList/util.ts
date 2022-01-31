@@ -1,5 +1,4 @@
 import {
-  map,
   slice,
   normaliseAccessorProps,
   createImmutableAction,
@@ -8,7 +7,6 @@ import { Fun } from '../../util/type';
 import {
   DoubleReferenceNode,
   DoublyNodeOption,
-  GetLinkedListDataType,
   LinkBoundary,
   LinkListMapperFn,
   LinkListType,
