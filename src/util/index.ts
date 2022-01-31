@@ -22,16 +22,14 @@ export function normaliseAccessorProps<T extends Record<any, any>>(obj: T) {
   for (let key in obj) {
     if (isPropertyOwn(obj, key)) {
       const propertyDescriptor = Object.getOwnPropertyDescriptor(obj, key);
-      if (propertyDescriptor?.set && !propertyDescriptor.get) {
-        continue;
-      }
+      if (propertyDescriptor?.set && !propertyDescriptor.get) continue;
 
-      Object.defineProperty(obj, key, {
-        enumerable: propertyDescriptor?.enumerable,
-        configurable: propertyDescriptor?.configurable,
-        writable: true,
-        value: obj[key],
-      });
+      if (propertyDescriptor && propertyDescriptor.get) {
+        Object.defineProperty(obj, key, {
+          writable: true,
+          value: obj[key],
+        });
+      }
     }
   }
   return obj;
@@ -264,7 +262,7 @@ export function _handleNumericSortBasedPredicate(
   }
 }
 
-export function _numericalAscendPredicate<T>(
+export function _ascendPredicate<T>(
   itemOne: ListItemEntry<T>,
   itemTwo: ListItemEntry<T>
 ) {
@@ -275,10 +273,13 @@ export function createArrayAndInitialize<T>(size: number, _initialData: T) {
   return <Array<T>>Array(size).fill(_initialData);
 }
 
-export function createImmutableAction<
-  Object extends Record<PropertyKey, any>,
-  R
->(mutables: Object, immutablePreserver: ImmutablePreserverFn<keyof Object, R>) {
+export function createImmutableAction<Object extends Record<PropertyKey, any>>(
+  mutables: Object,
+  immutablePreserver: ImmutablePreserverFn<
+    GetAllFunctionValueKey<Object>,
+    Object
+  >
+) {
   function isImmutableAllowed(dependencies: any[]) {
     let immutableSigner = lastListItem(dependencies);
     return isBoolean(immutableSigner) && immutableSigner;

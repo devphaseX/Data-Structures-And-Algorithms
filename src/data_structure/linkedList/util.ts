@@ -151,46 +151,6 @@ let tranverseNode: TranverseLink;
 
 export { tranverseNode };
 
-type CustomFunction = (...args: any[]) => void;
-
-export function createImmutableStructure<T>(
-  args: Array<CustomFunction>,
-  mapNode: <U>(fn: (value: T) => U, mutable?: boolean) => LinkListType<U>
-) {
-  return map(args, function addImmutableOnAllow(fn) {
-    if (!fn.name) {
-      throw new TypeError();
-    }
-    return [
-      fn.name,
-      function decideImmutable(...args: any[]) {
-        const immutableArg = args[args.length - 1] as boolean;
-        if (typeof immutableArg === 'boolean' && immutableArg) {
-          return immutableOperation();
-          function immutableOperation() {
-            const clone = mapNode((v) => v);
-            args.pop();
-
-            const actionType = <keyof typeof clone>fn.name;
-            const mutableMethod = <CustomFunction>clone[actionType];
-            let data;
-            if (typeof mutableMethod === 'function') {
-              data = mutableMethod(...args);
-            } else {
-              throw TypeError(
-                `This property value isnt calleable, value return the type ${typeof mutableMethod},
-                expected function type.`
-              );
-            }
-            return { data, newList: clone };
-          }
-        }
-        return (<CustomFunction>fn)(...args);
-      },
-    ] as const;
-  }) as [keyof LinkListType<T>, (...args: any[]) => unknown];
-}
-
 export function sortNodeRemoval(nodePos: Set<NodePosition>) {
   const positionEntries = [...nodePos];
   return new Set(positionEntries.sort((a, b) => (a > b ? -1 : 1)));
@@ -422,12 +382,15 @@ export function dataKeeper<T>() {
 }
 
 export function createLinkListImmutableAction<
-  Value,
-  LinkedList extends LinkListType<Value>
->(linkedList: LinkedList, mapper: (fn: (value: Value) => Value) => LinkedList) {
+  T,
+  LinkedList extends LinkListType<T>
+>(linkedList: LinkedList, mapper: (fn: (value: T) => T) => LinkedList) {
+  function removeDepValue(deps: any[]) {
+    return slice(deps, 0, -1);
+  }
   return createImmutableAction(linkedList, function (methodKey, dependencies) {
     const clone = mapper((v) => v);
-    ((clone as any)[methodKey] as Fun)(slice(dependencies, 0, -1));
+    ((clone as any)[methodKey] as Fun)(removeDepValue(dependencies));
     return clone;
   });
 }

@@ -5,7 +5,7 @@ import {
   rangeLoop,
   _isPreSortedBySize,
   _handleNumericSortBasedPredicate,
-  _numericalAscendPredicate,
+  _ascendPredicate,
 } from '../util/index.js';
 
 function sortByBubble<T>(list: Array<T>) {
@@ -25,7 +25,7 @@ function sortByBubble<T>(list: Array<T>) {
       const currentItemEntry = createItemEntry(list[i], i);
       const nextItemEntry = createItemEntry(list[j], j);
 
-      if (_numericalAscendPredicate(currentItemEntry, nextItemEntry)) {
+      if (_ascendPredicate(currentItemEntry, nextItemEntry)) {
         swapItem(list, currentItemEntry, nextItemEntry);
         swapFlag = 1;
       }
@@ -43,7 +43,7 @@ function sortByBubble<T>(list: Array<T>) {
         const currentItemEntry = createItemEntry(list[i], i);
         const nextItemEntry = createItemEntry(list[j], j);
 
-        if (_numericalAscendPredicate(currentItemEntry, nextItemEntry)) {
+        if (_ascendPredicate(currentItemEntry, nextItemEntry)) {
           swapItem(list, currentItemEntry, nextItemEntry);
           swapFlag = 1;
         }
