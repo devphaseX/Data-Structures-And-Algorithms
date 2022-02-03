@@ -273,11 +273,11 @@ export function createArrayAndInitialize<T>(size: number, _initialData: T) {
   return <Array<T>>Array(size).fill(_initialData);
 }
 
-export function createImmutableAction<Object extends Record<PropertyKey, any>>(
-  mutables: Object,
+export function createImmutableAction<Mutable extends Record<PropertyKey, any>>(
+  mutables: Mutable,
   immutablePreserver: ImmutablePreserverFn<
-    GetAllFunctionValueKey<Object>,
-    Object
+    GetAllFunctionValueKey<Mutable>,
+    Mutable
   >
 ) {
   function isImmutableAllowed(dependencies: any[]) {
@@ -286,7 +286,7 @@ export function createImmutableAction<Object extends Record<PropertyKey, any>>(
   }
 
   function createImmutableWrapper<
-    FunKey extends GetAllFunctionValueKey<Object>
+    FunKey extends GetAllFunctionValueKey<Mutable>
   >(key: FunKey) {
     return function (...dependencies: any[]) {
       if (isImmutableAllowed(dependencies)) {
