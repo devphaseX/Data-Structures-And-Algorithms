@@ -229,7 +229,7 @@ export function _createDoublyLinkedList<T>(
     size = 0;
   }
 
-  const mutableStateFns = [
+  const mutableStateFns = {
     appendNode,
     prependNode,
     mapNode,
@@ -240,7 +240,7 @@ export function _createDoublyLinkedList<T>(
     removeFirstNode,
     removeLastNode,
     emptyLinkedList,
-  ];
+  };
 
   const linkOperation = sealObject({
     get head() {

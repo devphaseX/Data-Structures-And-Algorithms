@@ -1,4 +1,7 @@
+import { createDoublyLinkedList } from '../data_structure/linkedList/doublyLinkedList.js';
 import { createSinglyLinkedList } from '../data_structure/linkedList/singlyLinkedList.js';
+import { LinkListType } from '../data_structure/linkedList/type';
+import heapSort from '../sorting/heapSort.js';
 
 // const doubly = createCircularDoublyLinkedList([1, 2, 3, 5, 6]);
 // doubly.prependNode(0);
@@ -69,3 +72,24 @@ import { createSinglyLinkedList } from '../data_structure/linkedList/singlyLinke
 const single = createSinglyLinkedList(1);
 const newSingle = single.appendNode(0, true);
 console.log(single !== newSingle);
+
+function sortLinkedList<LinkedList extends LinkListType<number>>(
+  linkedLists: Array<LinkListType<number>>,
+  finalLinkedListConctructor: (initialData: Array<number>) => LinkedList
+) {
+  if (linkedLists.length === 0) return null;
+  if (linkedLists.length === 1) return linkedLists.pop()! as LinkedList;
+
+  const sortedList = heapSort(
+    linkedLists.map((l) => l.getNodeList()).flat(1),
+    'min'
+  );
+  return finalLinkedListConctructor(sortedList);
+}
+
+console.log(
+  sortLinkedList(
+    [createSinglyLinkedList([1, 2, 3, 4]), createDoublyLinkedList([4, 5, 6])],
+    createDoublyLinkedList
+  )?.getNodeList()
+);

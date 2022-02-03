@@ -5,7 +5,7 @@ import {
   getItemBoundary,
   getListBoundary,
   _isPreSortedBySize,
-  createArrayAndInitialize,
+  createArrayWithInitial,
 } from './../util/index.js';
 
 export default function countSort(list: Array<number>) {
@@ -46,7 +46,7 @@ function placeItemInSortPositions(
   freqBoundary: Array<number>,
   listSize: number
 ) {
-  const sortedList = createArrayAndInitialize(listSize, 0);
+  const sortedList = createArrayWithInitial(listSize, 0);
 
   rangeLoop(0, listSize, (i) => {
     const backIndex = listSize - i - 1;
@@ -63,7 +63,7 @@ function createItemFrequency(list: Array<number>, boundary: number) {
   return list.reduce((countRecord, item) => {
     countRecord[item]++;
     return countRecord;
-  }, createArrayAndInitialize(boundary, 0));
+  }, createArrayWithInitial(boundary, 0));
 }
 
 function computeItemFreqBoundary(itemFrequency: Array<number>) {

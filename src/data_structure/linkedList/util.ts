@@ -387,12 +387,9 @@ export function createLinkListImmutableAction<
   linkedList: LinkedList,
   mapper: (fn: LinkListMapperFn<LinkedList>) => LinkedList
 ) {
-  function removeDepValue(deps: any[]) {
-    return slice(deps, 0, -1);
-  }
   return createImmutableAction(linkedList, function (methodKey, dependencies) {
     const clone = mapper((v) => v);
-    ((clone as any)[methodKey] as Fun)(removeDepValue(dependencies));
+    ((clone as any)[methodKey] as Fun)(dependencies);
     return clone;
   });
 }

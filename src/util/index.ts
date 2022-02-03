@@ -269,7 +269,7 @@ export function _ascendPredicate<T>(
   return itemOne.item > itemTwo.item;
 }
 
-export function createArrayAndInitialize<T>(size: number, _initialData: T) {
+export function createArrayWithInitial<T>(size: number, _initialData: T) {
   return <Array<T>>Array(size).fill(_initialData);
 }
 
@@ -280,6 +280,10 @@ export function createImmutableAction<Mutable extends Record<PropertyKey, any>>(
     Mutable
   >
 ) {
+  function removeImmutableIndicator(deps: any[]) {
+    return slice(deps, 0, -1);
+  }
+
   function isImmutableAllowed(dependencies: any[]) {
     let immutableSigner = lastListItem(dependencies);
     return isBoolean(immutableSigner) && immutableSigner;
@@ -290,7 +294,7 @@ export function createImmutableAction<Mutable extends Record<PropertyKey, any>>(
   >(key: FunKey) {
     return function (...dependencies: any[]) {
       if (isImmutableAllowed(dependencies)) {
-        return immutablePreserver(key, dependencies);
+        return immutablePreserver(key, removeImmutableIndicator(dependencies));
       } else {
         return mutables[key](...dependencies);
       }
