@@ -10,6 +10,9 @@ export function cloneObject<T extends Record<any, any>>(obj: T) {
   return { ...obj };
 }
 
+export function cloneList<T>(list: Array<T>) {
+  return concat(list, []);
+}
 export function sealObject<T extends Record<any, any>>(obj: T) {
   return Object.seal(obj);
 }
@@ -303,11 +306,15 @@ export function createImmutableAction<Mutable extends Record<PropertyKey, any>>(
 
   return new Proxy(mutables, {
     get(target, key, receiver) {
-      const retrievedValue = Reflect.get(target, key, receiver);
-      if (isFunction(retrievedValue)) {
-        return createImmutableWrapper(key as any);
+      if (Reflect.has(target, key)) {
+        const retrievedValue = Reflect.get(target, key, receiver);
+        if (isFunction(retrievedValue)) {
+          return createImmutableWrapper(key as any);
+        } else {
+          return retrievedValue;
+        }
       } else {
-        return retrievedValue;
+        return void 0;
       }
     },
   });

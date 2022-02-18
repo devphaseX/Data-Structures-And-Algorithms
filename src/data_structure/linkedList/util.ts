@@ -389,7 +389,8 @@ export function createLinkListImmutableAction<
 ) {
   return createImmutableAction(linkedList, function (methodKey, dependencies) {
     const clone = mapper((v) => v);
-    ((clone as any)[methodKey] as Fun)(dependencies);
+    const mutableMethod: Fun = (clone as any)[methodKey];
+    mutableMethod(dependencies);
     return clone;
   });
 }

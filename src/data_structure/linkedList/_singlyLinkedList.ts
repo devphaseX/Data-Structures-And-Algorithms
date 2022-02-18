@@ -19,7 +19,6 @@ import {
   iterableLinkNode,
   createLinkListImmutableAction,
 } from './util.js';
-import { Fun } from '../../util/type';
 
 interface SinglyNodeConfig<T> {
   initialData?: T | Array<T>;
