@@ -109,6 +109,13 @@ const concat = function <T>(list: Array<T>, extendsList: Array<T>): Array<T> {
   return nativeArrayPrototype.concat.call(list, extendsList);
 };
 
+export const flatList = function <T>(
+  nestedStructure: Array<any>,
+  dept = Infinity
+): Array<T> {
+  return nativeArrayPrototype.flat.call(nestedStructure, dept) as Array<T>;
+};
+
 const sort = function <T>(
   list: Array<T>,
   comparator: (f: T, s: T) => number
