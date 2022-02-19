@@ -1,14 +1,14 @@
 import {
   cloneList,
-  cloneObject,
   createItemEntry,
   rangeLoop,
   swapItem,
+  _isPreSortedBySize,
 } from '../util/index.js';
 
 function sortUsingInsertion<T>(list: Array<T>) {
   const orderDivisionList: Array<T | null> = cloneList(list);
-  if (orderDivisionList.length < 2) {
+  if (_isPreSortedBySize(orderDivisionList)) {
     return orderDivisionList as Array<T>;
   }
 
