@@ -4,6 +4,7 @@ import {
   getMaxNumber,
   getMinNumber,
   rangeLoop,
+  toFixed,
 } from '../util/index.js';
 
 type Floatable = { int: string; fraction: string; normalForm: number };
@@ -34,13 +35,14 @@ function createBucketStructure(base: number) {
 
 function normalizeNegativeValues(list: Array<number>): NegativeNormalise {
   const min = getMinNumber(list);
+  debugger;
   list = list.map((v) => v + Math.abs(min));
   function normalize(value: number, fixedPoint = 0) {
     const originalForm = value + min;
-    return fixedPoint > 0 ? +originalForm.toFixed(fixedPoint) : originalForm;
+    return fixedPoint > 0 ? toFixed(originalForm, fixedPoint) : originalForm;
   }
 
-  function passThrough(value: number, fixedPoint = 0) {
+  function passThrough(value: number) {
     return value;
   }
   return {
@@ -88,25 +90,24 @@ function normalizeValueToUnit(value: Array<number>): UnitNormalise {
       fixedPoint: floatable.fraction.length,
     };
   }
-  function normalizeUnit(item: FloatableInt<number>, limit: number) {
+
+  function normalizeUnit(item: FloatableInt<number>) {
     return {
       ...item,
-      value: item.value.toString().padStart(limit, '0'),
+      value: item.value.toString().padStart(unit, '0'),
     };
   }
 
   const floatableValues = floatForms.map(convertFloatToInt);
-
   const unit = maxInt.toString().length + decimalRange;
   return {
     unit,
-    norminalUnits: floatableValues.map((v) => normalizeUnit(v, unit)),
+    norminalUnits: floatableValues.map(normalizeUnit),
   };
 }
 
 export default function sortUsingRadix(list: Array<number>) {
   const { revert, negativeNormalisedList } = normalizeNegativeValues(list);
-
   let { norminalUnits, unit } = normalizeValueToUnit(negativeNormalisedList);
 
   rangeLoop(0, unit, (forwardUnitPosition) => {

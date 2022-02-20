@@ -341,7 +341,7 @@ export function getFloatingPoint(value: number) {
   const floatMatch = value.toString().match(floatPattern);
   return floatMatch
     ? { int: floatMatch[1], fraction: floatMatch[2], normalForm: value }
-    : { int: value.toString(), fraction: '0', normalForm: value };
+    : { int: value.toString(), fraction: '', normalForm: value };
 }
 
 export function getMaxNumber(list: Array<number>) {
@@ -350,4 +350,8 @@ export function getMaxNumber(list: Array<number>) {
 
 export function getMinNumber(list: Array<number>) {
   return Math.min.apply(null, list);
+}
+
+export function toFixed(value: number, extend: number) {
+  return +value.toFixed(extend);
 }
