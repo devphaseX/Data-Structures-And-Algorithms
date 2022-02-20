@@ -355,3 +355,7 @@ export function getMinNumber(list: Array<number>) {
 export function toFixed(value: number, extend: number) {
   return +value.toFixed(extend);
 }
+
+export function isWithinRange(start: number, end: number, between: number) {
+  return start <= between && between < end;
+}
