@@ -334,3 +334,20 @@ export function isFunction(value: any) {
 export function isBoolean(value: any) {
   return typeof value === 'boolean';
 }
+
+const floatPattern = /(\d+)?\.(\d+)/;
+
+export function getFloatingPoint(value: number) {
+  const floatMatch = value.toString().match(floatPattern);
+  return floatMatch
+    ? { int: floatMatch[1], fraction: floatMatch[2], normalForm: value }
+    : { int: value.toString(), fraction: '0', normalForm: value };
+}
+
+export function getMaxNumber(list: Array<number>) {
+  return Math.max.apply(null, list);
+}
+
+export function getMinNumber(list: Array<number>) {
+  return Math.min.apply(null, list);
+}
