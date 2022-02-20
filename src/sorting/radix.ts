@@ -16,7 +16,7 @@ type FloatableInt<T = string> = {
 type BucketStructure = Map<number, Array<FloatableInt>>;
 
 type NegativeNormalise = {
-  revert(value: number, fixedPoint: number): number;
+  revertNegativity(value: number, fixedPoint: number): number;
   negativeNormalisedList: Array<number>;
 };
 
@@ -35,7 +35,6 @@ function createBucketStructure(base: number) {
 
 function normalizeNegativeValues(list: Array<number>): NegativeNormalise {
   const min = getMinNumber(list);
-  debugger;
   list = list.map((v) => v + Math.abs(min));
   function normalize(value: number, fixedPoint = 0) {
     const originalForm = value + min;
@@ -46,7 +45,7 @@ function normalizeNegativeValues(list: Array<number>): NegativeNormalise {
     return value;
   }
   return {
-    revert: min < 0 ? normalize : passThrough,
+    revertNegativity: min < 0 ? normalize : passThrough,
     negativeNormalisedList: list,
   };
 }
@@ -107,7 +106,8 @@ function normalizeValueToUnit(value: Array<number>): UnitNormalise {
 }
 
 export default function sortUsingRadix(list: Array<number>) {
-  const { revert, negativeNormalisedList } = normalizeNegativeValues(list);
+  const { revertNegativity, negativeNormalisedList } =
+    normalizeNegativeValues(list);
   let { norminalUnits, unit } = normalizeValueToUnit(negativeNormalisedList);
 
   rangeLoop(0, unit, (forwardUnitPosition) => {
@@ -127,6 +127,6 @@ export default function sortUsingRadix(list: Array<number>) {
   });
 
   return norminalUnits.map(({ revertToFloat, fixedPoint }) =>
-    revert(revertToFloat(), fixedPoint)
+    revertNegativity(revertToFloat(), fixedPoint)
   );
 }
