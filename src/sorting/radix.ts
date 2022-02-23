@@ -35,7 +35,12 @@ function createBucketStructure(base: number) {
 
 function normalizeNegativeValues(list: Array<number>): NegativeNormalise {
   const min = getMinNumber(list);
-  list = list.map((v) => v + Math.abs(min));
+  list = list.map(castToPositive);
+
+  function castToPositive(v: number) {
+    return v + Math.abs(min);
+  }
+
   function normalize(value: number, fixedPoint = 0) {
     const originalForm = value + min;
     return fixedPoint > 0 ? toFixed(originalForm, fixedPoint) : originalForm;

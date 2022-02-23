@@ -7,12 +7,12 @@ import {
   isWithinRange,
 } from '../util/index.js';
 
-function getComparisonGap(value: Array<any> | number) {
-  if (Array.isArray(value)) {
-    return Math.trunc(Math.log2(value.length));
-  } else {
-    return Math.trunc(value / 2);
-  }
+function getComparisonGap(value: number) {
+  return Math.trunc(value / 2);
+}
+
+function getSortPass(list: Array<number>) {
+  return Math.trunc(Math.log2(list.length));
 }
 
 function sortUsingShell(list: Array<number>) {
@@ -22,32 +22,31 @@ function sortUsingShell(list: Array<number>) {
   }
 
   let gap = getComparisonGap(list.length);
-  rangeLoop(0, getComparisonGap(list), () => {
-    rangeLoop(0, list.length - gap, (i) => {
-      let preElement = list[i];
-      let gapElement = list[i + gap];
+  rangeLoop(0, getSortPass(list), () => {
+    rangeLoop(0, list.length - gap, (preGapIndex) => {
+      let preElement = list[preGapIndex];
+      let gapElement = list[preGapIndex + gap];
 
       if (preElement > gapElement) {
         swapItem(
           list,
-          createItemEntry(preElement, i),
-          createItemEntry(gapElement, i + gap)
+          createItemEntry(preElement, preGapIndex),
+          createItemEntry(gapElement, preGapIndex + gap)
         );
 
-        let backwardGap = i - gap;
-        if (isWithinRange(0, list.length, backwardGap)) {
-          while (backwardGap > -1) {
-            if (gapElement < list[backwardGap]) {
-              swapItem(
-                list,
-                createItemEntry(gapElement, i),
-                createItemEntry(list[backwardGap], backwardGap)
-              );
-              i = backwardGap;
-              backwardGap = backwardGap - gap;
-            } else {
-              break;
-            }
+        let backwardGap = preGapIndex - gap;
+        while (isWithinRange(0, preGapIndex, backwardGap)) {
+          let backwardGapElement = list[backwardGap];
+          if (gapElement < backwardGapElement) {
+            swapItem(
+              list,
+              createItemEntry(gapElement, preGapIndex),
+              createItemEntry(backwardGapElement, backwardGap)
+            );
+            preGapIndex = backwardGap;
+            backwardGap = backwardGap - gap;
+          } else {
+            break;
           }
         }
       }

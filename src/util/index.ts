@@ -198,6 +198,17 @@ export function swapItem<T>(
   return source;
 }
 
+export function insertItemAt<T>(source: Array<T>, item: T, offset: number) {
+  if (!isWithinRange(0, getListSize(source), offset)) {
+    throw RangeError(
+      `Offset not within the Array data range, entered offset: ${offset}`
+    );
+  }
+
+  source.splice(offset, 0, item);
+  return source;
+}
+
 export function createItemEntry<T>(
   item: T,
   position: number
@@ -358,4 +369,8 @@ export function toFixed(value: number, extend: number) {
 
 export function isWithinRange(start: number, end: number, between: number) {
   return start <= between && between < end;
+}
+
+export function getListSize(list: Array<unknown>) {
+  return list.length;
 }
