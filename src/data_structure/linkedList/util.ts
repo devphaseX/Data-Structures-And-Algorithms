@@ -111,7 +111,7 @@ let tranverseNode: TranverseLink;
         );
       }
 
-      let nextNode = node.next;
+      let nextNode = node.next as LinkNode | null;
       let bypassLoopCheck = false;
       let isTraverseAbort = false;
 
@@ -126,6 +126,23 @@ let tranverseNode: TranverseLink;
         }
       }
 
+      function getNodeStep(node: LinkNode, nextRangeNode: LinkNode | null) {
+        let step = 0;
+        if (node.next && nextRangeNode) {
+          tranverseNode(
+            node.next,
+            (curNode, position, { abortTarversal }) => {
+              step += position;
+
+              if (curNode === nextRangeNode) {
+                return abortTarversal();
+              }
+            },
+            { isCircular }
+          );
+        }
+        return step;
+      }
       traversal(node, position, {
         abortTarversal,
         preventLoop: preventNodeLoop,
@@ -150,7 +167,7 @@ let tranverseNode: TranverseLink;
         direction,
         isCircular,
         traversal,
-        position + 1,
+        position + getNodeStep(node, nextNode),
         traversedNodes
       );
     }
