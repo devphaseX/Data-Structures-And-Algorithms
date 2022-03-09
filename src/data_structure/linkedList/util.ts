@@ -144,7 +144,9 @@ let tranverseNode: TranverseLink;
       }
 
       return traverseNodes(
-        node[direction as keyof NodeReference<any>],
+        bypassLoopCheck
+          ? nextNode
+          : node[direction as keyof NodeReference<any>],
         direction,
         isCircular,
         traversal,
