@@ -52,10 +52,9 @@ function createDoubleNode<T>(
   }
   return { data, prev: null, next: null };
 }
-
 export interface TraverseOption<LinkNode> {
   abortTarversal(): void;
-  preventLoop(newNextNode: LinkNode): void;
+  setNextNode(newNextNode: LinkNode): void;
 }
 export type TranversalFn<LinkNode> = (
   node: LinkNode,
@@ -112,62 +111,53 @@ let tranverseNode: TranverseLink;
       }
 
       let nextNode = node.next as LinkNode | null;
-      let bypassLoopCheck = false;
+      let bypassLoopCheck = { bypass: false, step: 1 };
       let isTraverseAbort = false;
 
       function abortTarversal() {
         isTraverseAbort = true;
       }
 
-      function preventNodeLoop(newNextNode: NonNullable<typeof node>) {
+      function setNextNode(
+        newNextNode: NonNullable<typeof node>,
+        step?: number
+      ) {
         if (!traversedNodes.has(newNextNode)) {
-          nextNode = newNextNode;
-          bypassLoopCheck = true;
+          if (newNextNode !== nextNode) nextNode = newNextNode;
+          bypassLoopCheck = {
+            bypass: true,
+            step: step ?? bypassLoopCheck.step,
+          };
+
+          if (
+            isCircular &&
+            newNextNode.next &&
+            traversedNodes.has(newNextNode.next as LinkNode)
+          ) {
+            abortTarversal();
+          }
         }
       }
 
-      function getNodeStep(node: LinkNode, nextRangeNode: LinkNode | null) {
-        let step = 0;
-        if (node.next && nextRangeNode) {
-          tranverseNode(
-            node.next,
-            (curNode, position, { abortTarversal }) => {
-              step += position;
-
-              if (curNode === nextRangeNode) {
-                return abortTarversal();
-              }
-            },
-            { isCircular }
-          );
-        }
-        return step;
-      }
-      traversal(node, position, {
-        abortTarversal,
-        preventLoop: preventNodeLoop,
-      });
+      traversal(node, position, { abortTarversal, setNextNode });
 
       if (isTraverseAbort) {
         return;
       }
 
       traversedNodes.add(node);
-
-      if (!bypassLoopCheck && nextNode !== node.next) {
+      if (!bypassLoopCheck.bypass && nextNode && nextNode !== node.next) {
         throw new TypeError(
           'Mutation of linked node during traversal is void, to prevent infinite loop.'
         );
       }
 
       return traverseNodes(
-        bypassLoopCheck
-          ? nextNode
-          : node[direction as keyof NodeReference<any>],
+        nextNode,
         direction,
         isCircular,
         traversal,
-        position + getNodeStep(node, nextNode),
+        position + bypassLoopCheck.step,
         traversedNodes
       );
     }
@@ -321,7 +311,7 @@ function connectLinkNodes<T>(
 function connectLinkNodes<T>(
   refs: Array<NodeReference<T>>,
   isCircular: boolean,
-  isBoundAllow?: boolean
+  includeTail?: boolean
 ): NodeReference<T> | LinkBoundary<NodeReference<T>> {
   let root = refs[0];
   let last = root;
@@ -340,7 +330,7 @@ function connectLinkNodes<T>(
     }
   }
 
-  if (isBoundAllow) {
+  if (includeTail) {
     return { root, tail: last, size: refs.length };
   }
   return root;
@@ -369,7 +359,7 @@ export function hasInvalidRange(range: number) {
   return range < 1 || Number.isNaN(range) || !Number.isFinite(range);
 }
 
-export function guardNodeReveal<T, Node extends NodeReference<T>>(
+export function unwrapNodeData<T, Node extends NodeReference<T>>(
   traversalFn: LinkTraversalFn<T>
 ) {
   return function (
@@ -438,27 +428,23 @@ export function reverseLinkedNode<Node extends NodeReference<any>>(
   isCircular: boolean
 ) {
   let prevNode = rootNode;
-
-  if (prevNode.next && prevNode.next !== prevNode) {
+  if (rootNode.next && rootNode.next !== prevNode) {
     tranverseNode(
-      prevNode.next,
-      (curNode, _, { preventLoop }) => {
-        if (curNode.next) preventLoop(curNode.next);
-
+      rootNode.next,
+      (curNode, _, { setNextNode }) => {
+        if (curNode.next) setNextNode(curNode.next);
         curNode.next = prevNode;
-        if (isLinkDouble(curNode) && isLinkDouble(prevNode)) {
-          prevNode.next = curNode;
-        }
+        if (isLinkDouble(curNode) && isLinkDouble(prevNode))
+          prevNode.prev = curNode;
+        prevNode = curNode as any;
       },
       { isCircular }
     );
   }
 
+  rootNode.next = isCircular ? prevNode : null;
   if (isLinkDouble(rootNode) && isLinkDouble(prevNode)) {
-    prevNode.prev = rootNode;
-    rootNode.next = prevNode;
-  } else {
-    rootNode.next = prevNode;
+    prevNode.prev = isCircular ? rootNode : null;
   }
   return prevNode;
 }

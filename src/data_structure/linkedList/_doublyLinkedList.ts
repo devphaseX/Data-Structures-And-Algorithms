@@ -5,7 +5,7 @@ import {
   createLinkNode,
   _positionsBaseRemoval,
   hasInvalidRange,
-  guardNodeReveal,
+  unwrapNodeData,
   TranversalFn,
   iterableLinkNode,
   createLinkListImmutableAction,
@@ -171,12 +171,13 @@ export function _createDoublyLinkedList<T>(
   function forEach(traverseFn: LinkTraversalFn<T>, startPoint?: LinkListEntry) {
     const direction = startPoint === 'tail' ? 'prev' : 'next';
     const startNode = direction === 'prev' ? tail : head;
-    if (startNode) {
-      return void tranverseNode(startNode, guardNodeReveal(traverseFn), {
-        direction,
-        ...nodeOption,
-      });
-    }
+
+    if (!startNode) return;
+
+    return void tranverseNode(startNode, unwrapNodeData(traverseFn), {
+      direction,
+      ...nodeOption,
+    });
   }
 
   function getNodeList() {

@@ -14,7 +14,7 @@ import {
   createLinkNode,
   _positionsBaseRemoval,
   hasInvalidRange,
-  guardNodeReveal,
+  unwrapNodeData,
   TranversalFn,
   iterableLinkNode,
   createLinkListImmutableAction,
@@ -155,9 +155,8 @@ export function _createSinglyLinkedList<T>(
   }
 
   function forEach(traverseFn: LinkTraversalFn<T>) {
-    if (head) {
-      return void tranverseNode(head, guardNodeReveal(traverseFn), nodeOption);
-    }
+    if (!head) return;
+    tranverseNode(head, unwrapNodeData(traverseFn), nodeOption);
   }
 
   function getNodeList() {
