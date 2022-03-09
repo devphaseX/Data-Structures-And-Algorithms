@@ -53,10 +53,14 @@ function createDoubleNode<T>(
   return { data, prev: null, next: null };
 }
 
+export interface TraverseOption<LinkNode> {
+  abortTarversal(): void;
+  preventLoop(newNextNode: LinkNode): void;
+}
 export type TranversalFn<LinkNode> = (
   node: LinkNode,
   position: number,
-  abortTraversel: () => void
+  traverseOption: TraverseOption<LinkNode>
 ) => void;
 
 interface TranverseLink {
@@ -107,14 +111,25 @@ let tranverseNode: TranverseLink;
         );
       }
 
-      const nextNode = node.next;
+      let nextNode = node.next;
+      let bypassLoopCheck = false;
       let isTraverseAbort = false;
 
       function abortTarversal() {
         isTraverseAbort = true;
       }
 
-      traversal(node, position, abortTarversal);
+      function preventNodeLoop(newNextNode: NonNullable<typeof node>) {
+        if (!traversedNodes.has(newNextNode)) {
+          nextNode = newNextNode;
+          bypassLoopCheck = true;
+        }
+      }
+
+      traversal(node, position, {
+        abortTarversal,
+        preventLoop: preventNodeLoop,
+      });
 
       if (isTraverseAbort) {
         return;
@@ -122,7 +137,7 @@ let tranverseNode: TranverseLink;
 
       traversedNodes.add(node);
 
-      if (nextNode !== node.next) {
+      if (!bypassLoopCheck && nextNode !== node.next) {
         throw new TypeError(
           'Mutation of linked node during traversal is void, to prevent infinite loop.'
         );
@@ -187,7 +202,7 @@ export function derefLastNode<T>(
 ) {
   let data!: T;
   let lastNode = rootNode;
-  tranverseNode(rootNode, (curNode, _, exitTraversal) => {
+  tranverseNode(rootNode, (curNode, _, { abortTarversal: exitTraversal }) => {
     if ([rootNode, null].includes(curNode.next)) {
       data = curNode.data;
 
@@ -338,8 +353,12 @@ export function hasInvalidRange(range: number) {
 export function guardNodeReveal<T, Node extends NodeReference<T>>(
   traversalFn: LinkTraversalFn<T>
 ) {
-  return function (node: Node, position: number, stopTraversal: () => void) {
-    return void traversalFn(node.data, position, stopTraversal);
+  return function (
+    node: Node,
+    position: number,
+    { abortTarversal }: TraverseOption<Node>
+  ) {
+    return void traversalFn(node.data, position, abortTarversal);
   };
 }
 
@@ -393,4 +412,34 @@ export function createLinkListImmutableAction<
     mutableMethod(dependencies);
     return clone;
   });
+}
+
+export function reverseLinkedNode<Node extends NodeReference<any>>(
+  rootNode: Node,
+  isCircular: boolean
+) {
+  let prevNode = rootNode;
+
+  if (prevNode.next && prevNode.next !== prevNode) {
+    tranverseNode(
+      prevNode.next,
+      (curNode, _, { preventLoop }) => {
+        if (curNode.next) preventLoop(curNode.next);
+
+        curNode.next = prevNode;
+        if (isLinkDouble(curNode) && isLinkDouble(prevNode)) {
+          prevNode.next = curNode;
+        }
+      },
+      { isCircular }
+    );
+  }
+
+  if (isLinkDouble(rootNode) && isLinkDouble(prevNode)) {
+    prevNode.prev = rootNode;
+    rootNode.next = prevNode;
+  } else {
+    rootNode.next = prevNode;
+  }
+  return prevNode;
 }

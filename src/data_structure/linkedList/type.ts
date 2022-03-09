@@ -50,7 +50,6 @@ export interface LinkedListInitial<T> {
 
 export type NodePosition = number;
 
-type ImmutableResult<Data, Self> = { data: Data; structure: Self };
 export interface LinkedListMethods<T, Head, Self> {
   head: Head | null;
   size: number;
@@ -58,6 +57,8 @@ export interface LinkedListMethods<T, Head, Self> {
   appendNode(value: T | Array<T>, mutable: true): Self;
   prependNode(value: T | Array<T>): void;
   prependNode(value: T | Array<T>, mutable: true): Self;
+  reverse(mutable: true): Self;
+  reverse(): void;
   removeNode(predicate: PredicateFn<T>): void;
   removeNode(predicate: PredicateFn<T>, mutable: true): Self;
   removeNodes(predicate: PredicateFn<T>): void;

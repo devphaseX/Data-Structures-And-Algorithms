@@ -9,6 +9,7 @@ import {
   TranversalFn,
   iterableLinkNode,
   createLinkListImmutableAction,
+  reverseLinkedNode,
 } from './util.js';
 import {
   CircularDoublyLinkedList,
@@ -80,7 +81,7 @@ export function _createDoublyLinkedList<T>(
       initial: NonNullable<typeof head>
     ): TranversalFn<typeof initial> => {
       let beforeNode = initial;
-      return function searchForNode(curNode, position, abortTraverse) {
+      return function searchForNode(curNode, position, { abortTarversal }) {
         if (predicate(curNode.data, position)) {
           beforeNode.next = curNode.next;
 
@@ -90,7 +91,7 @@ export function _createDoublyLinkedList<T>(
 
           size -= 1;
           if (stopOnFirstOccurence) {
-            return abortTraverse();
+            return abortTarversal();
           }
         }
         beforeNode = curNode;
@@ -229,6 +230,14 @@ export function _createDoublyLinkedList<T>(
     size = 0;
   }
 
+  function reverse() {
+    if (head) {
+      let prevHead = head;
+      head = reverseLinkedNode(head, nodeOption.isCircular);
+      tail = prevHead;
+    }
+  }
+
   const mutableStateFns = {
     appendNode,
     prependNode,
@@ -240,6 +249,7 @@ export function _createDoublyLinkedList<T>(
     removeFirstNode,
     removeLastNode,
     emptyLinkedList,
+    reverse,
   };
 
   const linkOperation = sealObject({

@@ -18,6 +18,7 @@ import {
   TranversalFn,
   iterableLinkNode,
   createLinkListImmutableAction,
+  reverseLinkedNode,
 } from './util.js';
 
 interface SinglyNodeConfig<T> {
@@ -76,12 +77,12 @@ export function _createSinglyLinkedList<T>(
       initial: NonNullable<typeof head>
     ): TranversalFn<typeof initial> => {
       let beforeNode = initial;
-      return function (curNode, position, abortTraverse) {
+      return function (curNode, position, { abortTarversal }) {
         if (predicate(curNode.data, position)) {
           beforeNode.next = curNode.next;
           size -= 1;
           if (stopOnFirstOccurence) {
-            return abortTraverse();
+            return abortTarversal();
           }
         }
         beforeNode = curNode;
@@ -221,7 +222,16 @@ export function _createSinglyLinkedList<T>(
     removeFirstNode,
     removeLastNode,
     emptyLinkedList,
+    reverse,
   };
+
+  function reverse() {
+    if (head) {
+      let prevHead = head;
+      head = reverseLinkedNode(head, nodeOption.isCircular);
+      tail = prevHead;
+    }
+  }
 
   const linkOperation = sealObject({
     get head() {
