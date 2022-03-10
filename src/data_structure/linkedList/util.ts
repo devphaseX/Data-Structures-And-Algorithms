@@ -112,37 +112,40 @@ let tranverseNode: TranverseLink;
 
       let nextNode = node.next as LinkNode | null;
       let bypassLoopCheck = { bypass: false, step: 1 };
-      let isTraverseAbort = false;
 
-      function abortTarversal() {
-        isTraverseAbort = true;
-      }
+      {
+        let isTraverseAbort = false;
 
-      function setNextNode(
-        newNextNode: NonNullable<typeof node>,
-        step?: number
-      ) {
-        if (!traversedNodes.has(newNextNode)) {
-          if (newNextNode !== nextNode) nextNode = newNextNode;
-          bypassLoopCheck = {
-            bypass: true,
-            step: step ?? bypassLoopCheck.step,
-          };
+        function abortTarversal() {
+          isTraverseAbort = true;
+        }
 
-          if (
-            isCircular &&
-            newNextNode.next &&
-            traversedNodes.has(newNextNode.next as LinkNode)
-          ) {
-            abortTarversal();
+        function setNextNode(
+          newNextNode: NonNullable<typeof node>,
+          step?: number
+        ) {
+          if (!traversedNodes.has(newNextNode)) {
+            if (newNextNode !== nextNode) nextNode = newNextNode;
+            bypassLoopCheck = {
+              bypass: true,
+              step: step ?? bypassLoopCheck.step,
+            };
+
+            if (
+              isCircular &&
+              newNextNode.next &&
+              traversedNodes.has(newNextNode.next as LinkNode)
+            ) {
+              abortTarversal();
+            }
           }
         }
-      }
 
-      traversal(node, position, { abortTarversal, setNextNode });
+        traversal(node, position, { abortTarversal, setNextNode });
 
-      if (isTraverseAbort) {
-        return;
+        if (isTraverseAbort) {
+          return;
+        }
       }
 
       traversedNodes.add(node);
@@ -187,8 +190,10 @@ export function adjustNodePosition(
   let newNodePosition = new Set(nodePosition);
   if (nodePosition.has(curPositon)) {
     newNodePosition.delete(curPositon);
-    const nodesListPosition = Array.from(newNodePosition, (cur) => cur - 1);
-    newNodePosition = new Set(nodesListPosition as Array<NodePosition>);
+    {
+      const nodesListPosition = Array.from(newNodePosition, (cur) => cur - 1);
+      newNodePosition = new Set(nodesListPosition as Array<NodePosition>);
+    }
   }
   return newNodePosition;
 }
@@ -417,8 +422,10 @@ export function createLinkListImmutableAction<
 ) {
   return createImmutableAction(linkedList, function (methodKey, dependencies) {
     const clone = mapper((v) => v);
-    const mutableMethod: Fun = (clone as any)[methodKey];
-    mutableMethod(dependencies);
+    {
+      const mutableMethod: Fun = (clone as any)[methodKey];
+      mutableMethod(dependencies);
+    }
     return clone;
   });
 }

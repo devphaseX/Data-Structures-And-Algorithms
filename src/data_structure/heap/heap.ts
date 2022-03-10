@@ -77,16 +77,18 @@ export function makeParentComplyToHeapStructure(
     rightPosition: rightChildPosition,
   });
 
-  const parentEntry = createItemEntry(currentHeap[parentId], parentId);
+  {
+    const parentEntry = createItemEntry(currentHeap[parentId], parentId);
 
-  if (!getComparisonFn(type)(parentEntry.item, selectedChildEntry.item)) {
-    swapItem(currentHeap, parentEntry, selectedChildEntry);
-    if (selectedChildEntry.position < currentHeap.length) {
-      return makeParentComplyToHeapStructure(
-        currentHeap,
-        type,
-        selectedChildEntry.position
-      );
+    if (!getComparisonFn(type)(parentEntry.item, selectedChildEntry.item)) {
+      swapItem(currentHeap, parentEntry, selectedChildEntry);
+      if (selectedChildEntry.position < currentHeap.length) {
+        return makeParentComplyToHeapStructure(
+          currentHeap,
+          type,
+          selectedChildEntry.position
+        );
+      }
     }
   }
 
