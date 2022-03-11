@@ -2,7 +2,6 @@ import {
   getLogarithmicPass,
   getMiddlePoint,
   rangeLoop,
-  skipNthArgs,
   _defaultSort,
 } from '../util/index';
 
@@ -19,7 +18,7 @@ export function binarySearch<T>(
 ): T | null {
   let foundItem: T | null = null;
   let bound = { lb: 0, hb: list.length };
-  let middlePoint = getMiddlePoint(0, bound.hb);
+  let middlePoint = getMiddlePoint(bound.lb, bound.hb);
 
   function comparer(item: T) {
     if (typeof bait === 'number') {
