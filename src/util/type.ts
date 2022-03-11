@@ -39,3 +39,20 @@ export type GetAllFunctionValueKey<
     ? Key
     : never;
 }[keyof ActionableObject];
+
+export type DropFirst<L extends unknown[]> = L extends [
+  __: any,
+  ...rest: infer R
+]
+  ? R
+  : [];
+
+export type DropBound = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
+
+export type DropNthFirstItem<
+  L extends unknown[],
+  Nth = DropBound,
+  Count extends 0[] = []
+> = Nth extends Count['length']
+  ? L
+  : DropNthFirstItem<DropFirst<L>, Nth, [...Count, 0]>;

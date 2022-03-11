@@ -4,6 +4,8 @@ import {
   Chain,
   GetAllFunctionValueKey,
   ImmutablePreserverFn,
+  DropNthFirstItem,
+  DropBound,
 } from './type';
 
 export function cloneObject<T extends Record<any, any>>(obj: T) {
@@ -373,4 +375,17 @@ export function isWithinRange(start: number, end: number, between: number) {
 
 export function getListSize(list: Array<unknown>) {
   return list.length;
+}
+
+export function getLogarithmicPass(list: Array<any>) {
+  return Math.trunc(Math.log2(list.length));
+}
+
+export function skipNthArgs<B extends DropBound>(endBound: B) {
+  return function <Args extends unknown[]>(...args: Args) {
+    type StrictedArgs = DropNthFirstItem<Args, B>;
+    return function <U>(restrictFn: (...rest: StrictedArgs) => U) {
+      return restrictFn(...(slice(args, endBound) as any));
+    };
+  };
 }
