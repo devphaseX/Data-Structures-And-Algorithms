@@ -1,10 +1,21 @@
 import {
   cloneList,
   getListSize,
-  insertItemAt,
   rangeLoop,
   _isPreSortedBySize,
 } from '../util/index.js';
+
+function swapItemPosition<T>(
+  list: Array<T>,
+  positionOne: number,
+  positionTwo: number
+) {
+  list.splice(
+    positionOne,
+    1,
+    ...list.splice(positionTwo, 1, list[positionOne])
+  );
+}
 
 function sortUsingSelection(list: Array<number>) {
   list = cloneList(list);
@@ -12,18 +23,22 @@ function sortUsingSelection(list: Array<number>) {
 
   const len = getListSize(list);
 
-  rangeLoop(0, len - 1, (sortedEndBound, unsortedStartBound) => {
-    let unsortedIndex = unsortedStartBound;
-    let minValue = list[unsortedIndex];
+  rangeLoop(0, len - 1, (sortedEndBound) => {
+    let min = list[sortedEndBound];
+    let pointer = { min: sortedEndBound, nav: sortedEndBound };
 
-    while (unsortedIndex < len - 1) {
-      if (list[unsortedIndex] < list[unsortedIndex + 1]) {
-        minValue = list[unsortedIndex + 1];
-        break;
+    while (pointer.nav < len) {
+      if (list[pointer.nav] < min) {
+        min = list[pointer.nav];
+        pointer.min = pointer.nav;
       }
+
+      pointer.nav += 1;
     }
 
-    insertItemAt(list, minValue, sortedEndBound + 1);
+    if (pointer.min !== sortedEndBound) {
+      swapItemPosition(list, sortedEndBound, pointer.min);
+    }
   });
 
   return list;
