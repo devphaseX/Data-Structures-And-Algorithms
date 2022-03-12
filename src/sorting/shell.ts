@@ -2,18 +2,17 @@ import {
   cloneList,
   _isPreSortedBySize,
   rangeLoop,
-  createItemEntry,
-  swapItem,
   isWithinRange,
+  swapListUsingPosition,
+  getListSize,
+  pipe,
 } from '../util/index.js';
 
 function getComparisonGap(value: number) {
   return Math.trunc(value / 2);
 }
 
-function getSortPass(list: Array<number>) {
-  return Math.trunc(Math.log2(list.length));
-}
+const getSortPass = pipe(getListSize, Math.log2, Math.trunc);
 
 function sortUsingShell(list: Array<number>) {
   list = cloneList(list);
@@ -21,28 +20,19 @@ function sortUsingShell(list: Array<number>) {
     return list;
   }
 
-  let gap = getComparisonGap(list.length);
+  let gap = getComparisonGap(getListSize(list));
   rangeLoop(0, getSortPass(list), () => {
     rangeLoop(0, list.length - gap, (preGapIndex) => {
       let preElement = list[preGapIndex];
       let gapElement = list[preGapIndex + gap];
 
       if (preElement > gapElement) {
-        swapItem(
-          list,
-          createItemEntry(preElement, preGapIndex),
-          createItemEntry(gapElement, preGapIndex + gap)
-        );
-
+        swapListUsingPosition(list, preGapIndex, preGapIndex + gap);
         let backwardGap = preGapIndex - gap;
         while (isWithinRange(0, preGapIndex, backwardGap)) {
           let backwardGapElement = list[backwardGap];
           if (gapElement < backwardGapElement) {
-            swapItem(
-              list,
-              createItemEntry(gapElement, preGapIndex),
-              createItemEntry(backwardGapElement, backwardGap)
-            );
+            swapListUsingPosition(list, preGapIndex, backwardGap);
             preGapIndex = backwardGap;
             backwardGap = backwardGap - gap;
           } else {

@@ -6,6 +6,7 @@ import {
   getListBoundary,
   _isPreSortedBySize,
   createArrayWithInitial,
+  pipe,
 } from './../util/index.js';
 
 export default function countSort(list: Array<number>) {
@@ -20,9 +21,11 @@ export default function countSort(list: Array<number>) {
     isNormalizeApplied = true;
   }
 
-  const counts = computeItemFreqBoundary(
-    createItemFrequency(list, getItemBoundary(itemBoundary))
-  );
+  const counts = pipe(
+    getItemBoundary,
+    createItemFrequency.bind(null, list),
+    computeItemFreqBoundary
+  )(itemBoundary);
 
   let sortedList = placeItemInSortPositions(list, counts, list.length);
 

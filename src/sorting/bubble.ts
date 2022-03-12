@@ -1,14 +1,17 @@
 import {
-  createItemEntry,
-  swapItem,
+  swapListUsingPosition,
   slice,
   rangeLoop,
   _isPreSortedBySize,
   _handleNumericSortBasedPredicate,
   _ascendPredicate,
 } from '../util/index.js';
+import { SortPredicate } from '../util/type';
 
-function sortByBubble<T>(list: Array<T>) {
+function sortByBubble<T>(list: Array<T>): Array<T>;
+function sortByBubble<T>(list: Array<T>, prediate: SortPredicate<T>): Array<T>;
+
+function sortByBubble<T>(list: Array<T>, predicate?: SortPredicate<T>) {
   if (_isPreSortedBySize(list)) {
     return slice;
   }
@@ -22,11 +25,12 @@ function sortByBubble<T>(list: Array<T>) {
 
     let swapFlag = 0;
     rangeLoop(0, order, (i, j) => {
-      const currentItemEntry = createItemEntry(list[i], i);
-      const nextItemEntry = createItemEntry(list[j], j);
+      const currentItem = list[i];
+      const nextItem = list[j];
 
-      if (_ascendPredicate(currentItemEntry, nextItemEntry)) {
-        swapItem(list, currentItemEntry, nextItemEntry);
+      const comparePredicate = predicate || _ascendPredicate;
+      if (comparePredicate(currentItem as any, nextItem as any)) {
+        swapListUsingPosition(list, i, j);
         swapFlag = 1;
       }
     });
@@ -40,11 +44,12 @@ function sortByBubble<T>(list: Array<T>) {
       let swapFlag = 0;
 
       rangeLoop(0, size - 1 - pass, (i, j) => {
-        const currentItemEntry = createItemEntry(list[i], i);
-        const nextItemEntry = createItemEntry(list[j], j);
+        const currentItem = list[i];
+        const nextItem = list[j];
 
-        if (_ascendPredicate(currentItemEntry, nextItemEntry)) {
-          swapItem(list, currentItemEntry, nextItemEntry);
+        const comparePredicate = predicate || _ascendPredicate;
+        if (comparePredicate(currentItem as any, nextItem as any)) {
+          swapListUsingPosition(list, i, j);
           swapFlag = 1;
         }
       });

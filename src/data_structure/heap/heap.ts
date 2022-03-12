@@ -1,4 +1,10 @@
-import { createItemEntry, rangeLoop, swapItem } from './../../util/index.js';
+import {
+  createItemEntry,
+  pipe,
+  rangeLoop,
+  swapItem,
+  swapListUsingPosition,
+} from './../../util/index.js';
 
 export interface Heap {
   heap: Record<number, number>;
@@ -22,11 +28,7 @@ export function makeChildComplyToHeapStructure(
   const comparisonFnType = getComparisonFn(type);
 
   if (!comparisonFnType(parent, child)) {
-    swapItem(
-      currentHeap,
-      createItemEntry(parent, parentId),
-      createItemEntry(child, newlyItemIndex)
-    );
+    swapListUsingPosition(currentHeap, parentId, newlyItemIndex);
 
     if (parentId > 0) {
       return makeChildComplyToHeapStructure(currentHeap, type, parentId);
@@ -38,7 +40,7 @@ export function makeChildComplyToHeapStructure(
 
 export function getParentPosition(index: number) {
   if (index === 0) return index;
-  return Math.abs(Math.trunc(index / 2) - ((index + 1) % 2));
+  return pipe(Math.trunc, Math.abs)(index / 2) - ((index + 1) % 2);
 }
 
 export function getLeftChildPosition(parentPosition: number) {
@@ -72,21 +74,26 @@ export function makeParentComplyToHeapStructure(
   }
   const rightChildPosition = getRightChildPosition(parentId);
 
-  const selectedChildEntry = getSelectedChildEntry(currentHeap, type, {
-    leftPosition: leftChildPosition,
-    rightPosition: rightChildPosition,
-  });
+  const { item: childItem, position: childPosition } = getSelectedChildEntry(
+    currentHeap,
+    type,
+    {
+      leftPosition: leftChildPosition,
+      rightPosition: rightChildPosition,
+    }
+  );
 
   {
-    const parentEntry = createItemEntry(currentHeap[parentId], parentId);
+    const parentItem = currentHeap[parentId];
 
-    if (!getComparisonFn(type)(parentEntry.item, selectedChildEntry.item)) {
-      swapItem(currentHeap, parentEntry, selectedChildEntry);
-      if (selectedChildEntry.position < currentHeap.length) {
+    if (!getComparisonFn(type)(parentItem, childItem)) {
+      swapListUsingPosition(currentHeap, parentId, childPosition);
+
+      if (childPosition < currentHeap.length) {
         return makeParentComplyToHeapStructure(
           currentHeap,
           type,
-          selectedChildEntry.position
+          childPosition
         );
       }
     }

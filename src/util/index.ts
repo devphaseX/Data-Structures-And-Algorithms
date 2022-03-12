@@ -186,8 +186,9 @@ const copyWithin = function <T>(
 };
 
 export const lastListItem = <T>(list: Array<T>) => {
-  return list[list.length - 1];
+  return list[getListSize(list) - 1];
 };
+
 export function swapItem<T>(
   source: Array<T>,
   itemOne: ListItemEntry<T>,
@@ -218,21 +219,21 @@ export function createItemEntry<T>(
   return { item, position };
 }
 
-export function rangeLoop(
-  start: number,
-  end: number,
-  ranger: (i: number, j: number, breakLoop: () => void) => void
-) {
+interface LoopScopeFn {
+  (currentIndex: number, nextIndex: number, exit: () => void): void;
+}
+
+export function rangeLoop(start: number, end: number, ranger: LoopScopeFn) {
   let isLoopBreak = false;
 
   function breakLoop() {
     isLoopBreak = true;
   }
 
-  loop: for (let i = start; i < end; i++) {
+  for (let i = start; i < end; i++) {
     ranger(i, i + 1, breakLoop);
     if (isLoopBreak) {
-      break loop;
+      return void 0;
     }
   }
 }
@@ -250,7 +251,7 @@ export function getListBoundary(list: Array<number>) {
 }
 
 export function _isPreSortedBySize<T>(list: Array<T>) {
-  return [0, 1].includes(list.length);
+  return [0, 1].includes(getListSize(list));
 }
 
 export function getMiddlePoint(lb: number, ub: number) {
@@ -285,11 +286,14 @@ export function _handleNumericSortBasedPredicate(
   }
 }
 
-export function _ascendPredicate<T>(
-  itemOne: ListItemEntry<T>,
-  itemTwo: ListItemEntry<T>
-) {
-  return itemOne.item > itemTwo.item;
+export function _ascendPredicate(itemOne: number, itemTwo: number) {
+  return itemOne > itemTwo;
+}
+
+export function positionBasedComparer(fixed: number, item: number) {
+  if (fixed === item) return 0;
+  if (fixed > item) return 1;
+  return -1;
 }
 
 export function createArrayWithInitial<T>(size: number, _initialData: T) {
@@ -378,7 +382,7 @@ export function getListSize(list: Array<unknown>) {
 }
 
 export function getLogarithmicPass(list: Array<any>) {
-  return Math.trunc(Math.log2(list.length));
+  return pipe(getListSize, Math.log2, Math.trunc)(list);
 }
 
 export function skipNthArgs<B extends DropBound>(endBound: B) {
@@ -387,5 +391,52 @@ export function skipNthArgs<B extends DropBound>(endBound: B) {
     return function <U>(restrictFn: (...rest: StrictedArgs) => U) {
       return restrictFn(...(slice(args, endBound) as any));
     };
+  };
+}
+
+export function swapListUsingPosition<T>(
+  list: Array<T>,
+  positionOne: number,
+  positionTwo: number
+) {
+  list.splice(
+    positionOne,
+    1,
+    ...list.splice(positionTwo, 1, list[positionOne])
+  );
+}
+
+type MappeableFn<S, T> = (value: S) => T;
+
+export function pipe<A, B>(...fn: [f1: MappeableFn<A, B>]): MappeableFn<A, B>;
+export function pipe<A, B, C>(
+  ...fns: [f1: MappeableFn<A, B>, f2: MappeableFn<B, C>]
+): MappeableFn<A, C>;
+export function pipe<A, B, C, D>(
+  ...fns: [f1: MappeableFn<A, B>, f2: MappeableFn<B, C>, f3: MappeableFn<C, D>]
+): MappeableFn<A, D>;
+export function pipe<A, B, C, D, E>(
+  ...fns: [
+    f1: MappeableFn<A, B>,
+    f2: MappeableFn<B, C>,
+    f3: MappeableFn<C, D>,
+    f4: MappeableFn<D, E>
+  ]
+): MappeableFn<A, E>;
+export function pipe<A, B, C, D, E, F>(
+  ...fns: [
+    f1: MappeableFn<A, B>,
+    f2: MappeableFn<B, C>,
+    f3: MappeableFn<C, D>,
+    f4: MappeableFn<D, E>,
+    f5: MappeableFn<E, F>
+  ]
+): MappeableFn<A, F>;
+
+export function pipe<A, B, C, D, E, F>(
+  ...fns: Array<MappeableFn<any, any>>
+): any {
+  return function (value: any) {
+    return fns.reduce((acc, fn) => fn(acc), value);
   };
 }

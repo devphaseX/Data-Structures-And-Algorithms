@@ -56,3 +56,7 @@ export type DropNthFirstItem<
 > = Nth extends Count['length']
   ? L
   : DropNthFirstItem<DropFirst<L>, Nth, [...Count, 0]>;
+
+export type SortPredicate<T> = (itemOne: T, itemTwo: T) => boolean;
+
+export type InferMapValue<M> = M extends Map<any, infer V> ? V : unknown;

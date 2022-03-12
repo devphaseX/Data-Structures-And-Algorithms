@@ -2,6 +2,7 @@ import {
   createItemEntry,
   slice,
   swapItem,
+  swapListUsingPosition,
   _isPreSortedBySize,
 } from '../util/index.js';
 
@@ -26,20 +27,12 @@ function quickSort(list: Array<number>) {
       }
 
       if (leftPtr < rightPtr) {
-        const leftBiggerValue = createItemEntry(list[leftPtr], leftPtr);
-        const righLowerValue = createItemEntry(list[rightPtr], rightPtr);
-        swapItem(list, leftBiggerValue, righLowerValue);
+        swapListUsingPosition(list, leftPtr, rightPtr);
       }
     }
 
     const isSwapItemNotPivot = pivot !== list[rightPtr];
-    if (isSwapItemNotPivot) {
-      swapItem(
-        list,
-        createItemEntry(pivot, low),
-        createItemEntry(list[rightPtr], rightPtr)
-      );
-    }
+    if (isSwapItemNotPivot) swapListUsingPosition(list, low, rightPtr);
 
     return rightPtr;
   }

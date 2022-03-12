@@ -3,19 +3,8 @@ import {
   getListSize,
   rangeLoop,
   _isPreSortedBySize,
+  swapListUsingPosition,
 } from '../util/index.js';
-
-function swapItemPosition<T>(
-  list: Array<T>,
-  positionOne: number,
-  positionTwo: number
-) {
-  list.splice(
-    positionOne,
-    1,
-    ...list.splice(positionTwo, 1, list[positionOne])
-  );
-}
 
 function sortUsingSelection(list: Array<number>) {
   list = cloneList(list);
@@ -37,7 +26,7 @@ function sortUsingSelection(list: Array<number>) {
     }
 
     if (pointer.min !== sortedEndBound) {
-      swapItemPosition(list, sortedEndBound, pointer.min);
+      swapListUsingPosition(list, sortedEndBound, pointer.min);
     }
   });
 
