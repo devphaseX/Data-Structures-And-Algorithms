@@ -1,7 +1,5 @@
 import {
-  createItemEntry,
   slice,
-  swapItem,
   swapListUsingPosition,
   _isPreSortedBySize,
 } from '../util/index.js';

@@ -6,6 +6,8 @@ import {
   ImmutablePreserverFn,
   DropNthFirstItem,
   DropBound,
+  ListActionWithValue,
+  ListActionWithLength,
 } from './type';
 
 export function cloneObject<T extends Record<any, any>>(obj: T) {
@@ -138,24 +140,61 @@ const fill = function <T>(
   return nativeArrayPrototype.fill.call(list, value, offset, end);
 };
 
-const push = function <T>(list: Array<T>, value: T) {
-  const newList = concat(list, []);
-  return newList.push(value), newList;
+function workWithList<T>(list: Array<T>, workImmutably?: boolean) {
+  return function <U>(useCopy: (cp: Array<T>) => U) {
+    const copy = workImmutably ? cloneList(list) : list;
+    return useCopy(copy);
+  };
+}
+
+const push = function <T>(
+  list: Array<T>,
+  value: T,
+  mutable?: boolean
+): ListActionWithLength<T> {
+  return workWithList(
+    list,
+    mutable
+  )(function (newList) {
+    return [newList, newList.push(value)];
+  });
 };
 
-const pop = function <T>(list: Array<T>) {
-  const newList = concat(list, []);
-  return newList.pop(), newList;
+const pop = function <T>(
+  list: Array<T>,
+  mutable?: boolean
+): ListActionWithValue<T> {
+  return workWithList(
+    list,
+    mutable
+  )(function (newList) {
+    return [newList, newList.pop()];
+  });
 };
 
-const shift = function <T>(list: Array<T>): Array<T> {
-  const newList = concat(list, []);
-  return newList.shift(), newList;
+const shift = function <T>(
+  list: Array<T>,
+  mutable?: boolean
+): ListActionWithValue<T> {
+  return workWithList(
+    list,
+    mutable
+  )(function (newList) {
+    return [newList, newList.shift()];
+  });
 };
 
-const unshift = function <T>(list: Array<T>, value: T): Array<T> {
-  const newList = concat(list, []);
-  return newList.unshift(value), newList;
+const unshift = function <T>(
+  list: Array<T>,
+  value: T,
+  mutable?: boolean
+): ListActionWithLength<T> {
+  return workWithList(
+    list,
+    mutable
+  )(function (newList) {
+    return [newList, newList.unshift(value)];
+  });
 };
 
 export const slice = function <T>(
@@ -178,11 +217,17 @@ export const splice = function <T>(
 const copyWithin = function <T>(
   list: Array<T>,
   target: number,
-  offset: number,
-  end?: number
+  options: { offset: number; end?: number; mutable?: boolean }
 ) {
-  const newList = concat(list, []);
-  return newList.copyWithin(target, offset, end);
+  const { offset, mutable, end } = options;
+
+  return workWithList(
+    list,
+    mutable
+  )(function (newList) {
+    // newList.copyWithin(newList, offset, end);
+    return newList;
+  });
 };
 
 export const lastListItem = <T>(list: Array<T>) => {
@@ -208,7 +253,7 @@ export function insertItemAt<T>(source: Array<T>, item: T, offset: number) {
     );
   }
 
-  source.splice(offset, 0, item);
+  splice(source, offset, 0, item);
   return source;
 }
 
@@ -239,7 +284,27 @@ export function rangeLoop(start: number, end: number, ranger: LoopScopeFn) {
 }
 
 export function unshiftLastItemWithFirst<T>(list: Array<T>) {
-  return list.splice(0, 1, list.pop()!)[0];
+  switch (getListSize(list)) {
+    case 0:
+      throw new Error(`Unshifting of empty list isn't allow.`);
+
+    case 1:
+      return getListLastItem(list);
+
+    default: {
+      const [newList, lastItem] = pop(list, true);
+      splice(newList, 0, 1, lastItem!);
+      return getListFirstItem(newList);
+    }
+  }
+}
+
+export function getListFirstItem<T>(list: Array<T>) {
+  return list[0];
+}
+
+export function getListLastItem<T>(list: Array<T>) {
+  return list[getListSize(list) - 1];
 }
 
 export function getItemBoundary(range: { min: number; max: number }) {
@@ -394,16 +459,32 @@ export function skipNthArgs<B extends DropBound>(endBound: B) {
   };
 }
 
+type SwapHistory<T> = { value: T; prev: number; cur: number };
 export function swapListUsingPosition<T>(
   list: Array<T>,
   positionOne: number,
-  positionTwo: number
-) {
-  list.splice(
-    positionOne,
-    1,
-    ...list.splice(positionTwo, 1, list[positionOne])
-  );
+  positionTwo: number,
+  mutable = true
+): [Array<T>, { itemOne: SwapHistory<T>; itemTwo: SwapHistory<T> }] {
+  function createSwapHistory(prev: number, cur: number): SwapHistory<T> {
+    return {
+      value: list[prev],
+      prev,
+      cur,
+    };
+  }
+
+  return workWithList(
+    list,
+    mutable
+  )(function (newList) {
+    const itemOne = createSwapHistory(positionOne, positionTwo);
+    const itemTwo = createSwapHistory(positionTwo, positionOne);
+
+    newList[itemOne.prev] = itemTwo.value;
+    newList[itemTwo.prev] = itemOne.value;
+    return [newList, { itemOne, itemTwo }];
+  });
 }
 
 type MappeableFn<S, T> = (value: S) => T;

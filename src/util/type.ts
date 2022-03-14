@@ -60,3 +60,6 @@ export type DropNthFirstItem<
 export type SortPredicate<T> = (itemOne: T, itemTwo: T) => boolean;
 
 export type InferMapValue<M> = M extends Map<any, infer V> ? V : unknown;
+
+export type ListActionWithValue<T> = [list: Array<T>, item: T | undefined];
+export type ListActionWithLength<T> = [list: Array<T>, length: number];

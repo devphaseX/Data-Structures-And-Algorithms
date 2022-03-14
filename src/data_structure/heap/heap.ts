@@ -2,7 +2,6 @@ import {
   createItemEntry,
   pipe,
   rangeLoop,
-  swapItem,
   swapListUsingPosition,
 } from './../../util/index.js';
 

@@ -5,6 +5,8 @@ import {
   _isPreSortedBySize,
   _handleNumericSortBasedPredicate,
   _ascendPredicate,
+  cloneList,
+  getListSize,
 } from '../util/index.js';
 import { SortPredicate } from '../util/type';
 
@@ -19,7 +21,7 @@ function sortByBubble<T>(list: Array<T>, predicate?: SortPredicate<T>) {
   function _bubbleSort(
     list: Array<T>,
     isSortedBeforePassEnd = false,
-    order = list.length - 1
+    order = getListSize(list) - 1
   ): Array<T> {
     if (order < 0 || isSortedBeforePassEnd) return list;
 
@@ -39,7 +41,7 @@ function sortByBubble<T>(list: Array<T>, predicate?: SortPredicate<T>) {
   }
 
   function _bubbleSortOptimised(list: Array<T>) {
-    const size = list.length;
+    const size = getListSize(list);
     rangeLoop(0, size - 1, (pass, _, breakLoop) => {
       let swapFlag = 0;
 
@@ -61,9 +63,11 @@ function sortByBubble<T>(list: Array<T>, predicate?: SortPredicate<T>) {
     return list;
   }
 
-  return list.length < 100
-    ? _bubbleSort(slice(list, 0))
-    : _bubbleSortOptimised(slice(list, 0));
+  list = cloneList(list);
+
+  return getListSize(list) < 100
+    ? _bubbleSort(list)
+    : _bubbleSortOptimised(list);
 }
 
 export default sortByBubble;
