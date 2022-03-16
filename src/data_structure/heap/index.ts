@@ -1,5 +1,12 @@
 import heapSort from '../../sorting/heapSort.js';
-import { slice, unshiftLastItemWithFirst } from '../../util/index.js';
+import {
+  cloneList,
+  getListSize,
+  hasEmptyList,
+  pop,
+  unshiftLastItemWithFirst,
+} from '../../util/index.js';
+
 import {
   heapify,
   Heap,
@@ -14,27 +21,31 @@ function createHeap(order: HeapDataOrder, data?: number | Array<number>): Heap {
   function insert(data: number) {
     const lastItemPosition = heapList.length;
     heapList.push(data);
-    if (heapList.length === 1) return;
+    if (getListSize(heapList) === 1) return;
     heapList = makeChildComplyToHeapStructure(
-      slice(heapList, 0),
+      heapList,
       order,
       lastItemPosition
     );
   }
 
   function _delete() {
-    if (heapList.length === 0) {
+    if (hasEmptyList(heapList)) {
       throw new TypeError("Can't delete from an empty heap.");
     }
 
+    const doesRootHasChild = () => getListSize(heapList) > 1;
+
     let topMostItem: number;
-    if (heapList.length > 1) {
+    let isRootParent = doesRootHasChild();
+
+    if (isRootParent) {
       topMostItem = unshiftLastItemWithFirst(heapList);
     } else {
-      topMostItem = heapList.pop()!;
+      [, topMostItem] = pop(heapList);
     }
-    if (heapList.length > 1) {
-      heapList = makeParentComplyToHeapStructure(slice(heapList, 0), order, 0);
+    if (isRootParent) {
+      heapList = makeParentComplyToHeapStructure(heapList, order, 0);
     }
     return topMostItem;
   }
@@ -45,7 +56,7 @@ function createHeap(order: HeapDataOrder, data?: number | Array<number>): Heap {
 
   return {
     get heap() {
-      return { ...heapList };
+      return cloneList(heapList);
     },
     insert,
     delete: _delete,

@@ -17,6 +17,11 @@ export function cloneObject<T extends Record<any, any>>(obj: T) {
 export function cloneList<T>(list: Array<T>) {
   return concat(list, []);
 }
+
+export function hasEmptyList(list: Array<any>) {
+  return getListSize(list) === 0;
+}
+
 export function sealObject<T extends Record<any, any>>(obj: T) {
   return Object.seal(obj);
 }
@@ -42,8 +47,8 @@ export function normaliseAccessorProps<T extends Record<any, any>>(obj: T) {
   return obj;
 }
 
-export function unwindProcess() {
-  throw void 0;
+export function unwindProcess(reason?: any) {
+  throw reason;
 }
 
 export function _chain<T>(value: Array<T>) {
@@ -150,48 +155,54 @@ function workWithList<T>(list: Array<T>, workImmutably?: boolean) {
 const push = function <T>(
   list: Array<T>,
   value: T,
-  mutable?: boolean
+  immutable?: boolean
 ): ListActionWithLength<T> {
   return workWithList(
     list,
-    mutable
+    immutable
   )(function (newList) {
     return [newList, newList.push(value)];
   });
 };
 
-const pop = function <T>(
+export const pop = function <T>(
   list: Array<T>,
-  mutable?: boolean
+  immutable?: boolean
 ): ListActionWithValue<T> {
+  if (hasEmptyList(list)) {
+    unwindProcess('Pop expected a List with item but got List with none');
+  }
   return workWithList(
     list,
-    mutable
+    immutable
   )(function (newList) {
-    return [newList, newList.pop()];
+    return [newList, newList.pop()!];
   });
 };
 
 const shift = function <T>(
   list: Array<T>,
-  mutable?: boolean
+  immutable?: boolean
 ): ListActionWithValue<T> {
+  if (hasEmptyList(list)) {
+    unwindProcess('Pop expected a List with item but got List with none');
+  }
   return workWithList(
     list,
-    mutable
+    immutable
   )(function (newList) {
-    return [newList, newList.shift()];
+    return [newList, newList.shift()!];
   });
 };
 
 const unshift = function <T>(
   list: Array<T>,
   value: T,
-  mutable?: boolean
+  immutable?: boolean
 ): ListActionWithLength<T> {
   return workWithList(
     list,
-    mutable
+    immutable
   )(function (newList) {
     return [newList, newList.unshift(value)];
   });
@@ -357,7 +368,7 @@ export function _ascendPredicate(itemOne: number, itemTwo: number) {
 
 export function positionBasedComparer(fixed: number, item: number) {
   if (fixed === item) return 0;
-  if (fixed > item) return 1;
+  if (greaterThan.check(fixed, item)) return 1;
   return -1;
 }
 
@@ -464,7 +475,7 @@ export function swapListUsingPosition<T>(
   list: Array<T>,
   positionOne: number,
   positionTwo: number,
-  mutable = true
+  immutable = false
 ): [Array<T>, { itemOne: SwapHistory<T>; itemTwo: SwapHistory<T> }] {
   function createSwapHistory(prev: number, cur: number): SwapHistory<T> {
     return {
@@ -476,7 +487,7 @@ export function swapListUsingPosition<T>(
 
   return workWithList(
     list,
-    mutable
+    immutable
   )(function (newList) {
     const itemOne = createSwapHistory(positionOne, positionTwo);
     const itemTwo = createSwapHistory(positionTwo, positionOne);
@@ -520,4 +531,54 @@ export function pipe<A, B, C, D, E, F>(
   return function (value: any) {
     return fns.reduce((acc, fn) => fn(acc), value);
   };
+}
+
+type Check = {
+  check: (a: number, b: number) => boolean;
+  orEqual: Omit<Check, 'orEqal'>;
+  matches: <F, T>(
+    trueCase: () => T,
+    falseCase: () => F
+  ) => (a: number, b: number) => F | T;
+};
+
+type OrderFn = (a: number, b: number) => boolean;
+
+function orderComparison(order: OrderFn) {
+  let orderChecker: OrderFn = order;
+
+  const checks: Check = {
+    matches: function (trueCase, falseCase) {
+      return function (a, b) {
+        return (checks.check(a, b) ? trueCase : falseCase)();
+      };
+    },
+    get orEqual() {
+      let prevOrderChecker = orderChecker;
+      orderChecker = function (a: number, b: number) {
+        return prevOrderChecker(a, b) && Object.is(a, b);
+      };
+
+      return {
+        check: this.check,
+        matches: this.matches,
+      } as any;
+    },
+    check: function (a: number, b: number) {
+      return orderChecker(a, b);
+    },
+  };
+
+  return checks;
+}
+
+export const greaterThan = orderComparison((a, b) => a > b);
+export const lessThan = orderComparison((a, b) => a < b);
+
+export function isNotEmpty(value: any) {
+  return (
+    value != null ||
+    (typeof value === 'string' && value.trim() !== '') ||
+    (typeof value === 'number' && (value === 0 || value !== value))
+  );
 }

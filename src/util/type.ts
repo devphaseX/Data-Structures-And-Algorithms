@@ -61,5 +61,12 @@ export type SortPredicate<T> = (itemOne: T, itemTwo: T) => boolean;
 
 export type InferMapValue<M> = M extends Map<any, infer V> ? V : unknown;
 
-export type ListActionWithValue<T> = [list: Array<T>, item: T | undefined];
+export type ListActionWithValue<T> = [list: Array<T>, item: T];
 export type ListActionWithLength<T> = [list: Array<T>, length: number];
+export type ListRequired<L extends unknown[]> = Array<
+  NonNullable<InferMapValue<L>>
+>;
+
+export type InferArrayItem<A extends unknown[]> = A extends Array<infer I>
+  ? I
+  : unknown;

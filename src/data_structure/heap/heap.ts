@@ -1,8 +1,11 @@
 import {
   createItemEntry,
+  getListSize,
   pipe,
   rangeLoop,
   swapListUsingPosition,
+  greaterThan,
+  lessThan,
 } from './../../util/index.js';
 
 export interface Heap {
@@ -29,7 +32,7 @@ export function makeChildComplyToHeapStructure(
   if (!comparisonFnType(parent, child)) {
     swapListUsingPosition(currentHeap, parentId, newlyItemIndex);
 
-    if (parentId > 0) {
+    if (greaterThan.check(parentId, 0)) {
       return makeChildComplyToHeapStructure(currentHeap, type, parentId);
     }
   }
@@ -50,16 +53,8 @@ export function getRightChildPosition(parentPosition: number) {
   return getLeftChildPosition(parentPosition) + 1;
 }
 
-export function isFirstArgMin(first: number, second: number) {
-  return first <= second;
-}
-
-export function isFirstArgMax(first: number, second: number) {
-  return first >= second;
-}
-
 export function getComparisonFn(type: HeapDataOrder) {
-  return type === 'max' ? isFirstArgMax : isFirstArgMin;
+  return (type === 'max' ? greaterThan.orEqual : lessThan.orEqual).check;
 }
 
 export function makeParentComplyToHeapStructure(
@@ -68,7 +63,9 @@ export function makeParentComplyToHeapStructure(
   parentId: number
 ): Array<number> {
   const leftChildPosition = getLeftChildPosition(parentId);
-  if (leftChildPosition >= currentHeap.length) {
+  const heapSize = getListSize(currentHeap);
+
+  if (greaterThan.orEqual.check(leftChildPosition, heapSize)) {
     return currentHeap;
   }
   const rightChildPosition = getRightChildPosition(parentId);
@@ -88,7 +85,7 @@ export function makeParentComplyToHeapStructure(
     if (!getComparisonFn(type)(parentItem, childItem)) {
       swapListUsingPosition(currentHeap, parentId, childPosition);
 
-      if (childPosition < currentHeap.length) {
+      if (lessThan.check(childPosition, heapSize)) {
         return makeParentComplyToHeapStructure(
           currentHeap,
           type,
@@ -110,7 +107,8 @@ export function getSelectedChildEntry(
   }
 ) {
   const { leftPosition, rightPosition } = childPosition;
-  return rightPosition < heapDS.length
+
+  return lessThan.check(rightPosition, getListSize(heapDS))
     ? selectChildEntryByHierachy(heapDS, leftPosition, rightPosition, type)
     : createItemEntry(heapDS[leftPosition], leftPosition);
 }
@@ -128,8 +126,10 @@ export function selectChildEntryByHierachy(
 }
 
 function heapify(list: Array<number>, order: HeapDataOrder) {
-  if (list.length === 1) return list;
-  const endOfNonLeaveItem = Math.trunc(list.length / 2);
+  let length = getListSize(list);
+  if (length === 1) return list;
+
+  const endOfNonLeaveItem = Math.trunc(length / 2);
   rangeLoop(0, endOfNonLeaveItem + 1, (i) => {
     makeParentComplyToHeapStructure(list, order, endOfNonLeaveItem - i);
   });
