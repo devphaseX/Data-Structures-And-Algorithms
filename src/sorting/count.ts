@@ -7,6 +7,7 @@ import {
   _isPreSortedBySize,
   createArrayWithInitial,
   pipe,
+  lessThan,
 } from './../util/index.js';
 
 export default function countSort(list: Array<number>) {
@@ -16,7 +17,7 @@ export default function countSort(list: Array<number>) {
   const itemBoundary = getListBoundary(list);
   let isNormalizeApplied = false;
 
-  if (itemBoundary.min < 0) {
+  if (lessThan.check(itemBoundary.min, 0)) {
     list = normalizeNegativeValues(list, itemBoundary.min);
     isNormalizeApplied = true;
   }

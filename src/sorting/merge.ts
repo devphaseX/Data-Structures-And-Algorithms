@@ -1,4 +1,6 @@
 import {
+  equal,
+  getListSize,
   getMiddlePoint,
   slice,
   _defaultSort,
@@ -20,7 +22,7 @@ function mergeSort<T>(
   }
 
   function _mergeSort(list: Array<T>, lb: number, ub: number): Array<T> {
-    if (ub - lb === 1 || _isPreSortedBySize(list)) {
+    if (equal.check(ub - lb, 1) || _isPreSortedBySize(list)) {
       return slice(list, lb, ub);
     }
     const middle = getMiddlePoint(lb, ub);
@@ -30,8 +32,13 @@ function mergeSort<T>(
   function merge(sortOne: Array<T>, sortTwo: Array<T>) {
     const mergeSortedList: Array<T> = [];
 
-    while (sortOne.length || sortTwo.length) {
-      if (sortOne[0] === undefined || sortTwo[0] === undefined) break;
+    while (getListSize(sortOne) || getListSize(sortTwo)) {
+      if (
+        equal.check(sortOne[0], undefined) ||
+        equal.check(sortTwo[0], undefined)
+      ) {
+        break;
+      }
       let orderValue =
         (predicateFn && predicateFn(sortOne[0], sortTwo[0])) ??
         _defaultSort(sortOne[0] as any, sortTwo[0] as any);

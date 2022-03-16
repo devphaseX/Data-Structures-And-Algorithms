@@ -1,3 +1,4 @@
+import { compare, equal, greaterThan, pipe } from './../../util/index';
 import heapSort from '../../sorting/heapSort.js';
 import {
   cloneList,
@@ -21,7 +22,8 @@ function createHeap(order: HeapDataOrder, data?: number | Array<number>): Heap {
   function insert(data: number) {
     const lastItemPosition = heapList.length;
     heapList.push(data);
-    if (getListSize(heapList) === 1) return;
+
+    if (equal.check(getListSize(heapList), 1)) return;
     heapList = makeChildComplyToHeapStructure(
       heapList,
       order,
@@ -34,17 +36,16 @@ function createHeap(order: HeapDataOrder, data?: number | Array<number>): Heap {
       throw new TypeError("Can't delete from an empty heap.");
     }
 
-    const doesRootHasChild = () => getListSize(heapList) > 1;
+    const rootHasDescendant = greaterThan.check(getListSize(heapList), 1);
 
     let topMostItem: number;
-    let isRootParent = doesRootHasChild();
 
-    if (isRootParent) {
+    if (rootHasDescendant) {
       topMostItem = unshiftLastItemWithFirst(heapList);
     } else {
       [, topMostItem] = pop(heapList);
     }
-    if (isRootParent) {
+    if (rootHasDescendant) {
       heapList = makeParentComplyToHeapStructure(heapList, order, 0);
     }
     return topMostItem;
@@ -62,7 +63,7 @@ function createHeap(order: HeapDataOrder, data?: number | Array<number>): Heap {
     delete: _delete,
     sort,
     get size() {
-      return heapList.length;
+      return getListSize(heapList);
     },
   };
 }

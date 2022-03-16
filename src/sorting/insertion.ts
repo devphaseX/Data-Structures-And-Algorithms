@@ -1,6 +1,8 @@
 import {
   cloneList,
   createItemEntry,
+  equal,
+  greaterThan,
   rangeLoop,
   swapItem,
   _isPreSortedBySize,
@@ -24,7 +26,7 @@ function sortUsingInsertion<T>(list: Array<T>) {
 
       const currentSortedItem = orderDivisionList[currentSortedItemIndex];
 
-      if (currentSortedItem! > currentUnsortedItem!) {
+      if (greaterThan.check(currentSortedItem, currentUnsortedItem)) {
         swapItem(
           orderDivisionList,
           createItemEntry(null, insertionHole),
@@ -37,7 +39,7 @@ function sortUsingInsertion<T>(list: Array<T>) {
       }
     });
 
-    if (orderDivisionList[0] === null) {
+    if (equal.check(orderDivisionList[0], null)) {
       orderDivisionList[0] = currentUnsortedItem;
     }
   });

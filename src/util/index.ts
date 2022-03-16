@@ -572,8 +572,113 @@ function orderComparison(order: OrderFn) {
   return checks;
 }
 
-export const greaterThan = orderComparison((a, b) => a > b);
-export const lessThan = orderComparison((a, b) => a < b);
+type ComparisonTask = {
+  lessThan: [
+    OrderFn,
+    Array<Exclude<keyof ComparisonTask, 'greaterThan' | 'lessThan'>>
+  ];
+  greaterThan: [
+    OrderFn,
+    Array<Exclude<keyof ComparisonTask, 'greaterThan' | 'lessThan'>>
+  ];
+  equal: [
+    (a: any, b: any) => boolean,
+    Array<
+      Exclude<keyof ComparisonTask, 'greaterThan' | 'lessThan' | 'notEqual'>
+    >
+  ];
+  notEqual: [
+    (a: any, b: any) => boolean,
+    Array<Exclude<keyof ComparisonTask, 'greaterThan' | 'lessThan' | 'equal'>>
+  ];
+};
+
+type ComparisonOperator = {
+  [K in keyof ComparisonTask]: Pick<
+    ComparisonOperator,
+    ComparisonTask[K][1][number]
+  > & {
+    check(a: any, b: any): boolean;
+  };
+};
+
+export const compare = ((): ComparisonOperator => {
+  const comparisonTask: ComparisonTask = {
+    lessThan: [lessThan, ['equal', 'notEqual']],
+    greaterThan: [greaterThan, ['equal', 'notEqual']],
+    equal: [equal, []],
+    notEqual: [notEqual, []],
+  };
+
+  function lessThan(a: number, b: number) {
+    return a < b;
+  }
+
+  function greaterThan(a: number, b: number) {
+    return a > b;
+  }
+
+  function equal(a: any, b: any) {
+    if ('is' in Object) return Object.is(a, b);
+    return (function (a: any, b: any) {
+      if (typeof a === 'number' && typeof b === 'number') {
+        return a === b || (a !== a && b !== b);
+      }
+      return a === b;
+    })(a, b);
+  }
+
+  function notEqual(a: any, b: any) {
+    return !equal(a, b);
+  }
+
+  function acknowledgeTasks(tasks: Array<OrderFn>) {
+    return function check(a: any, b: any) {
+      return tasks.every((task) => task(a, b));
+    };
+  }
+
+  function restrictAccess(currentTasks: Array<OrderFn>): any {
+    const handler = {
+      get(_: any, key: any) {
+        if (typeof key === 'string' && key === 'check') {
+          return acknowledgeTasks(currentTasks);
+        }
+
+        if (key in comparisonTask) {
+          const opK = key as keyof ComparisonTask;
+          return restrictAccess([...currentTasks, comparisonTask[opK][0]]);
+        }
+
+        throw new TypeError(
+          `The comparison operator accessed doesn't exist, expected ${Object.keys(
+            comparisonTask
+          ).join(',')} but got ${key}`
+        );
+      },
+    };
+    return new Proxy({}, handler);
+  }
+
+  return new Proxy(
+    {},
+    {
+      get(_, key) {
+        if (key === 'check') {
+          throw new TypeError();
+        }
+
+        if (key in comparisonTask) {
+          return restrictAccess([
+            comparisonTask[key as keyof ComparisonTask][0],
+          ]);
+        }
+      },
+    }
+  ) as any;
+})();
+
+export const { lessThan, equal, greaterThan, notEqual } = compare;
 
 export function isNotEmpty(value: any) {
   return (

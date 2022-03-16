@@ -6,6 +6,7 @@ import {
   swapListUsingPosition,
   getListSize,
   pipe,
+  lessThan,
 } from '../util/index.js';
 
 function getComparisonGap(value: number) {
@@ -31,7 +32,7 @@ function sortUsingShell(list: Array<number>) {
         let backwardGap = preGapIndex - gap;
         while (isWithinRange(0, preGapIndex, backwardGap)) {
           let backwardGapElement = list[backwardGap];
-          if (gapElement < backwardGapElement) {
+          if (lessThan.check(gapElement, backwardGapElement)) {
             swapListUsingPosition(list, preGapIndex, backwardGap);
             preGapIndex = backwardGap;
             backwardGap = backwardGap - gap;

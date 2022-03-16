@@ -4,6 +4,8 @@ import {
   rangeLoop,
   _isPreSortedBySize,
   swapListUsingPosition,
+  lessThan,
+  notEqual,
 } from '../util/index.js';
 
 function sortUsingSelection(list: Array<number>) {
@@ -16,8 +18,8 @@ function sortUsingSelection(list: Array<number>) {
     let min = list[sortedEndBound];
     let pointer = { min: sortedEndBound, nav: sortedEndBound };
 
-    while (pointer.nav < len) {
-      if (list[pointer.nav] < min) {
+    while (lessThan.check(pointer.nav, len)) {
+      if (lessThan.check(list[pointer.nav], min)) {
         min = list[pointer.nav];
         pointer.min = pointer.nav;
       }
@@ -25,7 +27,7 @@ function sortUsingSelection(list: Array<number>) {
       pointer.nav += 1;
     }
 
-    if (pointer.min !== sortedEndBound) {
+    if (notEqual.check(pointer.min, sortedEndBound)) {
       swapListUsingPosition(list, sortedEndBound, pointer.min);
     }
   });

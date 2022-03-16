@@ -1,4 +1,5 @@
 import {
+  equal,
   getLogarithmicPass,
   getMiddlePoint,
   positionBasedComparer,

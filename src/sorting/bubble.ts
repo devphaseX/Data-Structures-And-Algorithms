@@ -7,6 +7,8 @@ import {
   _ascendPredicate,
   cloneList,
   getListSize,
+  lessThan,
+  equal,
 } from '../util/index.js';
 import { SortPredicate } from '../util/type';
 
@@ -23,7 +25,7 @@ function sortByBubble<T>(list: Array<T>, predicate?: SortPredicate<T>) {
     isSortedBeforePassEnd = false,
     order = getListSize(list) - 1
   ): Array<T> {
-    if (order < 0 || isSortedBeforePassEnd) return list;
+    if (lessThan.check(order, 0) || isSortedBeforePassEnd) return list;
 
     let swapFlag = 0;
     rangeLoop(0, order, (i, j) => {
@@ -37,7 +39,7 @@ function sortByBubble<T>(list: Array<T>, predicate?: SortPredicate<T>) {
       }
     });
 
-    return _bubbleSort(list, swapFlag === 0, order - 1);
+    return _bubbleSort(list, equal.check(swapFlag, 0), order - 1);
   }
 
   function _bubbleSortOptimised(list: Array<T>) {
@@ -56,7 +58,7 @@ function sortByBubble<T>(list: Array<T>, predicate?: SortPredicate<T>) {
         }
       });
 
-      if (swapFlag === 0) {
+      if (equal.check(swapFlag, 0)) {
         breakLoop();
       }
     });
@@ -65,7 +67,7 @@ function sortByBubble<T>(list: Array<T>, predicate?: SortPredicate<T>) {
 
   list = cloneList(list);
 
-  return getListSize(list) < 100
+  return lessThan.check(getListSize(list), 100)
     ? _bubbleSort(list)
     : _bubbleSortOptimised(list);
 }

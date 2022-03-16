@@ -1,8 +1,10 @@
+import { lessThan } from './../util/index';
 import {
   flatList,
   getFloatingPoint,
   getMaxNumber,
   getMinNumber,
+  greaterThan,
   rangeLoop,
   toFixed,
 } from '../util/index.js';
@@ -43,14 +45,16 @@ function normalizeNegativeValues(list: Array<number>): NegativeNormalise {
 
   function normalize(value: number, fixedPoint = 0) {
     const originalForm = value + min;
-    return fixedPoint > 0 ? toFixed(originalForm, fixedPoint) : originalForm;
+    return greaterThan.check(fixedPoint, 0)
+      ? toFixed(originalForm, fixedPoint)
+      : originalForm;
   }
 
   function passThrough(value: number) {
     return value;
   }
   return {
-    revertNegativity: min < 0 ? normalize : passThrough,
+    revertNegativity: lessThan.check(min, 0) ? normalize : passThrough,
     negativeNormalisedList: list,
   };
 }

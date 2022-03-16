@@ -1,3 +1,4 @@
+import { equal } from '../../util/index';
 import { createDoublyLinkedList } from '../linkedList/index.js';
 
 interface Stack<T> {
@@ -19,7 +20,7 @@ function createStack<T>(type: T | null, size?: number): Stack<T> {
   const _innerStack = createDoublyLinkedList<T>(type ?? undefined);
 
   function push(value: T) {
-    if (_innerStack.size === size) {
+    if (equal.check(_innerStack.size, size)) {
       throw new OverFlowError('Cannot insert data in a size limit stack');
     }
     _innerStack.appendNode(value);
