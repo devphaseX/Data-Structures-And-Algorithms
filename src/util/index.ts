@@ -533,44 +533,7 @@ export function pipe<A, B, C, D, E, F>(
   };
 }
 
-type Check = {
-  check: (a: number, b: number) => boolean;
-  orEqual: Omit<Check, 'orEqal'>;
-  matches: <F, T>(
-    trueCase: () => T,
-    falseCase: () => F
-  ) => (a: number, b: number) => F | T;
-};
-
 type OrderFn = (a: number, b: number) => boolean;
-
-function orderComparison(order: OrderFn) {
-  let orderChecker: OrderFn = order;
-
-  const checks: Check = {
-    matches: function (trueCase, falseCase) {
-      return function (a, b) {
-        return (checks.check(a, b) ? trueCase : falseCase)();
-      };
-    },
-    get orEqual() {
-      let prevOrderChecker = orderChecker;
-      orderChecker = function (a: number, b: number) {
-        return prevOrderChecker(a, b) && Object.is(a, b);
-      };
-
-      return {
-        check: this.check,
-        matches: this.matches,
-      } as any;
-    },
-    check: function (a: number, b: number) {
-      return orderChecker(a, b);
-    },
-  };
-
-  return checks;
-}
 
 type ComparisonTask = {
   lessThan: [
