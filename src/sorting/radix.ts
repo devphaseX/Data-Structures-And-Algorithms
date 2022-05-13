@@ -1,4 +1,3 @@
-import { lessThan } from './../util/index';
 import {
   flatList,
   getFloatingPoint,
@@ -7,6 +6,7 @@ import {
   greaterThan,
   rangeLoop,
   toFixed,
+  lessThan,
 } from '../util/index.js';
 
 type Floatable = { int: string; fraction: string; normalForm: number };

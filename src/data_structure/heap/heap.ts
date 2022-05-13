@@ -10,12 +10,17 @@ import {
   equal,
 } from './../../util/index.js';
 
+export const HEAP_SYMBOL = Symbol(
+  `HEAP_${Math.random().toString(32).slice(2)}`
+);
+
 export interface Heap {
   heap: Record<number, number>;
   insert(data: number): void;
   delete(): number;
   sort(): Array<number>;
   readonly size: number;
+  readonly type: typeof HEAP_SYMBOL;
 }
 
 export type HeapDataOrder = 'max' | 'min';

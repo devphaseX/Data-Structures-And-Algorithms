@@ -14,6 +14,7 @@ import {
   HeapDataOrder,
   makeChildComplyToHeapStructure,
   makeParentComplyToHeapStructure,
+  HEAP_SYMBOL,
 } from './heap.js';
 
 function createHeap(order: HeapDataOrder, data?: number | Array<number>): Heap {
@@ -65,6 +66,7 @@ function createHeap(order: HeapDataOrder, data?: number | Array<number>): Heap {
     get size() {
       return getListSize(heapList);
     },
+    type: HEAP_SYMBOL,
   };
 }
 

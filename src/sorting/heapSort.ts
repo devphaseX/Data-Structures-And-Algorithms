@@ -1,4 +1,8 @@
-import { Heap, HeapDataOrder } from '../data_structure/heap/heap.js';
+import {
+  Heap,
+  HeapDataOrder,
+  HEAP_SYMBOL,
+} from '../data_structure/heap/heap.js';
 import createHeap from '../data_structure/heap/index.js';
 import { _isPreSortedBySize, slice } from '../util/index.js';
 
@@ -9,6 +13,12 @@ function heapSort(value: Array<number> | Heap, order?: HeapDataOrder) {
     return slice(value, 0);
   }
   const heap = Array.isArray(value) ? createHeap(order ?? 'min', value) : value;
+
+  if (heap.type !== HEAP_SYMBOL) {
+    throw new TypeError(
+      'The created or passed along structure isnt of heap type.'
+    );
+  }
   return Array.from({ length: heap.size }, () => heap.delete());
 }
 

@@ -1,4 +1,10 @@
 import { Fun } from '../../util/type';
+import {
+  DOUBLE_CIRCULAR_DIRECTED_NODE,
+  DOUBLE_DIRECTED_NODE,
+  SINGLE_CIRCULAR_DIRECTED_NODE,
+  SINGLE_DIRECTED_NODE,
+} from './util';
 
 export type LinkType = 'single' | 'double';
 export type Node<T, IsDouble extends boolean = false> = IfElse<
@@ -10,22 +16,26 @@ export type Node<T, IsDouble extends boolean = false> = IfElse<
 export interface SingleDirectedNode<T> {
   data: T;
   next: SingleDirectedNode<T> | null;
+  _type_: typeof SINGLE_DIRECTED_NODE;
 }
 
 export interface DoubleDirectedNode<T> {
   data: T;
   next: DoubleDirectedNode<T> | null;
   prev: DoubleDirectedNode<T> | null;
+  _type_: typeof DOUBLE_DIRECTED_NODE;
 }
 
 export interface CircularDirectedNode<T> {
   data: T;
   next: CircularDirectedNode<T>;
+  _type_: typeof SINGLE_CIRCULAR_DIRECTED_NODE;
 }
 export interface DoubleCircularDirectedNode<T> {
   data: T;
   next: DoubleCircularDirectedNode<T>;
   prev: DoubleCircularDirectedNode<T>;
+  _type_: typeof DOUBLE_CIRCULAR_DIRECTED_NODE;
 }
 
 export type SingleReferenceNode<T> =

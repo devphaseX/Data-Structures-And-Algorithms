@@ -20,6 +20,18 @@ import {
   SinglyNodeOption,
 } from './type';
 
+export const SINGLE_DIRECTED_NODE =
+  Symbol('SINGLE_DIRECTED_NODE') || 'SINGLE_DIRECTED_NODE';
+
+export const SINGLE_CIRCULAR_DIRECTED_NODE =
+  Symbol('SINGLE_CIRCULAR_DIRECTED_NODE') || 'SINGLE_CIRCULAR_DIRECTED_NODE';
+
+export const DOUBLE_DIRECTED_NODE =
+  Symbol('DOUBLE_DIRECTED_NODE') || 'DOUBLE_DIRECTED_NODE';
+
+export const DOUBLE_CIRCULAR_DIRECTED_NODE =
+  Symbol('DOUBLE_CIRCULAR_DIRECTED_NODE') || 'DOUBLE_CIRCULAR_DIRECTED_NODE';
+
 function createSingleNode<T>(
   data: T,
   isCircular?: boolean
@@ -30,9 +42,10 @@ function createSingleNode<T>(
       get next() {
         return this;
       },
+      _type_: SINGLE_CIRCULAR_DIRECTED_NODE,
     };
   }
-  return { data, next: null };
+  return { data, next: null, _type_: SINGLE_DIRECTED_NODE };
 }
 
 function createDoubleNode<T>(
@@ -48,9 +61,19 @@ function createDoubleNode<T>(
       get next() {
         return this;
       },
+      _type_: DOUBLE_CIRCULAR_DIRECTED_NODE,
     };
   }
-  return { data, prev: null, next: null };
+  return { data, prev: null, next: null, _type_: DOUBLE_DIRECTED_NODE };
+}
+
+export function detectCircularNode<Node extends NodeReference<any>>(
+  node: Node
+) {
+  return [
+    DOUBLE_CIRCULAR_DIRECTED_NODE,
+    SINGLE_CIRCULAR_DIRECTED_NODE,
+  ].includes(node._type_);
 }
 export interface TraverseOption<LinkNode> {
   abortTarversal(): void;
@@ -435,14 +458,17 @@ export function reverseLinkedNode<Node extends NodeReference<any>>(
   isCircular: boolean
 ) {
   let prevNode = rootNode;
+  let isDoubleLinkDetect = isLinkDouble(rootNode);
   if (rootNode.next && rootNode.next !== prevNode) {
     tranverseNode(
       rootNode.next,
       (curNode, _, { setNextNode }) => {
         if (curNode.next) setNextNode(curNode.next);
         curNode.next = prevNode;
-        if (isLinkDouble(curNode) && isLinkDouble(prevNode))
-          prevNode.prev = curNode;
+        if (isDoubleLinkDetect) {
+          (prevNode as DoubleReferenceNode<any>).prev =
+            curNode as DoubleReferenceNode<any>;
+        }
         prevNode = curNode as any;
       },
       { isCircular }
@@ -454,4 +480,8 @@ export function reverseLinkedNode<Node extends NodeReference<any>>(
     prevNode.prev = isCircular ? rootNode : null;
   }
   return prevNode;
+}
+
+export function isLinkShaped(value: any) {
+  return 'next' in value && typeof value.next === 'object';
 }

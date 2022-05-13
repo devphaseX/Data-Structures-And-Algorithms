@@ -4,8 +4,6 @@ import {
   Chain,
   GetAllFunctionValueKey,
   ImmutablePreserverFn,
-  DropNthFirstItem,
-  DropBound,
   ListActionWithValue,
   ListActionWithLength,
 } from './type';
@@ -315,7 +313,7 @@ export function getListFirstItem<T>(list: Array<T>) {
 }
 
 export function getListLastItem<T>(list: Array<T>) {
-  return list[getListSize(list) - 1];
+  return 'at' in list ? list.at(-1) : list[getListSize(list) - 1];
 }
 
 export function getItemBoundary(range: { min: number; max: number }) {
@@ -461,15 +459,6 @@ export function getLogarithmicPass(list: Array<any>) {
   return pipe(getListSize, Math.log2, Math.trunc)(list);
 }
 
-export function skipNthArgs<B extends DropBound>(endBound: B) {
-  return function <Args extends unknown[]>(...args: Args) {
-    type StrictedArgs = DropNthFirstItem<Args, B>;
-    return function <U>(restrictFn: (...rest: StrictedArgs) => U) {
-      return restrictFn(...(slice(args, endBound) as any));
-    };
-  };
-}
-
 type SwapHistory<T> = { value: T; prev: number; cur: number };
 export function swapListUsingPosition<T>(
   list: Array<T>,
@@ -565,7 +554,7 @@ type ComparisonOperator = {
   };
 };
 
-export const compare = ((): ComparisonOperator => {
+export const compare = (() => {
   const comparisonTask: ComparisonTask = {
     lessThan: [lessThan, ['equal', 'notEqual']],
     greaterThan: [greaterThan, ['equal', 'notEqual']],
@@ -601,21 +590,28 @@ export const compare = ((): ComparisonOperator => {
     };
   }
 
-  function restrictAccess(currentTasks: Array<OrderFn>): any {
+  function restrictAccess(
+    currentTasks: Array<OrderFn>,
+    lastAccesKey: keyof ComparisonTask
+  ): any {
+    const nextMethodKeys = comparisonTask[lastAccesKey][1] as Array<
+      keyof ComparisonTask
+    >;
+
     const handler = {
       get(_: any, key: any) {
         if (typeof key === 'string' && key === 'check') {
           return acknowledgeTasks(currentTasks);
         }
 
-        if (key in comparisonTask) {
+        if (nextMethodKeys.includes(key)) {
           const opK = key as keyof ComparisonTask;
-          return restrictAccess([...currentTasks, comparisonTask[opK][0]]);
+          return restrictAccess([...currentTasks, comparisonTask[opK][0]], opK);
         }
 
-        throw new TypeError(
+        unwindProcess(
           `The comparison operator accessed doesn't exist, expected ${Object.keys(
-            comparisonTask
+            nextMethodKeys
           ).join(',')} but got ${key}`
         );
       },
@@ -623,22 +619,18 @@ export const compare = ((): ComparisonOperator => {
     return new Proxy({}, handler);
   }
 
-  return new Proxy(
-    {},
-    {
-      get(_, key) {
-        if (key === 'check') {
-          throw new TypeError();
-        }
+  return new Proxy({} as ComparisonOperator, {
+    get(_, key) {
+      if (key === 'check') {
+        throw new TypeError();
+      }
 
-        if (key in comparisonTask) {
-          return restrictAccess([
-            comparisonTask[key as keyof ComparisonTask][0],
-          ]);
-        }
-      },
-    }
-  ) as any;
+      if (key in comparisonTask) {
+        let accessKey = key as keyof ComparisonTask;
+        return restrictAccess([comparisonTask[accessKey][0]], accessKey);
+      }
+    },
+  });
 })();
 
 export const { lessThan, equal, greaterThan, notEqual } = compare;
