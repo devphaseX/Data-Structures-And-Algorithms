@@ -1,5 +1,4 @@
 import { binary, equal, unwrapIterable } from '../../util/index.js';
-import { createDoublyLinkedList } from '../linkedList/index.js';
 
 interface Stack<T> {
   push(value: T): number;
