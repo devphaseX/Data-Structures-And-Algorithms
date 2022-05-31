@@ -86,8 +86,12 @@ export interface LinkedListMethods<T, Head, Self> {
   getNodeList(): Array<T>;
   getNodeData(position: number): T | null;
   getNodeData(predicate: PredicateFn<T>): T | null;
+  merge(another: Self): MergeRusult<Self>;
+  reBuild(): Self;
   [Symbol.iterator](): Generator<T>;
 }
+
+type MergeRusult<Self> = { self: Self; size: number };
 
 export interface SinglyLinkedList<T>
   extends LinkedListMethods<T, SingleDirectedNode<T>, SinglyLinkedList<T>> {

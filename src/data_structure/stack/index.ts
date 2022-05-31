@@ -1,4 +1,10 @@
-import { binary, equal, unwrapIterable } from '../../util/index.js';
+import {
+  binary,
+  equal,
+  isBoolean,
+  isFunction,
+  unwrapIterable,
+} from '../../util/index.js';
 
 interface Stack<T> {
   push(value: T): number;
@@ -14,16 +20,32 @@ interface Stack<T> {
 
 export class UnderFlowError extends Error {}
 export class OverFlowError extends Error {}
+type StackFillerFn<T> = (push: Stack<T>['push']) => true | number;
 
 function createStack<T>(
-  value: T | Array<T> | null,
+  value: T | Array<T> | StackFillerFn<T> | null,
   capacity: number
 ): Stack<T> {
   // const _innerStack = createDoublyLinkedList<T>(value ?? undefined);
   if (Array.isArray(value) && value.length > capacity) {
     throw new TypeError();
   }
-  const _innerStack = (value ? [value].flat(1) : []) as Array<T>;
+
+  const _innerStack = (
+    value && typeof value !== 'function' ? [value].flat(1) : []
+  ) as Array<T>;
+
+  if (isFunction(value)) {
+    const length = (value as StackFillerFn<T>)(push);
+    if (isBoolean(length)) {
+      capacity = _innerStack.length;
+    } else {
+      if ((length as number) < _innerStack.length) {
+        throw new TypeError();
+      }
+      capacity = length as number;
+    }
+  }
 
   function _getInnerStackSize() {
     return _innerStack.length;

@@ -1,4 +1,4 @@
-import { sealObject } from '../../util/index.js';
+import { pipe, sealObject, unary } from '../../util/index.js';
 import {
   derefLastNode,
   tranverseNode,
@@ -10,6 +10,9 @@ import {
   iterableLinkNode,
   createLinkListImmutableAction,
   reverseLinkedNode,
+  unwrapNodeOnHeadDetect,
+  unwrapNode,
+  detectCircularNode,
 } from './util.js';
 import {
   CircularDoublyLinkedList,
@@ -17,9 +20,11 @@ import {
   DoublyLinkedList,
   DoublyNodeOption,
   LinkListEntry,
+  LinkListType,
   LinkTraversalFn,
   LinkType,
   NodePosition,
+  NodeReference,
   PredicateFn,
 } from './type';
 
@@ -239,6 +244,20 @@ export function _createDoublyLinkedList<T>(
     }
   }
 
+  function merge(linked: LinkListType<T> | NodeReference<T>) {
+    const linkedHead = unwrapNodeOnHeadDetect(linked);
+    if (linkedHead) {
+      tranverseNode(
+        linkedHead,
+        pipe(unary(unwrapNode), (d) => linkOperation.appendNode(d)),
+        {
+          isCircular: detectCircularNode(linkedHead),
+        }
+      );
+    }
+    return { size, self: linkOperation };
+  }
+
   const mutableStateFns = {
     appendNode,
     prependNode,
@@ -263,6 +282,7 @@ export function _createDoublyLinkedList<T>(
     getNodeList,
     getNodeData,
     forEach,
+    merge,
     ...(mutableStateFns as any),
     [Symbol.iterator]: iterableLinkNode<T>(() => head, nodeOption.isCircular),
   }) as DoublyLinkedList<T>;

@@ -395,8 +395,12 @@ export function unwrapNodeData<T, Node extends NodeReference<T>>(
     position: number,
     { abortTarversal }: TraverseOption<Node>
   ) {
-    return void traversalFn(node.data, position, abortTarversal);
+    return void traversalFn(unwrapNode(node), position, abortTarversal);
   };
+}
+
+export function unwrapNode<T>(node: NodeReference<T>) {
+  return node.data;
 }
 
 export function iterableLinkNode<T = unknown>(
@@ -484,4 +488,18 @@ export function reverseLinkedNode<Node extends NodeReference<any>>(
 
 export function isLinkShaped(value: any) {
   return 'next' in value && typeof value.next === 'object';
+}
+
+export function unwrapNodeOnHeadDetect<U>(
+  linked: LinkListType<U> | NodeReference<U>
+) {
+  return 'head' in linked ? linked.head : linked;
+}
+
+export function linkListRebuilder<T>(rebuilder: T) {
+  return {
+    rebuild: () => {
+      return rebuilder;
+    },
+  };
 }

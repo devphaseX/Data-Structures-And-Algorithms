@@ -6,8 +6,10 @@ import {
   SinglyNodeOption,
   CircularLinkedList,
   LinkTraversalFn,
+  LinkListType,
+  NodeReference,
 } from './type';
-import { sealObject } from '../../util/index.js';
+import { pipe, sealObject, unary } from '../../util/index.js';
 import {
   derefLastNode,
   tranverseNode,
@@ -19,6 +21,9 @@ import {
   iterableLinkNode,
   createLinkListImmutableAction,
   reverseLinkedNode,
+  unwrapNodeOnHeadDetect,
+  detectCircularNode,
+  unwrapNode,
 } from './util.js';
 
 interface SinglyNodeConfig<T> {
@@ -232,6 +237,20 @@ export function _createSinglyLinkedList<T>(
     }
   }
 
+  function merge(linked: LinkListType<T> | NodeReference<T>) {
+    const linkedHead = unwrapNodeOnHeadDetect(linked);
+    if (linkedHead) {
+      tranverseNode(
+        linkedHead,
+        pipe(unary(unwrapNode), (d) => linkOperation.appendNode(d)),
+        {
+          isCircular: detectCircularNode(linkedHead),
+        }
+      );
+    }
+    return { size, self: linkOperation };
+  }
+
   const linkOperation = sealObject({
     get head() {
       return head;
@@ -242,6 +261,7 @@ export function _createSinglyLinkedList<T>(
     forEach,
     getNodeList,
     getNodeData,
+    merge,
     ...mutableStateFns,
     [Symbol.iterator]: iterableLinkNode<T>(() => head, nodeOption.isCircular),
   }) as SinglyLinkedList<T>;
