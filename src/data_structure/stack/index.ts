@@ -1,4 +1,4 @@
-import { equal } from '../../util/index';
+import { binary, equal, unwrapIterable } from '../../util/index.js';
 import { createDoublyLinkedList } from '../linkedList/index.js';
 
 interface Stack<T> {
@@ -16,21 +16,33 @@ interface Stack<T> {
 export class UnderFlowError extends Error {}
 export class OverFlowError extends Error {}
 
-function createStack<T>(type: T | null, size?: number): Stack<T> {
-  const _innerStack = createDoublyLinkedList<T>(type ?? undefined);
+function createStack<T>(
+  value: T | Array<T> | null,
+  capacity: number
+): Stack<T> {
+  // const _innerStack = createDoublyLinkedList<T>(value ?? undefined);
+  if (Array.isArray(value) && value.length > capacity) {
+    throw new TypeError();
+  }
+  const _innerStack = (value ? [value].flat(1) : []) as Array<T>;
+
+  function _getInnerStackSize() {
+    return _innerStack.length;
+  }
 
   function push(value: T) {
-    if (equal.check(_innerStack.size, size)) {
-      throw new OverFlowError('Cannot insert data in a size limit stack');
+    if (equal.check(_getInnerStackSize(), capacity)) {
+      throw new OverFlowError(
+        `Cannot insert data in a size limit stack of size(${capacity})`
+      );
     }
-    _innerStack.appendNode(value);
-    return _innerStack.size;
+    _innerStack.push(value);
+    return _getInnerStackSize();
   }
 
   function pop(): T {
-    if (_innerStack.size) {
-      const lastNodeData = peek();
-      _innerStack.removeLastNode();
+    if (!empty()) {
+      const lastNodeData = _innerStack.pop();
       return lastNodeData!;
     }
 
@@ -38,28 +50,28 @@ function createStack<T>(type: T | null, size?: number): Stack<T> {
   }
 
   function empty() {
-    _innerStack.emptyLinkedList();
+    return _innerStack.length === 0;
   }
 
   function peek(): T | null {
-    let lastNodeIndex = _innerStack.size;
-    return _innerStack.getNodeData(lastNodeIndex);
+    let lastNodeIndex = _innerStack.length - 1;
+    return _innerStack[lastNodeIndex];
   }
 
   function stackEntries() {
-    return _innerStack.getNodeList();
+    return unwrapIterable(_innerStack);
   }
 
   function isFull() {
-    return _innerStack.size === size;
+    return _innerStack.length === capacity;
   }
 
   function isEmpty() {
-    return _innerStack.size === 0;
+    return _innerStack.length === 0;
   }
 
   function forEach(cb: (value: T, index: number) => void) {
-    return void _innerStack.forEach(cb, 'tail');
+    return void _innerStack.forEach(binary(cb));
   }
 
   return {
@@ -72,7 +84,7 @@ function createStack<T>(type: T | null, size?: number): Stack<T> {
     stackEntries,
     forEach,
     get size() {
-      return _innerStack.size;
+      return _getInnerStackSize();
     },
   };
 }

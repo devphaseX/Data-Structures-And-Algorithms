@@ -642,3 +642,19 @@ export function isNotEmpty(value: any) {
     (typeof value === 'number' && (value === 0 || value !== value))
   );
 }
+
+export function unwrapIterable<T>(iterable: Iterable<T>) {
+  return [...iterable];
+}
+
+export function unary<T, U>(fn: (value: T) => U) {
+  return function narrowDown(value: T) {
+    return fn(value);
+  };
+}
+
+export function binary<A, B, C>(fn: (a: A, b: B) => C) {
+  return function narrowDown(a: A, b: B) {
+    return fn(a, b);
+  };
+}
