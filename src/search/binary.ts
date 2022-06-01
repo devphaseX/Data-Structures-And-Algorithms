@@ -5,7 +5,7 @@ import {
   positionBasedComparer,
   rangeLoop,
   _defaultSort,
-} from '../util/index';
+} from '../util/index.js';
 
 type BaitPredicate<T> = (item: T) => 0 | 1 | -1;
 

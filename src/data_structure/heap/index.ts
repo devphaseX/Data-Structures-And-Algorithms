@@ -1,12 +1,14 @@
-import { compare, equal, greaterThan, pipe } from './../../util/index';
-import heapSort from '../../sorting/heapSort.js';
 import {
+  equal,
+  greaterThan,
+  normalizeListableArgs,
   cloneList,
   getListSize,
   hasEmptyList,
   pop,
   unshiftLastItemWithFirst,
-} from '../../util/index.js';
+} from './../../util/index.js';
+import heapSort from '../../sorting/heapSort.js';
 
 import {
   heapify,
@@ -18,7 +20,8 @@ import {
 } from './heap.js';
 
 function createHeap(order: HeapDataOrder, data?: number | Array<number>): Heap {
-  let heapList: Array<number> = (data && heapify([data].flat(1), order)) || [];
+  let heapList: Array<number> =
+    (data && heapify(normalizeListableArgs(data), order)) || [];
 
   function insert(data: number) {
     const lastItemPosition = heapList.length;
@@ -42,7 +45,7 @@ function createHeap(order: HeapDataOrder, data?: number | Array<number>): Heap {
     let topMostItem: number;
 
     if (rootHasDescendant) {
-      topMostItem = unshiftLastItemWithFirst(heapList);
+      topMostItem = unshiftLastItemWithFirst(heapList)!;
     } else {
       [, topMostItem] = pop(heapList);
     }

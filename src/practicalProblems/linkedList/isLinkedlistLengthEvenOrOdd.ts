@@ -2,7 +2,7 @@ import {
   LinkListType,
   NodeReference,
 } from './../../data_structure/linkedList/type';
-import { getLinkedNodeReq } from './shared';
+import { getLinkedNodeReq } from './shared.js';
 
 function isLinkedListLengthOddOrEven<T>(
   linkedList: LinkListType<T> | NodeReference<T>

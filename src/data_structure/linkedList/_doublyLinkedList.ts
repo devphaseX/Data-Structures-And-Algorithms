@@ -1,4 +1,4 @@
-import { pipe, sealObject, unary } from '../../util/index.js';
+import { callLaterWith, pipe, sealObject, unary } from '../../util/index.js';
 import {
   derefLastNode,
   tranverseNode,
@@ -26,6 +26,7 @@ import {
   NodePosition,
   NodeReference,
   PredicateFn,
+  RebuildFn,
 } from './type';
 
 interface DoublyNodeConfig<T> {
@@ -34,13 +35,16 @@ interface DoublyNodeConfig<T> {
 }
 
 export function _createDoublyLinkedList<T>(
-  option: DoublyNodeConfig<T>
+  option: DoublyNodeConfig<T>,
+  rebuilder: RebuildFn
 ): DoublyLinkedList<T> | CircularDoublyLinkedList<T>;
 export function _createDoublyLinkedList<T>(
-  option: Required<DoublyNodeConfig<T>>
+  option: Required<DoublyNodeConfig<T>>,
+  rebuilder: RebuildFn
 ): DoublyLinkedList<T> | CircularDoublyLinkedList<T>;
 export function _createDoublyLinkedList<T>(
-  option: DoublyNodeConfig<T>
+  option: DoublyNodeConfig<T>,
+  rebuilder: RebuildFn
 ): DoublyLinkedList<T> | CircularDoublyLinkedList<T> {
   const nodeOption = <DoublyNodeOption<T>>{ ...option, type: 'double' };
   let head: DoubleReferenceNode<T> | null = null;
@@ -153,9 +157,7 @@ export function _createDoublyLinkedList<T>(
   };
 
   function mapNode<U>(mapFn: (value: T) => U) {
-    const { initialData, ...delegateConfig } = nodeOption;
-    const newLinks = _createDoublyLinkedList<U>(delegateConfig);
-
+    const newLinks = rebuilder<U>(null);
     forEach((data) => newLinks.appendNode(mapFn(data)));
     return newLinks;
   }
@@ -283,9 +285,15 @@ export function _createDoublyLinkedList<T>(
     getNodeData,
     forEach,
     merge,
+    rebuild: rebuilder,
     ...(mutableStateFns as any),
     [Symbol.iterator]: iterableLinkNode<T>(() => head, nodeOption.isCircular),
   }) as DoublyLinkedList<T>;
 
-  return createLinkListImmutableAction(linkOperation, mapNode);
+  return createLinkListImmutableAction(linkOperation, mapNode as any, [
+    rebuilder,
+    forEach,
+    getNodeList,
+    merge,
+  ]);
 }

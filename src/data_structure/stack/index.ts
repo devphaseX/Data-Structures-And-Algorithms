@@ -3,6 +3,7 @@ import {
   equal,
   isBoolean,
   isFunction,
+  normalizeListableArgs,
   unwrapIterable,
 } from '../../util/index.js';
 
@@ -26,13 +27,12 @@ function createStack<T>(
   value: T | Array<T> | StackFillerFn<T> | null,
   capacity: number
 ): Stack<T> {
-  // const _innerStack = createDoublyLinkedList<T>(value ?? undefined);
   if (Array.isArray(value) && value.length > capacity) {
     throw new TypeError();
   }
 
   const _innerStack = (
-    value && typeof value !== 'function' ? [value].flat(1) : []
+    value && typeof value !== 'function' ? normalizeListableArgs(value) : []
   ) as Array<T>;
 
   if (isFunction(value)) {
@@ -62,12 +62,11 @@ function createStack<T>(
   }
 
   function pop(): T {
-    if (!empty()) {
-      const lastNodeData = _innerStack.pop();
-      return lastNodeData!;
+    if (empty()) {
+      throw new UnderFlowError('Cannot pop data off an empty stack');
     }
-
-    throw new UnderFlowError('Cannot pop data off an empty stack');
+    const lastNodeData = _innerStack.pop();
+    return lastNodeData!;
   }
 
   function empty() {

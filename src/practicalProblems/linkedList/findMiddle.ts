@@ -1,20 +1,19 @@
-import { createSinglyLinkedList } from '../../data_structure/linkedList/singlyLinkedList';
 import {
   detectCircularNode,
   tranverseNode,
 } from '../../data_structure/linkedList/util';
-import { getMiddlePoint } from '../../util/index';
+import { getMiddlePoint } from '../../util/index.js';
 import {
   LinkListType,
   NodeReference,
 } from './../../data_structure/linkedList/type';
-import { getLinkedNodeReq } from './shared';
+import { getLinkedNodeReq } from './shared.js';
 
 function findMiddle<T>(linkedList: LinkListType<T> | NodeReference<T>) {
-  const result = getLinkedNodeReq(linkedList);
-  if (!result) return result;
+  const requirement = getLinkedNodeReq(linkedList);
+  if (!requirement) return requirement;
 
-  const { unwrapLinkedList, length } = result;
+  const { unwrapLinkedList, length } = requirement;
   let middle!: NodeReference<T>;
   let middlePointIndex = getMiddlePoint(0, length);
 

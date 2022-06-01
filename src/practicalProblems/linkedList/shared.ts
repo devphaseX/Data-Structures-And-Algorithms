@@ -9,7 +9,7 @@ import {
   detectCircularNode,
   tranverseNode,
 } from '../../data_structure/linkedList/util.js';
-import createQueue from '../../data_structure/queue/index';
+import createQueue from '../../data_structure/queue/index.js';
 
 function getLinkedNodeReq<T>(linkedList: LinkListType<T> | NodeReference<T>) {
   const isHeadUnwrapped = 'head' in linkedList;

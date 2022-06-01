@@ -445,16 +445,21 @@ export function createLinkListImmutableAction<
   LinkedList extends LinkListType<any>
 >(
   linkedList: LinkedList,
-  mapper: (fn: LinkListMapperFn<LinkedList>) => LinkedList
+  mapper: (fn: LinkListMapperFn<LinkedList>) => LinkedList,
+  whiteList?: Array<LinkedList[keyof LinkedList]>
 ) {
-  return createImmutableAction(linkedList, function (methodKey, dependencies) {
-    const clone = mapper((v) => v);
-    {
-      const mutableMethod: Fun = (clone as any)[methodKey];
-      mutableMethod(dependencies);
-    }
-    return clone;
-  });
+  return createImmutableAction(
+    linkedList,
+    function (methodKey, dependencies) {
+      const clone = mapper((v) => v);
+      {
+        const mutableMethod: Fun = (clone as any)[methodKey];
+        mutableMethod(dependencies);
+      }
+      return clone;
+    },
+    whiteList
+  );
 }
 
 export function reverseLinkedNode<Node extends NodeReference<any>>(
@@ -498,8 +503,15 @@ export function unwrapNodeOnHeadDetect<U>(
 
 export function linkListRebuilder<T>(rebuilder: T) {
   return {
-    rebuild: () => {
+    rebuild() {
       return rebuilder;
     },
   };
+}
+
+export function makeLinkedConfigurable<T>(
+  isCircular: boolean,
+  initialData?: T | Array<T> | null
+) {
+  return { isCircular, ...(initialData ? { initialData } : null) };
 }

@@ -1,9 +1,10 @@
+import { normalizeListableArgs } from '../../util/index.js';
+
 type QueueInitFn<T> = (enqueue: (value: T) => void) => void;
 function createQueue<T>(value: T | Array<T> | QueueInitFn<T>) {
-  const _innerQueue =
-    typeof value !== 'function'
-      ? new Set<T>([value].flat(1) as Array<T>)
-      : new Set<T>();
+  const _innerQueue = new Set<T>(
+    typeof value !== 'function' ? normalizeListableArgs(value) : []
+  );
 
   if (typeof value === 'function') {
     (value as QueueInitFn<T>)(enqueue);
@@ -30,8 +31,20 @@ function createQueue<T>(value: T | Array<T> | QueueInitFn<T>) {
   }
 
   function flush(cb: (value: T) => void) {
-    while (!isEmpty()) {
-      cb(dequeue()!);
+    //perform a data flush safety
+    let erroredOnFlush = false;
+    try {
+      while (!isEmpty()) {
+        cb(dequeue()!);
+      }
+    } catch (e) {
+      erroredOnFlush = true;
+      throw e;
+    } finally {
+      //clear all remaining if an errored got encountered during flushing.
+      if (erroredOnFlush) {
+        clear();
+      }
     }
   }
 

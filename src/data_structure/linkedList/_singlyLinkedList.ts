@@ -8,6 +8,7 @@ import {
   LinkTraversalFn,
   LinkListType,
   NodeReference,
+  RebuildFn,
 } from './type';
 import { pipe, sealObject, unary } from '../../util/index.js';
 import {
@@ -32,13 +33,16 @@ interface SinglyNodeConfig<T> {
 }
 
 export function _createSinglyLinkedList<T>(
-  nodeOption: SinglyNodeConfig<T>
+  nodeOption: SinglyNodeConfig<T>,
+  rebuilder: RebuildFn
 ): SinglyLinkedList<T> | CircularLinkedList<T>;
 export function _createSinglyLinkedList<T>(
-  nodeOption: Required<SinglyNodeConfig<T>>
+  nodeOption: Required<SinglyNodeConfig<T>>,
+  rebuilder: RebuildFn
 ): SinglyLinkedList<T> | CircularLinkedList<T>;
 export function _createSinglyLinkedList<T>(
-  option: SinglyNodeConfig<T>
+  option: SinglyNodeConfig<T>,
+  rebuilder: RebuildFn
 ): SinglyLinkedList<T> | CircularLinkedList<T> {
   const nodeOption = <SinglyNodeOption<T>>{ ...option, type: 'single' };
   let head: SingleReferenceNode<T> | null = null;
@@ -137,8 +141,7 @@ export function _createSinglyLinkedList<T>(
   };
 
   function mapNode<U>(mapFn: (value: T) => U) {
-    const { initialData, ...delegateConfig } = nodeOption;
-    const newLinks = _createSinglyLinkedList<U>(delegateConfig);
+    const newLinks = rebuilder<U>(null) as SinglyLinkedList<U>;
     forEach((data) => {
       newLinks.appendNode(mapFn(data));
     });
@@ -262,9 +265,15 @@ export function _createSinglyLinkedList<T>(
     getNodeList,
     getNodeData,
     merge,
+    rebuild: rebuilder as any,
     ...mutableStateFns,
     [Symbol.iterator]: iterableLinkNode<T>(() => head, nodeOption.isCircular),
   }) as SinglyLinkedList<T>;
 
-  return createLinkListImmutableAction(linkOperation, mapNode);
+  return createLinkListImmutableAction(linkOperation, mapNode, [
+    rebuilder,
+    forEach,
+    getNodeList,
+    merge,
+  ]);
 }

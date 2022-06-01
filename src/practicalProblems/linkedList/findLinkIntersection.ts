@@ -1,10 +1,10 @@
-import { compare } from './../../util/index';
+import { compare } from './../../util/index.js';
 import { NodeReference } from '../../data_structure/linkedList/type.js';
 import {
   detectCircularNode,
   tranverseNode,
-} from '../../data_structure/linkedList/util';
-import { getListLastItem } from '../../util/index';
+} from '../../data_structure/linkedList/util.js';
+import { getListLastItem } from '../../util/index.js';
 
 const { equal } = compare;
 

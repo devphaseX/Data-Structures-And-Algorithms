@@ -87,7 +87,7 @@ export interface LinkedListMethods<T, Head, Self> {
   getNodeData(position: number): T | null;
   getNodeData(predicate: PredicateFn<T>): T | null;
   merge(another: Self): MergeRusult<Self>;
-  reBuild(): Self;
+  rebuild(): Self;
   [Symbol.iterator](): Generator<T>;
 }
 
@@ -171,3 +171,7 @@ export type GetLinkedListDataType<Link> = Link extends LinkListType<infer U>
 export type LinkListMapperFn<Link> = (
   nodeValue: GetLinkedListDataType<Link>
 ) => GetLinkedListDataType<Link>;
+
+export type RebuildFn = <T>(
+  value?: T | Array<T> | undefined | null
+) => LinkListType<T>;

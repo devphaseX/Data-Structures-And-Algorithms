@@ -1,13 +1,12 @@
-import { CircularDoublyLinkedList } from './type';
-import { linkListRebuilder } from './util.js';
+import { CircularDoublyLinkedList, RebuildFn } from './type';
+import { makeLinkedConfigurable } from './util.js';
 import { _createDoublyLinkedList } from './_doublyLinkedList.js';
 
-export function createCircularDoublyLinkedList<T>(initialData?: T | Array<T>) {
-  return Object.assign(
-    _createDoublyLinkedList<T>({
-      isCircular: true,
-      ...(initialData != undefined ? { initialData: initialData } : null),
-    }) as CircularDoublyLinkedList<T>,
-    linkListRebuilder(createCircularDoublyLinkedList)
-  );
+export function createCircularDoublyLinkedList<T>(
+  initialData?: T | Array<T>
+): CircularDoublyLinkedList<T> {
+  return _createDoublyLinkedList(
+    makeLinkedConfigurable(true, initialData),
+    createCircularDoublyLinkedList as RebuildFn
+  ) as CircularDoublyLinkedList<T>;
 }

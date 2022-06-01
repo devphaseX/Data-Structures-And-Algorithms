@@ -379,7 +379,8 @@ export function createImmutableAction<Mutable extends Record<PropertyKey, any>>(
   immutablePreserver: ImmutablePreserverFn<
     GetAllFunctionValueKey<Mutable>,
     Mutable
-  >
+  >,
+  whiteList?: Array<Mutable[keyof Mutable]>
 ) {
   function removeImmutableIndicator(deps: any[]) {
     return slice(deps, 0, -1);
@@ -406,10 +407,13 @@ export function createImmutableAction<Mutable extends Record<PropertyKey, any>>(
     get(target, key, receiver) {
       if (Reflect.has(target, key)) {
         const retrievedValue = Reflect.get(target, key, receiver);
-        if (isFunction(retrievedValue)) {
-          return createImmutableWrapper(key as any);
-        } else {
+        if (!isFunction(retrievedValue)) {
           return retrievedValue;
+        } else {
+          if (whiteList && whiteList.includes(retrievedValue)) {
+            return retrievedValue;
+          }
+          return createImmutableWrapper(key as any);
         }
       } else {
         return void 0;
@@ -586,7 +590,7 @@ export const compare = (() => {
 
   function acknowledgeTasks(tasks: Array<OrderFn>) {
     return function check(a: any, b: any) {
-      return tasks.every((task) => task(a, b));
+      return tasks.some(callLaterWith(null, [a, b]));
     };
   }
 
@@ -657,4 +661,14 @@ export function binary<A, B, C>(fn: (a: A, b: B) => C) {
   return function narrowDown(a: A, b: B) {
     return fn(a, b);
   };
+}
+
+export function callLaterWith<C, R extends unknown[], V>(context: C, args: R) {
+  return function invokeWithConstants(fn: (...args: R) => V) {
+    return fn.apply(context, args);
+  };
+}
+
+export function normalizeListableArgs<T>(arg: T | Array<T>) {
+  return [arg].flat(1) as Array<T>;
 }
