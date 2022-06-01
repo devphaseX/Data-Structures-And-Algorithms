@@ -11,15 +11,24 @@ import {
 } from '../../data_structure/linkedList/util.js';
 import createQueue from '../../data_structure/queue/index.js';
 
-function getLinkedNodeReq<T>(linkedList: LinkListType<T> | NodeReference<T>) {
+interface LinkedNodeInfo<T> {
+  unwrapLinkedList: NodeReference<T>;
+  length: number;
+}
+
+function getLinkedNodeReq<T>(
+  linkedList: LinkListType<T> | NodeReference<T>
+): LinkedNodeInfo<T> | null {
   const isHeadUnwrapped = 'head' in linkedList;
-  const unwrapLinkedList = isHeadUnwrapped ? linkedList.head : linkedList;
+  const unwrapLinkedList = isHeadUnwrapped
+    ? (linkedList.head as NodeReference<T>)
+    : linkedList;
 
   if (!unwrapLinkedList) return unwrapLinkedList;
 
   const length = isHeadUnwrapped
     ? linkedList.size
-    : createSinglyLinkedList<T>().merge(linkedList as any).size;
+    : createSinglyLinkedList<T>().merge(linkedList).size;
   return { unwrapLinkedList, length };
 }
 

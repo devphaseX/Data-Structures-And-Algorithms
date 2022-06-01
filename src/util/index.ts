@@ -672,3 +672,11 @@ export function callLaterWith<C, R extends unknown[], V>(context: C, args: R) {
 export function normalizeListableArgs<T>(arg: T | Array<T>) {
   return [arg].flat(1) as Array<T>;
 }
+
+export function isEven(value: number) {
+  return value % 2 === 0;
+}
+
+export function isOdd(value: number) {
+  return !isEven(value);
+}

@@ -1,9 +1,11 @@
 import { normalizeListableArgs } from '../../util/index.js';
 
 type QueueInitFn<T> = (enqueue: (value: T) => void) => void;
-function createQueue<T>(value: T | Array<T> | QueueInitFn<T>) {
+function createQueue<T>(value: T | Array<T> | QueueInitFn<T> | null) {
   const _innerQueue = new Set<T>(
-    typeof value !== 'function' ? normalizeListableArgs(value) : []
+    typeof value !== 'function' && value !== null
+      ? normalizeListableArgs(value)
+      : []
   );
 
   if (typeof value === 'function') {

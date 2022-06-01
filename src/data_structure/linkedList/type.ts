@@ -86,7 +86,7 @@ export interface LinkedListMethods<T, Head, Self> {
   getNodeList(): Array<T>;
   getNodeData(position: number): T | null;
   getNodeData(predicate: PredicateFn<T>): T | null;
-  merge(another: Self): MergeRusult<Self>;
+  merge(another: LinkListType<T> | NodeReference<T>): MergeRusult<Self>;
   rebuild(): Self;
   [Symbol.iterator](): Generator<T>;
 }
