@@ -31,12 +31,9 @@ function reverseLinkedNodeInPair<T>(
     if (secondInPair) {
       secondInPair.next = firstInPair;
       pairsQueue.enqueue(secondInPair);
-    } else {
-      if (firstInPair) {
-        pairsQueue.enqueue(firstInPair);
-      }
-      break;
-    }
+    } else if (firstInPair) {
+      pairsQueue.enqueue(firstInPair);
+    } else break;
   }
 
   let head = pairsQueue.peek();
@@ -49,18 +46,17 @@ function reverseLinkedNodeInPair<T>(
 
       if (secondNodeEntry) {
         firstNodeEntry.next!.next = secondNodeEntry;
-      } else {
-        last = firstNodeEntry;
-      }
+      } else last = firstNodeEntry;
     }
 
     if (last.next?.next) {
       last.next.next = null;
     }
-
-    linkedList.emptyLinkedList();
-    linkedList.merge(head);
   }
+
+  linkedList.emptyLinkedList();
+  linkedList.merge(head);
+
   return head;
 }
 
