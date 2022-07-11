@@ -680,3 +680,45 @@ export function isEven(value: number) {
 export function isOdd(value: number) {
   return !isEven(value);
 }
+
+export interface Success<T> {
+  type: 'success';
+  value: T;
+}
+
+export interface Failure<E> {
+  type: 'failed';
+  error: { cause: E };
+}
+
+export type Option<Result, Error> = Success<Result> | Failure<Error>;
+
+export function createOption<V>(value: V, errorType: true): Failure<V>;
+export function createOption<V>(value: V, errorType: false): Success<V>;
+export function createOption<V>(value: V, errorType: boolean): Option<V, V> {
+  if (errorType === true) return { type: 'failed', error: { cause: value } };
+  return { type: 'success', value };
+}
+
+export interface Some<T> {
+  type: 'some';
+  value: T;
+}
+
+export interface None {
+  type: 'none';
+}
+
+export type Result<Value> = Some<Value> | None;
+
+export function createValueWrapper(computer: () => null | undefined): None;
+export function createValueWrapper<V>(computer: () => V): Some<V>;
+export function createValueWrapper<V>(
+  computer: () => V | null | undefined
+): Result<V> {
+  const result = computer();
+  if (result === null || result === undefined) {
+    return { type: 'none' };
+  }
+  return { type: 'some', value: result };
+}

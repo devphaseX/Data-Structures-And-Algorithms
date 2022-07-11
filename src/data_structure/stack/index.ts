@@ -23,11 +23,21 @@ export class UnderFlowError extends Error {}
 export class OverFlowError extends Error {}
 type StackFillerFn<T> = (push: Stack<T>['push']) => true | number;
 
+type InnerStackSize = number;
+function hasDetectOverFlow(
+  capacity: number,
+  getInnerStackSize: () => InnerStackSize
+) {
+  return getInnerStackSize() > capacity;
+}
+
 function createStack<T>(
   value: T | Array<T> | StackFillerFn<T> | null,
   capacity: number
 ): Stack<T> {
-  if (Array.isArray(value) && value.length > capacity) {
+  if (
+    hasDetectOverFlow(capacity, () => (Array.isArray(value) ? value.length : 1))
+  ) {
     throw new TypeError();
   }
 
