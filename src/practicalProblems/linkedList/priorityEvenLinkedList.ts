@@ -15,7 +15,7 @@ function prioritizeEvenOverOddLinkedList(linkedList: LinkListType<number>) {
     }
   }, 'head');
 
-  return evenLinkedList.merge(oddLinkedList);
+  return evenLinkedList.merge(oddLinkedList).self;
 }
 
 export default prioritizeEvenOverOddLinkedList;
