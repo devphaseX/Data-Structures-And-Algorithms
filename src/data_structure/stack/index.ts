@@ -31,6 +31,12 @@ function hasDetectOverFlow(
   return getInnerStackSize() > capacity;
 }
 
+const ERROR_MSG = {
+  OVERFLOW: 'Stack has overflow the defined capacity limit',
+  lESS_CAPACITY_ERROR: (capacity: number, stackSize: number) =>
+    `The capacity{${capacity}} value is less than the stack current size{${stackSize}}`,
+};
+
 function createStack<T>(
   value: T | Array<T> | StackFillerFn<T> | null,
   capacity: number
@@ -38,7 +44,7 @@ function createStack<T>(
   if (
     hasDetectOverFlow(capacity, () => (Array.isArray(value) ? value.length : 1))
   ) {
-    throw new TypeError();
+    throw new TypeError(ERROR_MSG.OVERFLOW);
   }
 
   const _innerStack = (
@@ -51,7 +57,9 @@ function createStack<T>(
       capacity = _innerStack.length;
     } else {
       if ((length as number) < _innerStack.length) {
-        throw new TypeError();
+        throw new TypeError(
+          ERROR_MSG.lESS_CAPACITY_ERROR(length as number, _innerStack.length)
+        );
       }
       capacity = length as number;
     }

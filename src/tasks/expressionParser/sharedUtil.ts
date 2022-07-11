@@ -1,74 +1,28 @@
-interface BinaryEvaluator {
-  (x: number, y: number): number;
+import { Result } from './../../util/index';
+
+type OperatorType = 'unary' | 'binary' | 'tertiary';
+interface Operator<Sym, Type extends OperatorType> {
+  symbol: Sym;
 }
 
-interface OperatorRank {
-  associativity: Associativity;
-  precedence: number;
-  expressionEvaluator: BinaryEvaluator;
+interface UnaryOperator<S> extends Operator<S, 'unary'> {
+  computer(value: any): Result<number>;
 }
 
-type Associativity = 'ltr' | 'rtl';
-export type OperatorSymbol = '+' | '-' | '/' | '*' | '**' | '^' | '()';
-
-function createOperatorRank(
-  type: OperatorSymbol,
-  precedence: number,
-  associativity: Associativity
-): [OperatorSymbol, OperatorRank] {
-  return [
-    type,
-    { associativity, precedence, expressionEvaluator: evaluateOperator(type) },
-  ];
+interface BinaryOperator<S> extends Operator<S, 'binary'> {
+  computer(x: number, y: number): Result<number>;
 }
 
-function evaluateOperator(type: OperatorSymbol) {
-  return function (x: number, y: number) {
-    switch (type) {
-      case '()': {
-        return x ?? y;
-      }
-
-      case '^': {
-        return x ^ y;
-      }
-
-      case '*': {
-        return x * y;
-      }
-
-      case '/': {
-        return x / y;
-      }
-
-      case '+': {
-        return x + y;
-      }
-
-      case '-': {
-        return x - y;
-      }
-      default: {
-        throw new TypeError('Unknown operator');
-      }
-    }
-  };
-}
-
-export const operatorMap = new Map<OperatorSymbol, OperatorRank>([
-  createOperatorRank('()', 4, 'ltr'),
-  createOperatorRank('^', 4, 'rtl'),
-  createOperatorRank('*', 3, 'rtl'),
-  createOperatorRank('/', 3, 'rtl'),
-  createOperatorRank('+', 2, 'rtl'),
-  createOperatorRank('-', 2, 'rtl'),
-]);
-
-const OperatorSplitPattern = new RegExp(
-  `[${Array.from(operatorMap.values()).join('|')}]`,
-  'g'
-);
-
-export function getOperand(expression: string) {
-  return expression.split(OperatorSplitPattern);
+interface TertiaryOperator<S> extends Operator<S, 'tertiary'> {
+  computer<Then, Else>(cond: () => true, satisfied: Then, fallback: Else): Then;
+  computer<Then, Else>(
+    cond: () => false,
+    satisfied: Then,
+    fallback: Else
+  ): Else;
+  computer<Then, Else>(
+    cond: () => boolean,
+    satisfied: Then,
+    fallback: Else
+  ): Then | Else;
 }
