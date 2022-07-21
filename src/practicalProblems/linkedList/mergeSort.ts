@@ -7,37 +7,37 @@ import { createQueueRepOfLinkedNode } from './shared.js';
   order?
  */
 
-function mergeLinkedListUsingSort<T extends LinkListType<any>>(
-  first: T,
-  second: T
+function mergeLinkedListUsingSort<LinkList extends LinkListType<any>>(
+  leadingLinkList: LinkList,
+  trailingLinkList: LinkList
 ) {
-  const queueRepOne = createQueueRepOfLinkedNode(first);
-  const queueRepTwo = createQueueRepOfLinkedNode(second);
+  const queueLeadingRep = createQueueRepOfLinkedNode(leadingLinkList);
+  const queueTrailingRep = createQueueRepOfLinkedNode(trailingLinkList);
 
-  const queueRepCombine = first.rebuild();
+  const queueLinkMergeRep = leadingLinkList.rebuild();
 
-  while (!queueRepOne.isEmpty() && !queueRepTwo.isEmpty()) {
-    const queueValueOne = queueRepOne.peek()!.data;
-    const queueValueTwo = queueRepTwo.peek()!.data;
+  while (!queueLeadingRep.isEmpty() && !queueTrailingRep.isEmpty()) {
+    const queueValueOne = queueLeadingRep.peek()!.data;
+    const queueValueTwo = queueTrailingRep.peek()!.data;
 
     if (lessThan.equal.check(queueValueOne, queueValueTwo)) {
-      queueRepOne.dequeue();
-      queueRepCombine.appendNode(queueValueOne);
+      queueLeadingRep.dequeue();
+      queueLinkMergeRep.appendNode(queueValueOne);
     } else {
-      queueRepTwo.dequeue();
-      queueRepCombine.appendNode(queueValueTwo);
+      queueTrailingRep.dequeue();
+      queueLinkMergeRep.appendNode(queueValueTwo);
     }
   }
 
-  queueRepOne.flush(({ data }) => {
-    queueRepCombine.appendNode(data);
+  queueLeadingRep.flush(({ data }) => {
+    queueLinkMergeRep.appendNode(data);
   });
 
-  queueRepTwo.flush(({ data }) => {
-    queueRepCombine.appendNode(data);
+  queueTrailingRep.flush(({ data }) => {
+    queueLinkMergeRep.appendNode(data);
   });
 
-  return queueRepCombine;
+  return queueLinkMergeRep;
 }
 
 export default mergeLinkedListUsingSort;
