@@ -408,7 +408,8 @@ export function iterableLinkNode<T = unknown>(
   isCircular: boolean
 ) {
   return function* iterator() {
-    let currentNode = closeOverLinkFn();
+    let starterNode = closeOverLinkFn();
+    let currentNode = starterNode;
     do {
       if (!currentNode) {
         break;
@@ -417,7 +418,7 @@ export function iterableLinkNode<T = unknown>(
       currentNode = currentNode.next;
     } while (
       currentNode &&
-      ((isCircular && currentNode.next !== closeOverLinkFn()) ||
+      ((isCircular && currentNode.next !== starterNode) ||
         (!isCircular && currentNode.next))
     );
   };
