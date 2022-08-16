@@ -14,7 +14,6 @@ import { pipe, sealObject, unary } from '../../util/index.js';
 import {
   derefLastNode,
   tranverseNode,
-  createLinkNode,
   _positionsBaseRemoval,
   hasInvalidRange,
   unwrapNodeData,
@@ -25,6 +24,7 @@ import {
   unwrapNodeOnHeadDetect,
   detectCircularNode,
   unwrapNode,
+  createNthNode,
 } from './util.js';
 
 interface SinglyNodeConfig<T> {
@@ -49,8 +49,14 @@ export function _createSinglyLinkedList<T>(
   let tail: SingleReferenceNode<T> | null = head;
   let size = 0;
   if (nodeOption.initialData) {
-    const nodeLink = createLinkNode(nodeOption, true);
-    ({ root: head, tail: tail, size } = nodeLink);
+    ({
+      head,
+      tail,
+      length: size,
+    } = createNthNode([nodeOption.initialData].flat(1) as Array<T>, {
+      ...option,
+      type: 'single',
+    }));
   }
 
   function derefNode(
@@ -104,12 +110,18 @@ export function _createSinglyLinkedList<T>(
   }
 
   function appendNode(data: T) {
-    const nodeLink = createLinkNode({ ...nodeOption, initialData: data }, true);
-    size += nodeLink.size;
+    const nodeLink = createNthNode(
+      [nodeOption.initialData].flat(1) as Array<T>,
+      {
+        ...option,
+        type: 'single',
+      }
+    );
+    size += nodeLink.length;
     if (!head) {
-      ({ root: head, tail } = nodeLink);
+      ({ head, tail } = nodeLink);
     } else {
-      tail!.next = nodeLink.root;
+      tail!.next = nodeLink.head;
       tail = nodeLink.tail;
       if (nodeOption.isCircular) {
         tail.next = head;
@@ -118,14 +130,20 @@ export function _createSinglyLinkedList<T>(
   }
 
   const prependNode = function (data: T) {
-    const nodeLink = createLinkNode({ ...nodeOption, initialData: data }, true);
-    size += nodeLink.size;
+    const nodeLink = createNthNode(
+      [nodeOption.initialData].flat(1) as Array<T>,
+      {
+        ...option,
+        type: 'single',
+      }
+    );
+    size += nodeLink.length;
     if (!head) {
-      ({ root: head, tail } = nodeLink);
+      ({ head, tail } = nodeLink);
       return void 0;
     }
-    nodeLink.root.next = head;
-    ({ root: head, tail } = nodeLink);
+    nodeLink.head.next = head;
+    ({ head, tail } = nodeLink);
 
     if (nodeOption.isCircular) {
       tail.next = head;

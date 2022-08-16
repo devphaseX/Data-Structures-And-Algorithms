@@ -1,8 +1,8 @@
-import { callLaterWith, pipe, sealObject, unary } from '../../util/index.js';
+import { pipe, sealObject, unary } from '../../util/index.js';
 import {
   derefLastNode,
   tranverseNode,
-  createLinkNode,
+  createNthNode,
   _positionsBaseRemoval,
   hasInvalidRange,
   unwrapNodeData,
@@ -51,8 +51,14 @@ export function _createDoublyLinkedList<T>(
   let tail: DoubleReferenceNode<T> | null = head;
   let size = 0;
   if (nodeOption.initialData) {
-    const nodeLink = createLinkNode(nodeOption, true);
-    ({ root: head, tail: tail, size } = nodeLink);
+    ({
+      head,
+      tail,
+      length: size,
+    } = createNthNode([nodeOption.initialData].flat() as Array<T>, {
+      type: 'double',
+      ...option,
+    }));
   }
 
   function derefNode(
@@ -113,14 +119,17 @@ export function _createDoublyLinkedList<T>(
   }
 
   function appendNode(data: T | Array<T>) {
-    const nodeLink = createLinkNode({ ...nodeOption, initialData: data }, true);
-    size += nodeLink.size;
+    const nodeLink = createNthNode([data].flat() as Array<T>, {
+      ...option,
+      type: 'double',
+    });
+    size += nodeLink.length;
 
     if (!head) {
-      return void ({ root: head, tail } = nodeLink);
+      return void ({ head, tail } = nodeLink);
     } else {
       let lastNode = tail!;
-      lastNode.next = nodeLink.root;
+      lastNode.next = nodeLink.head;
       lastNode.next.prev = lastNode;
       tail = nodeLink.tail;
 
@@ -131,16 +140,19 @@ export function _createDoublyLinkedList<T>(
   }
 
   const prependNode = function (data: T | Array<T>) {
-    const nodeLink = createLinkNode({ ...nodeOption, initialData: data }, true);
-    size += nodeLink.size;
+    const nodeLink = createNthNode([data].flat() as Array<T>, {
+      ...option,
+      type: 'double',
+    });
+    size += nodeLink.length;
 
     if (!head) {
-      return void ({ root: head, tail } = nodeLink);
+      return void ({ head, tail } = nodeLink);
     }
 
     nodeLink.tail.next = head;
     head.prev = nodeLink.tail;
-    head = nodeLink.root;
+    head = nodeLink.head;
 
     if (nodeOption.isCircular) {
       head.prev = tail;

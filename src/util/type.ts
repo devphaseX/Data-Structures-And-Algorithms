@@ -70,3 +70,5 @@ export type ListRequired<L extends unknown[]> = Array<
 export type InferArrayItem<A extends unknown[]> = A extends Array<infer I>
   ? I
   : unknown;
+
+export type IntialDataFunction<T> = () => T;

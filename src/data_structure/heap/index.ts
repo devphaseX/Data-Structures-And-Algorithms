@@ -17,6 +17,7 @@ import {
   makeChildComplyToHeapStructure,
   makeParentComplyToHeapStructure,
   HEAP_SYMBOL,
+  getComparisonFn,
 } from './heap.js';
 
 function createHeap(order: HeapDataOrder, data?: number | Array<number>): Heap {
@@ -30,7 +31,7 @@ function createHeap(order: HeapDataOrder, data?: number | Array<number>): Heap {
     if (equal.check(getListSize(heapList), 1)) return;
     heapList = makeChildComplyToHeapStructure(
       heapList,
-      order,
+      getComparisonFn(order),
       lastItemPosition
     );
   }
@@ -41,7 +42,6 @@ function createHeap(order: HeapDataOrder, data?: number | Array<number>): Heap {
     }
 
     const rootHasDescendant = greaterThan.check(getListSize(heapList), 1);
-
     let topMostItem: number;
 
     if (rootHasDescendant) {
@@ -50,7 +50,11 @@ function createHeap(order: HeapDataOrder, data?: number | Array<number>): Heap {
       [, topMostItem] = pop(heapList);
     }
     if (rootHasDescendant) {
-      heapList = makeParentComplyToHeapStructure(heapList, order, 0);
+      heapList = makeParentComplyToHeapStructure(
+        heapList,
+        getComparisonFn(order),
+        0
+      );
     }
     return topMostItem;
   }

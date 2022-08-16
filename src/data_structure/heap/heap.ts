@@ -10,12 +10,14 @@ import {
   equal,
 } from './../../util/index.js';
 
+type ComparisonFn<V> = (itemOne: V, itemTwo: V) => boolean;
+
 export const HEAP_SYMBOL = Symbol(
   `HEAP_${Math.random().toString(32).slice(2)}`
 );
 
 export interface Heap {
-  heap: Record<number, number>;
+  heap: Array<number>;
   insert(data: number): void;
   delete(): number;
   sort(): Array<number>;
@@ -27,20 +29,22 @@ export type HeapDataOrder = 'max' | 'min';
 
 export function makeChildComplyToHeapStructure(
   currentHeap: Array<number>,
-  type: HeapDataOrder,
+  comparisonFn: ComparisonFn<number>,
   newlyItemIndex: number
 ): Array<number> {
   const parentId = getParentPosition(newlyItemIndex);
   const parent = currentHeap[parentId];
   const child = currentHeap[newlyItemIndex];
 
-  const comparisonFnType = getComparisonFn(type);
-
-  if (!comparisonFnType(parent, child)) {
+  if (!comparisonFn(parent, child)) {
     swapListUsingPosition(currentHeap, parentId, newlyItemIndex);
 
     if (greaterThan.check(parentId, 0)) {
-      return makeChildComplyToHeapStructure(currentHeap, type, parentId);
+      return makeChildComplyToHeapStructure(
+        currentHeap,
+        comparisonFn,
+        parentId
+      );
     }
   }
 
@@ -66,7 +70,7 @@ export function getComparisonFn(type: HeapDataOrder) {
 
 export function makeParentComplyToHeapStructure(
   currentHeap: Array<number>,
-  type: HeapDataOrder,
+  comparisonFn: ComparisonFn<number>,
   parentId: number
 ): Array<number> {
   const leftChildPosition = getLeftChildPosition(parentId);
@@ -79,7 +83,7 @@ export function makeParentComplyToHeapStructure(
 
   const { item: childItem, position: childPosition } = getSelectedChildEntry(
     currentHeap,
-    type,
+    comparisonFn,
     {
       leftPosition: leftChildPosition,
       rightPosition: rightChildPosition,
@@ -89,13 +93,13 @@ export function makeParentComplyToHeapStructure(
   {
     const parentItem = currentHeap[parentId];
 
-    if (!getComparisonFn(type)(parentItem, childItem)) {
+    if (!comparisonFn(parentItem, childItem)) {
       swapListUsingPosition(currentHeap, parentId, childPosition);
 
       if (compare.lessThan.check(childPosition, heapSize)) {
         return makeParentComplyToHeapStructure(
           currentHeap,
-          type,
+          comparisonFn,
           childPosition
         );
       }
@@ -107,7 +111,7 @@ export function makeParentComplyToHeapStructure(
 
 export function getSelectedChildEntry(
   heapDS: Array<number>,
-  type: HeapDataOrder,
+  comparisonFn: ComparisonFn<number>,
   childPosition: {
     leftPosition: number;
     rightPosition: number;
@@ -116,7 +120,12 @@ export function getSelectedChildEntry(
   const { leftPosition, rightPosition } = childPosition;
 
   return lessThan.check(rightPosition, getListSize(heapDS))
-    ? selectChildEntryByHierachy(heapDS, leftPosition, rightPosition, type)
+    ? selectChildEntryByHierachy(
+        heapDS,
+        leftPosition,
+        rightPosition,
+        comparisonFn
+      )
     : createItemEntry(heapDS[leftPosition], leftPosition);
 }
 
@@ -124,12 +133,12 @@ export function selectChildEntryByHierachy(
   heapDS: Array<number>,
   itemOnePosition: number,
   itemTwoPosition: number,
-  type: HeapDataOrder
+  comparisonFn: ComparisonFn<number>
 ) {
   const itemOne = createItemEntry(heapDS[itemOnePosition], itemOnePosition);
   const itemTwo = createItemEntry(heapDS[itemTwoPosition], itemTwoPosition);
 
-  return getComparisonFn(type)(itemOne.item, itemTwo.item) ? itemOne : itemTwo;
+  return comparisonFn(itemOne.item, itemTwo.item) ? itemOne : itemTwo;
 }
 
 function heapify(list: Array<number>, order: HeapDataOrder) {
@@ -137,8 +146,13 @@ function heapify(list: Array<number>, order: HeapDataOrder) {
   if (compare.equal.check(length, 1)) return list;
 
   const endOfNonLeaveItem = Math.trunc(length / 2);
+  const comparisonFnType = getComparisonFn(order);
   rangeLoop(0, endOfNonLeaveItem + 1, (i) => {
-    makeParentComplyToHeapStructure(list, order, endOfNonLeaveItem - i);
+    makeParentComplyToHeapStructure(
+      list,
+      comparisonFnType,
+      endOfNonLeaveItem - i
+    );
   });
   return list;
 }
