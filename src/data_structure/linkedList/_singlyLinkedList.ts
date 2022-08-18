@@ -10,7 +10,12 @@ import {
   NodeReference,
   RebuildFn,
 } from './type';
-import { pipe, sealObject, unary } from '../../util/index.js';
+import {
+  containValueInList,
+  pipe,
+  sealObject,
+  unary,
+} from '../../util/index.js';
 import {
   derefLastNode,
   tranverseNode,
@@ -22,7 +27,6 @@ import {
   createLinkListImmutableAction,
   reverseLinkedNode,
   unwrapNodeOnHeadDetect,
-  detectCircularNode,
   unwrapNode,
   createNthNode,
 } from './util.js';
@@ -32,14 +36,6 @@ interface SinglyNodeConfig<T> {
   isCircular: boolean;
 }
 
-export function _createSinglyLinkedList<T>(
-  nodeOption: SinglyNodeConfig<T>,
-  rebuilder: RebuildFn
-): SinglyLinkedList<T> | CircularLinkedList<T>;
-export function _createSinglyLinkedList<T>(
-  nodeOption: Required<SinglyNodeConfig<T>>,
-  rebuilder: RebuildFn
-): SinglyLinkedList<T> | CircularLinkedList<T>;
 export function _createSinglyLinkedList<T>(
   option: SinglyNodeConfig<T>,
   rebuilder: RebuildFn
@@ -53,9 +49,9 @@ export function _createSinglyLinkedList<T>(
       head,
       tail,
       length: size,
-    } = createNthNode([nodeOption.initialData].flat(1) as Array<T>, {
-      ...option,
+    } = createNthNode(containValueInList(nodeOption.initialData), {
       type: 'single',
+      ...option,
     }));
   }
 
@@ -109,14 +105,13 @@ export function _createSinglyLinkedList<T>(
     }
   }
 
-  function appendNode(data: T) {
-    const nodeLink = createNthNode(
-      [nodeOption.initialData].flat(1) as Array<T>,
-      {
-        ...option,
-        type: 'single',
-      }
-    );
+  function appendNode(data: T | Array<T>) {
+    const nodeLink = createNthNode(containValueInList(data), {
+      type: 'single',
+      ...option,
+    });
+
+    createNthNode([1], { type: 'single', isCircular: true });
     size += nodeLink.length;
     if (!head) {
       ({ head, tail } = nodeLink);
@@ -129,14 +124,11 @@ export function _createSinglyLinkedList<T>(
     }
   }
 
-  const prependNode = function (data: T) {
-    const nodeLink = createNthNode(
-      [nodeOption.initialData].flat(1) as Array<T>,
-      {
-        ...option,
-        type: 'single',
-      }
-    );
+  const prependNode = function (data: T | Array<T>) {
+    const nodeLink = createNthNode(containValueInList(data), {
+      type: 'single',
+      ...option,
+    });
     size += nodeLink.length;
     if (!head) {
       ({ head, tail } = nodeLink);
@@ -195,8 +187,6 @@ export function _createSinglyLinkedList<T>(
     return dataList;
   }
 
-  function getNodeData(position: number): T | null;
-  function getNodeData(predicate: PredicateFn<T>): T | null;
   function getNodeData(type: number | PredicateFn<T>) {
     let outerData: T | null = null;
     forEach((data, position) => {
@@ -261,13 +251,11 @@ export function _createSinglyLinkedList<T>(
   function merge(linked: LinkListType<T> | NodeReference<T>) {
     const linkedHead = unwrapNodeOnHeadDetect(linked);
     if (linkedHead) {
-      tranverseNode(
-        linkedHead,
-        pipe(unary(unwrapNode), (d) => linkOperation.appendNode(d)),
-        {
-          isCircular: detectCircularNode(linkedHead),
-        }
+      const appendUnwrapNode = pipe(
+        unary<typeof linkedHead, T>(unwrapNode),
+        unary<T, void>(linkOperation.appendNode)
       );
+      tranverseNode(linkedHead, appendUnwrapNode, option);
     }
     return { size, self: linkOperation };
   }

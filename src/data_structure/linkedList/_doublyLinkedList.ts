@@ -1,4 +1,9 @@
-import { pipe, sealObject, unary } from '../../util/index.js';
+import {
+  containValueInList,
+  pipe,
+  sealObject,
+  unary,
+} from '../../util/index.js';
 import {
   derefLastNode,
   tranverseNode,
@@ -12,7 +17,6 @@ import {
   reverseLinkedNode,
   unwrapNodeOnHeadDetect,
   unwrapNode,
-  detectCircularNode,
 } from './util.js';
 import {
   CircularDoublyLinkedList,
@@ -37,14 +41,6 @@ interface DoublyNodeConfig<T> {
 export function _createDoublyLinkedList<T>(
   option: DoublyNodeConfig<T>,
   rebuilder: RebuildFn
-): DoublyLinkedList<T> | CircularDoublyLinkedList<T>;
-export function _createDoublyLinkedList<T>(
-  option: Required<DoublyNodeConfig<T>>,
-  rebuilder: RebuildFn
-): DoublyLinkedList<T> | CircularDoublyLinkedList<T>;
-export function _createDoublyLinkedList<T>(
-  option: DoublyNodeConfig<T>,
-  rebuilder: RebuildFn
 ): DoublyLinkedList<T> | CircularDoublyLinkedList<T> {
   const nodeOption = <DoublyNodeOption<T>>{ ...option, type: 'double' };
   let head: DoubleReferenceNode<T> | null = null;
@@ -55,7 +51,7 @@ export function _createDoublyLinkedList<T>(
       head,
       tail,
       length: size,
-    } = createNthNode([nodeOption.initialData].flat() as Array<T>, {
+    } = createNthNode(containValueInList(nodeOption.initialData), {
       type: 'double',
       ...option,
     }));
@@ -119,9 +115,9 @@ export function _createDoublyLinkedList<T>(
   }
 
   function appendNode(data: T | Array<T>) {
-    const nodeLink = createNthNode([data].flat() as Array<T>, {
-      ...option,
+    const nodeLink = createNthNode(containValueInList(data), {
       type: 'double',
+      ...option,
     });
     size += nodeLink.length;
 
@@ -140,9 +136,9 @@ export function _createDoublyLinkedList<T>(
   }
 
   const prependNode = function (data: T | Array<T>) {
-    const nodeLink = createNthNode([data].flat() as Array<T>, {
-      ...option,
+    const nodeLink = createNthNode(containValueInList(data), {
       type: 'double',
+      ...option,
     });
     size += nodeLink.length;
 
@@ -209,8 +205,6 @@ export function _createDoublyLinkedList<T>(
     return dataList;
   }
 
-  function getNodeData(position: number): T | null;
-  function getNodeData(predicate: PredicateFn<T>): T | null;
   function getNodeData(type: number | PredicateFn<T>) {
     let outerData: T | null = null;
     forEach((data, position) => {
@@ -261,13 +255,11 @@ export function _createDoublyLinkedList<T>(
   function merge(linked: LinkListType<T> | NodeReference<T>) {
     const linkedHead = unwrapNodeOnHeadDetect(linked);
     if (linkedHead) {
-      tranverseNode(
-        linkedHead,
-        pipe(unary(unwrapNode), (d) => linkOperation.appendNode(d)),
-        {
-          isCircular: detectCircularNode(linkedHead),
-        }
+      const appendUnwrapNode = pipe(
+        unary<typeof linkedHead, T>(unwrapNode),
+        unary<T, void>(linkOperation.appendNode)
       );
+      tranverseNode(linkedHead, appendUnwrapNode, option);
     }
     return { size, self: linkOperation };
   }

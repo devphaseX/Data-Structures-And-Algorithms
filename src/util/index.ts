@@ -722,3 +722,7 @@ export function createValueWrapper<V>(
   }
   return { type: 'some', value: result };
 }
+
+export function containValueInList<T>(value: T | T[]): T[] {
+  return [value].flat(1) as T[];
+}

@@ -1,7 +1,7 @@
 import {
   slice,
-  normaliseAccessorProps,
   createImmutableAction,
+  normaliseAccessorProps,
 } from '../../util/index.js';
 import { Fun, IntialDataFunction } from '../../util/type';
 import {
@@ -11,6 +11,7 @@ import {
   LinkOption,
   LinkTraversalFn,
   LinkTraverseDirection,
+  LinkType,
   NodePosition,
   NodeReference,
   SingleReferenceNode,
@@ -28,50 +29,39 @@ export const DOUBLE_DIRECTED_NODE =
 export const DOUBLE_CIRCULAR_DIRECTED_NODE =
   Symbol('DOUBLE_CIRCULAR_DIRECTED_NODE') || 'DOUBLE_CIRCULAR_DIRECTED_NODE';
 
-type SingleConfigOption<T> = {
-  isCircular?: boolean;
-  ref?: { prev: SingleReferenceNode<T> | null };
-};
 function createSingleNode<T>(
   data: T,
   option: SingleConfigOption<T>
 ): SingleReferenceNode<T> {
-  if (option.isCircular) {
-    return {
-      data,
-      get next() {
-        return option.ref?.prev ?? this;
-      },
-      _type_: SINGLE_CIRCULAR_DIRECTED_NODE,
-    };
-  }
-  return { data, next: null, _type_: SINGLE_DIRECTED_NODE };
+  const { ref, isCircular } = option;
+
+  return {
+    data,
+    get next() {
+      if (!isCircular) return null;
+      return ref?.prev ?? this;
+    },
+    _type_: isCircular ? SINGLE_CIRCULAR_DIRECTED_NODE : SINGLE_DIRECTED_NODE,
+  };
 }
 
-type DoubleConfigOption<T> = {
-  isCircular?: boolean;
-  ref?: {
-    prev: DoubleReferenceNode<T> | null;
-    next?: DoubleReferenceNode<T> | null;
-  };
-};
 function createDoubleNode<T>(
   data: T,
   options: DoubleConfigOption<T>
 ): DoubleReferenceNode<T> {
-  if (options.isCircular) {
-    return {
-      data,
-      get prev() {
-        return options.ref?.prev ?? this;
-      },
-      get next() {
-        return options.ref?.next ?? this;
-      },
-      _type_: DOUBLE_CIRCULAR_DIRECTED_NODE,
-    };
-  }
-  return { data, prev: null, next: null, _type_: DOUBLE_DIRECTED_NODE };
+  const { isCircular, ref } = options;
+  return {
+    data,
+    get prev() {
+      if (!isCircular) return null;
+      return ref?.prev ?? this;
+    },
+    get next() {
+      if (!isCircular) return null;
+      return ref?.next ?? this;
+    },
+    _type_: isCircular ? DOUBLE_CIRCULAR_DIRECTED_NODE : DOUBLE_DIRECTED_NODE,
+  };
 }
 
 export function detectCircularNode<Node extends NodeReference<any>>(
@@ -269,9 +259,9 @@ export function derefLastNode<T>(
   return data;
 }
 
-type CreateNthNodeOption<Type extends 'single' | 'double'> = {
+type CreateNthNodeOption = {
   isCircular: boolean;
-  type: Type;
+  type: LinkType;
 };
 
 type BoundNodeResult<NodeType> = {
@@ -280,44 +270,38 @@ type BoundNodeResult<NodeType> = {
   length: number;
 };
 
-export function createNthNode<T>(
+type NthNodeResult<
+  Option extends CreateNthNodeOption,
+  T
+> = Option['type'] extends 'single'
+  ? BoundNodeResult<SingleReferenceNode<T>>
+  : BoundNodeResult<DoubleReferenceNode<T>>;
+
+export function createNthNode<Option extends CreateNthNodeOption, T>(
   nodeDatas: Array<T>,
-  option: CreateNthNodeOption<'single'>
-): BoundNodeResult<SingleReferenceNode<T>>;
-export function createNthNode<T>(
-  nodeDatas: Array<T>,
-  option: CreateNthNodeOption<'double'>
-): BoundNodeResult<DoubleReferenceNode<T>>;
-export function createNthNode<T>(
-  nodeDatas: Array<T>,
-  option: CreateNthNodeOption<'single' | 'double'>
-): BoundNodeResult<SingleReferenceNode<T> | DoubleReferenceNode<T>>;
-export function createNthNode<T>(
-  nodeDatas: Array<T>,
-  option: CreateNthNodeOption<'single' | 'double'>
-) {
+  option: Option
+): NthNodeResult<Option, T> {
   const allowedNodetype = ['single', 'double'] as const;
+  const { type, isCircular } = option;
   if (!allowedNodetype.includes(option.type)) {
     throw new TypeError(
-      `Expected a node type of either ${allowedNodetype.join()} but got ${
-        option.type
-      }`
+      `Expected a node type of either ${allowedNodetype.join()} but got ${type}`
     );
   }
   const nodeBound: Partial<BoundNodeResult<NodeReference<T>>> = { length: 0 };
 
   nodeDatas.forEach((data, index) => {
-    const currentNode = createNode(data, option.type, {
-      ...option,
-      ref: nodeBound.tail && { prev: nodeBound.tail },
+    const currentNode = createNode(data, {
+      type,
+      isCircular,
+      ref: (nodeBound.tail as any) && { prev: nodeBound.tail },
     });
-
     nodeBound.head ||= currentNode;
     nodeBound.tail = currentNode;
     nodeBound.length = index + 1;
   });
 
-  return nodeBound as BoundNodeResult<NodeReference<T>>;
+  return nodeBound as NthNodeResult<Option, T>;
 }
 
 export function isLinkDouble<T>(
@@ -326,33 +310,48 @@ export function isLinkDouble<T>(
   return 'prev' in node;
 }
 
-function createNode<T>(
-  value: T,
-  type: 'single',
-  option: SingleConfigOption<T>
-): SingleReferenceNode<T>;
-function createNode<T>(
-  value: T,
-  type: 'double',
-  option: DoubleConfigOption<T>
-): DoubleReferenceNode<T>;
-function createNode<T>(
-  value: T,
-  type: 'single' | 'double',
-  option: SingleConfigOption<T> | DoubleConfigOption<T>
-): DoubleReferenceNode<T>;
-function createNode<T>(
-  value: T,
-  type: 'single' | 'double',
-  option: SingleConfigOption<T> | DoubleReferenceNode<T>
-) {
-  let nodeReference: NodeReference<T>;
-  if (type === 'single') {
-    nodeReference = createSingleNode(value, option as SingleConfigOption<T>);
+type SingleConfigOption<T> = {
+  type: 'single';
+  isCircular?: boolean;
+  ref?: { prev: SingleReferenceNode<T> | null };
+};
+
+type DoubleConfigOption<T> = {
+  type: 'double';
+  isCircular?: boolean;
+  ref?: {
+    prev: DoubleReferenceNode<T> | null;
+    next?: DoubleReferenceNode<T> | null;
+  };
+};
+
+type TypeableNode = { type: string };
+
+type NodeResult<
+  T,
+  Option extends TypeableNode
+> = Option['type'] extends 'single'
+  ? SingleReferenceNode<T>
+  : Option['type'] extends 'double'
+  ? DoubleReferenceNode<T>
+  : NodeReference<T>;
+type NodeConfigOption<T> = SingleConfigOption<T> | DoubleConfigOption<T>;
+
+function createNode<
+  NodeValue,
+  ConfigOption extends NodeConfigOption<NodeValue> = NodeConfigOption<NodeValue>
+>(value: NodeValue, option: ConfigOption) {
+  let nodeReference: NodeReference<NodeValue>;
+
+  if (option.type === 'single') {
+    nodeReference = createSingleNode(value, option);
   } else {
-    nodeReference = createDoubleNode(value, option as DoubleConfigOption<T>);
+    nodeReference = createDoubleNode(value, option);
   }
-  return normaliseAccessorProps(nodeReference);
+  return normaliseAccessorProps(nodeReference) as NodeResult<
+    NodeValue,
+    ConfigOption
+  >;
 }
 
 export function hasInvalidRange(range: number) {
@@ -468,10 +467,13 @@ export function isLinkShaped(value: any) {
   return 'next' in value && typeof value.next === 'object';
 }
 
-export function unwrapNodeOnHeadDetect<U>(
-  linked: LinkListType<U> | NodeReference<U>
-) {
-  return 'head' in linked ? linked.head : linked;
+type UnwrapNode<Node> = Node extends LinkListType<any> ? Node['head'] : Node;
+export function unwrapNodeOnHeadDetect<
+  LinkType extends LinkListType<any> | NodeReference<any>
+>(linked: LinkType) {
+  return (
+    'head' in linked ? linked.head : linked
+  ) as UnwrapNode<LinkType> | null;
 }
 
 export function linkListRebuilder<T>(rebuilder: T) {

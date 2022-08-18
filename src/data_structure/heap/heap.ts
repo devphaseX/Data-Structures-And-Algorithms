@@ -11,7 +11,10 @@ import {
 } from './../../util/index.js';
 
 type ComparisonFn<V> = (itemOne: V, itemTwo: V) => boolean;
-
+type ChildNodePosition = {
+  left: number;
+  right: number;
+};
 export const HEAP_SYMBOL = Symbol(
   `HEAP_${Math.random().toString(32).slice(2)}`
 );
@@ -85,8 +88,8 @@ export function makeParentComplyToHeapStructure(
     currentHeap,
     comparisonFn,
     {
-      leftPosition: leftChildPosition,
-      rightPosition: rightChildPosition,
+      left: leftChildPosition,
+      right: rightChildPosition,
     }
   );
 
@@ -112,24 +115,16 @@ export function makeParentComplyToHeapStructure(
 export function getSelectedChildEntry(
   heapDS: Array<number>,
   comparisonFn: ComparisonFn<number>,
-  childPosition: {
-    leftPosition: number;
-    rightPosition: number;
-  }
+  childPosition: ChildNodePosition
 ) {
-  const { leftPosition, rightPosition } = childPosition;
+  const { left, right } = childPosition;
 
-  return lessThan.check(rightPosition, getListSize(heapDS))
-    ? selectChildEntryByHierachy(
-        heapDS,
-        leftPosition,
-        rightPosition,
-        comparisonFn
-      )
-    : createItemEntry(heapDS[leftPosition], leftPosition);
+  return lessThan.check(right, getListSize(heapDS))
+    ? chooseComparisonChildNode(heapDS, left, right, comparisonFn)
+    : createItemEntry(heapDS[left], right);
 }
 
-export function selectChildEntryByHierachy(
+export function chooseComparisonChildNode(
   heapDS: Array<number>,
   itemOnePosition: number,
   itemTwoPosition: number,
@@ -146,11 +141,10 @@ function heapify(list: Array<number>, order: HeapDataOrder) {
   if (compare.equal.check(length, 1)) return list;
 
   const endOfNonLeaveItem = Math.trunc(length / 2);
-  const comparisonFnType = getComparisonFn(order);
   rangeLoop(0, endOfNonLeaveItem + 1, (i) => {
     makeParentComplyToHeapStructure(
       list,
-      comparisonFnType,
+      getComparisonFn(order),
       endOfNonLeaveItem - i
     );
   });

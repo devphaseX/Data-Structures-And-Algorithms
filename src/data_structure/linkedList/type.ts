@@ -105,7 +105,7 @@ export interface CircularLinkedList<T>
   forEach(traverseFn: LinkTraversalFn<T>): void;
 }
 export interface DoublyLinkedList<T>
-  extends LinkedListMethods<T, DoubleDirectedNode<T>, SinglyLinkedList<T>> {
+  extends LinkedListMethods<T, DoubleDirectedNode<T>, DoublyLinkedList<T>> {
   mapNode<U>(fn: (value: T) => U, mutable?: boolean): DoublyLinkedList<U>;
   forEach(traverseFn: LinkTraversalFn<T>, startPoint?: 'head' | 'tail'): void;
 }
@@ -114,7 +114,7 @@ export interface CircularDoublyLinkedList<T>
   extends LinkedListMethods<
     T,
     DoubleCircularDirectedNode<T>,
-    SinglyLinkedList<T>
+    DoublyLinkedList<T>
   > {
   mapNode<U>(fn: (value: T) => U, mutable?: boolean): DoublyLinkedList<U>;
   forEach(traverseFn: LinkTraversalFn<T>, startPoint: 'head' | 'tail'): void;
