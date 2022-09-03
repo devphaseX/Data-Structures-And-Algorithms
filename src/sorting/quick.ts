@@ -18,7 +18,6 @@ function quickSort(list: Array<number>) {
     let leftPtr = low;
     let rightPtr = high;
 
-    lessThan.equal.check(leftPtr, rightPtr);
     while (lessThan.check(leftPtr, rightPtr)) {
       while (lessThan.equal.check(list[leftPtr], pivot)) {
         leftPtr++;

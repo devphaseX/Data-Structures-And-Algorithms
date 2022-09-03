@@ -1,11 +1,10 @@
 import { identity } from '../../util/index';
 
 const SOLDIER = 1;
-const CIVILIAN = 0;
 
 type Matrix<T> = Array<Array<T>>;
 type Soldier = typeof SOLDIER;
-type Civilian = typeof CIVILIAN;
+type Civilian = 0;
 
 type TwoDimensionMatrix = Array<Array<Soldier | Civilian>>;
 type RowPosition = number;

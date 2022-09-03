@@ -1,5 +1,6 @@
 import {
   binary,
+  double,
   equal,
   isBoolean,
   isFunction,
@@ -9,7 +10,7 @@ import {
 
 interface Stack<T> {
   push(value: T): number;
-  pop(): T | null;
+  pop(): T;
   peek(): T | null;
   empty(): void;
   isEmpty(): boolean;
@@ -17,6 +18,7 @@ interface Stack<T> {
   stackEntries(): Array<T>;
   size: number;
   forEach(cb: (value: T, index: number) => void): void;
+  flush(cb: (value: T, index: number) => void): boolean;
 }
 
 export class UnderFlowError extends Error {}
@@ -39,13 +41,17 @@ const ERROR_MSG = {
 
 function createStack<T>(
   value: T | Array<T> | StackFillerFn<T> | null,
-  capacity: number
+  capacity?: number
 ): Stack<T> {
   if (
-    hasDetectOverFlow(capacity, () => (Array.isArray(value) ? value.length : 1))
+    capacity !== undefined &&
+    Array.isArray(value) &&
+    hasDetectOverFlow(capacity, () => value.length)
   ) {
     throw new TypeError(ERROR_MSG.OVERFLOW);
   }
+
+  let canDoubleCapacity = value === null;
 
   const _innerStack = (
     value && typeof value !== 'function' ? normalizeListableArgs(value) : []
@@ -54,7 +60,7 @@ function createStack<T>(
   if (isFunction(value)) {
     const length = (value as StackFillerFn<T>)(push);
     if (isBoolean(length)) {
-      capacity = _innerStack.length;
+      capacity = length ? _innerStack.length : Number.MIN_SAFE_INTEGER;
     } else {
       if ((length as number) < _innerStack.length) {
         throw new TypeError(
@@ -70,11 +76,17 @@ function createStack<T>(
   }
 
   function push(value: T) {
-    if (equal.check(_getInnerStackSize(), capacity)) {
+    let capacityHasOverflow = equal.check(_getInnerStackSize(), capacity);
+    if (!canDoubleCapacity && capacityHasOverflow) {
       throw new OverFlowError(
         `Cannot insert data in a size limit stack of size(${capacity})`
       );
     }
+
+    if (canDoubleCapacity && capacityHasOverflow) {
+      capacity = double(capacity ?? 1);
+    }
+
     _innerStack.push(value);
     return _getInnerStackSize();
   }
@@ -112,7 +124,21 @@ function createStack<T>(
     return void _innerStack.forEach(binary(cb));
   }
 
+  function flush(cb: (value: T, index: number) => void): boolean {
+    try {
+      let count = _getInnerStackSize();
+      while (!isEmpty()) {
+        cb(pop(), count--);
+      }
+      return true;
+    } catch {
+      empty();
+      return false;
+    }
+  }
+
   return {
+    flush,
     push,
     pop,
     peek,
@@ -127,4 +153,5 @@ function createStack<T>(
   };
 }
 
+export type { Stack };
 export default createStack;

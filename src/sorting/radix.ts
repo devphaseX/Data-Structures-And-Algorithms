@@ -7,6 +7,7 @@ import {
   rangeLoop,
   toFixed,
   lessThan,
+  identity,
 } from '../util/index.js';
 
 type Floatable = { int: string; fraction: string; normalForm: number };
@@ -50,11 +51,8 @@ function normalizeNegativeValues(list: Array<number>): NegativeNormalise {
       : originalForm;
   }
 
-  function passThrough(value: number) {
-    return value;
-  }
   return {
-    revertNegativity: lessThan.check(min, 0) ? normalize : passThrough,
+    revertNegativity: lessThan.check(min, 0) ? normalize : identity<number>,
     negativeNormalisedList: list,
   };
 }

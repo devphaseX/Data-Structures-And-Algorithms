@@ -677,6 +677,10 @@ export function isEven(value: number) {
   return value % 2 === 0;
 }
 
+export function identity<T>(value: T) {
+  return value;
+}
+
 export function isOdd(value: number) {
   return !isEven(value);
 }
@@ -693,11 +697,20 @@ export interface Failure<E> {
 
 export type Option<Result, Error> = Success<Result> | Failure<Error>;
 
-export function createOption<V>(value: V, errorType: true): Failure<V>;
-export function createOption<V>(value: V, errorType: false): Success<V>;
-export function createOption<V>(value: V, errorType: boolean): Option<V, V> {
-  if (errorType === true) return { type: 'failed', error: { cause: value } };
-  return { type: 'success', value };
+type OptionResult<V, IsError extends boolean> = IsError extends true
+  ? Success<V>
+  : Failure<V>;
+
+export function createOption<V, IsError extends boolean>(
+  value: V,
+  errorType: IsError
+): OptionResult<V, IsError> {
+  if (errorType === true)
+    return { type: 'failed', error: { cause: value } } as OptionResult<
+      V,
+      IsError
+    >;
+  return { type: 'success', value } as OptionResult<V, IsError>;
 }
 
 export interface Some<T> {
@@ -725,4 +738,67 @@ export function createValueWrapper<V>(
 
 export function containValueInList<T>(value: T | T[]): T[] {
   return [value].flat(1) as T[];
+}
+
+export function double(value: number) {
+  return value * 2;
+}
+
+function supportIterator<T>(value: any): value is Iterable<T> {
+  return Symbol.iterator in value;
+}
+export function iterableLoop<T>(
+  iterable: any,
+  cb: (
+    value: T,
+    index: number,
+    option: { iterable: Iterable<T>; breakLoop: () => void }
+  ) => void
+) {
+  if (!supportIterator<T>(iterable)) {
+    throw new TypeError('Structure cannot be iterable.');
+  }
+
+  let index = 0;
+  let breakLoop = false;
+  function setBreakState() {
+    breakLoop = true;
+  }
+  for (let item of iterable) {
+    cb(item, index++, { iterable, breakLoop: setBreakState });
+    if (breakLoop) break;
+  }
+}
+
+type EmptyStructureFn<Struct, Value> = (oldStructure: Struct) => {
+  structure: Struct;
+  push: (value: Value) => void;
+  checkExist: (value: Value) => boolean;
+};
+
+export function createUniqueStructure<Value, Struct extends Iterable<Value>>(
+  structure: Struct,
+  createEmptyStructure: EmptyStructureFn<Struct, Value>
+) {
+  const {
+    structure: uniqueStructure,
+    push,
+    checkExist,
+  } = createEmptyStructure(structure);
+  iterableLoop<Value>(structure, (item) => {
+    if (checkExist(item)) return;
+    push(item);
+  });
+
+  return uniqueStructure;
+}
+
+export function escapeRegExp(tokens: string) {
+  return tokens.replace(/[.^\\/(){}*+?]/g, '\\$&');
+}
+
+export const DIGIT_PATTERN = /\d+\.?\d*?/;
+
+export function isDigit(value: string) {
+  return DIGIT_PATTERN.test(value);
 }
