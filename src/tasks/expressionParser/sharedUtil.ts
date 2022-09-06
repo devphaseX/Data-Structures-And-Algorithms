@@ -1,4 +1,4 @@
-import createStack, { Stack } from '../../data_structure/stack/index';
+import { Stack } from '../../data_structure/stack/index';
 import {
   createUniqueStructure,
   DIGIT_PATTERN,
@@ -16,7 +16,6 @@ interface NumericExpression {
   priority: Priority;
   associativity: Associativity;
   operator: Token;
-  // computer: (...args: any) => number;
   computer: (stack: OperandStack, ...rest: any) => number;
 }
 
