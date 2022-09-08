@@ -7,13 +7,8 @@ function createQueue<T>(size: number): Queue<T> {
   let front: number,
     rear = (front = -1);
 
-  function nextRear() {
-    return (rear + 1) % _innerStackRep.length;
-  }
-
-  function nextFront() {
-    return (front + 1) & _innerStackRep.length;
-  }
+  const nextRear = () => (rear + 1) % size;
+  const nextFront = () => (front + 1) & size;
 
   return preventContextBindSevere<Queue<T>>((unwrapTarget) => ({
     peek() {
@@ -23,13 +18,13 @@ function createQueue<T>(size: number): Queue<T> {
       return front === -1;
     },
     isFull() {
-      return rear + (1 % _innerStackRep.length) === front;
+      return (rear + 1) % size === front;
     },
     size() {
-      return (_innerStackRep.length - front + rear + 1) % _innerStackRep.length;
+      return (size - front + rear + 1) % (size + 1);
     },
     clear() {
-      return (_innerStackRep.length = 0);
+      return (size = 0);
     },
 
     enqueue(value) {
