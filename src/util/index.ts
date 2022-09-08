@@ -802,3 +802,33 @@ export const DIGIT_PATTERN = /\d+\.?\d*?/;
 export function isDigit(value: string) {
   return DIGIT_PATTERN.test(value);
 }
+
+type ProxyObject<T> = T;
+type GetTarget<T> = (unwrapProxy: () => T) => T;
+export function preventContextBindSevere<T extends object>(
+  getTarget: GetTarget<T>
+): ProxyObject<T> {
+  let isReady = false;
+  let target = getTarget(unwrapProxy);
+  function unwrapProxy() {
+    if (!isReady) {
+      throw new Error(
+        `Access to an unready proxy is not allow. avoid unwrappingProxy during proxy creation.
+         Avoid calling unwrapProxy before the existing proxy function scope`
+      );
+    }
+
+    return target;
+  }
+  return new Proxy(target, {
+    get(target, p, reciever) {
+      const value = Reflect.get(target, p, reciever);
+      if (typeof value === 'function') return value.bind(reciever);
+      if (p === 'valueOf') return target;
+      return value;
+    },
+  });
+}
+
+export class UnderFlowError extends Error {}
+export class OverFlowError extends Error {}
