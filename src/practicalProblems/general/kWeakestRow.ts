@@ -1,4 +1,4 @@
-import { identity } from '../../util/index';
+import { identity } from '../../util/index.js';
 
 const SOLDIER = 1;
 

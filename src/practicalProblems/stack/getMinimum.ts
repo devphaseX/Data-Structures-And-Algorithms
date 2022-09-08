@@ -1,5 +1,5 @@
-import createStack from '../../data_structure/stack/index';
-import { iterableLoop } from '../../util/index';
+import createStack from '../../data_structure/stack/index.js';
+import { iterableLoop } from '../../util/index.js';
 
 function getMinimum(orderList: Array<number>) {
   const minPriorityStack = createStack<number>(null);

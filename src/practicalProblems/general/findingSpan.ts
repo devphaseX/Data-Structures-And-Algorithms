@@ -1,4 +1,4 @@
-import { iterableLoop } from '../../util/index';
+import { iterableLoop } from '../../util/index.js';
 
 type Histogram = Array<number>;
 type HistogramSpan = Array<number>;

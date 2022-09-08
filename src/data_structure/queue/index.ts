@@ -6,12 +6,12 @@ import {
 
 interface Queue<T> {
   enqueue(value: T): number;
-  dequeue(): T | null;
+  dequeue(): T;
   size(): number;
   isEmpty(): boolean;
   flush(cb: (value: T) => void): void;
   clear(): void;
-  peek(): T;
+  peek(): T | null;
   isFull(): boolean;
 }
 
@@ -43,8 +43,8 @@ function createQueue<T>(
     return size();
   }
 
-  function dequeue(): T | null {
-    if (!size()) {
+  function dequeue(): T {
+    if (isEmpty()) {
       throw new OverFlowError(
         'Queue is at it limit. Item in take is prevented.'
       );
@@ -63,20 +63,13 @@ function createQueue<T>(
   }
 
   function flush(cb: (value: T) => void) {
-    //perform a data flush safety
-    let erroredOnFlush = false;
     try {
       while (!isEmpty()) {
         cb(dequeue()!);
       }
     } catch (e) {
-      erroredOnFlush = true;
+      clear();
       throw e;
-    } finally {
-      //clear all remaining if an errored got encountered during flushing.
-      if (erroredOnFlush) {
-        clear();
-      }
     }
   }
 

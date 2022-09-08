@@ -806,10 +806,12 @@ export function isDigit(value: string) {
 type ProxyObject<T> = T;
 type GetTarget<T> = (unwrapProxy: () => T) => T;
 export function preventContextBindSevere<T extends object>(
-  getTarget: GetTarget<T>
+  getTarget: GetTarget<T>,
+  blacklists?: Array<keyof T>
 ): ProxyObject<T> {
   let isReady = false;
   let target = getTarget(unwrapProxy);
+  isReady = true;
   function unwrapProxy() {
     if (!isReady) {
       throw new Error(
@@ -822,6 +824,7 @@ export function preventContextBindSevere<T extends object>(
   }
   return new Proxy(target, {
     get(target, p, reciever) {
+      if (blacklists?.includes(p as keyof T)) return undefined;
       const value = Reflect.get(target, p, reciever);
       if (typeof value === 'function') return value.bind(reciever);
       if (p === 'valueOf') return target;

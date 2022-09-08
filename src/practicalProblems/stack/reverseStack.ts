@@ -1,5 +1,5 @@
-import type { Stack } from '../../data_structure/stack/index';
-import createStack from '../../data_structure/stack/index';
+import type { Stack } from '../../data_structure/stack/index.js';
+import createStack from '../../data_structure/stack/index.js';
 
 function reverseStack<T>(stack: Stack<T>, isMutable: true): Stack<T>;
 function reverseStack<T>(stack: Stack<T>): void;

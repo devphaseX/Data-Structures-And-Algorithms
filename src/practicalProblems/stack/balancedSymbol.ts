@@ -1,5 +1,5 @@
 import createStack from '../../data_structure/stack/index.js';
-import { createUniqueStructure, iterableLoop } from '../../util/index';
+import { createUniqueStructure, iterableLoop } from '../../util/index.js';
 
 type SymbolSignType = 'open' | 'close';
 
