@@ -37,7 +37,7 @@ function createQueue<T>(
 
   function enqueue(value: T) {
     if (boundary && boundary === size()) {
-      throw new UnderFlowError('Removing item from an empty is queue is void.');
+      throw new OverFlowError('Removing item from an empty is queue is void.');
     }
     _innerQueue.add(value);
     return size();
@@ -45,7 +45,7 @@ function createQueue<T>(
 
   function dequeue(): T {
     if (isEmpty()) {
-      throw new OverFlowError(
+      throw new UnderFlowError(
         'Queue is at it limit. Item in take is prevented.'
       );
     }

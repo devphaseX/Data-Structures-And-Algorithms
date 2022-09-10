@@ -2,10 +2,7 @@ import { OverFlowError, preventContextBindSevere } from '../../util/index';
 import { createSinglyLinkedList } from '../linkedList/singlyLinkedList';
 import type { Queue } from './index.js';
 
-function createQueue<T>(
-  size: number,
-  isResizable?: boolean
-): Partial<Queue<T>> {
+function createQueue<T>(size: number, isResizable?: boolean): Queue<T> {
   return preventContextBindSevere<Queue<T>>((unwrapTarget) => {
     const _queue = createSinglyLinkedList<T>();
 
@@ -34,14 +31,13 @@ function createQueue<T>(
       },
       enqueue: (value) => {
         const queue = unwrapTarget();
-        if (queue.isFull()) {
-          if (!isResizable) {
-            throw new OverFlowError(
-              'Queue is at it limit. Item in take is prevented.'
-            );
-          }
-          resize(size * 2);
+        let hasOverFlow = false;
+        if ((hasOverFlow = queue.isFull() && !isResizable)) {
+          throw new OverFlowError(
+            'Queue is at it limit. Item in take is prevented.'
+          );
         }
+        if (hasOverFlow) resize(size * 2);
         _queue.appendNode(value);
         return queue.size();
       },
