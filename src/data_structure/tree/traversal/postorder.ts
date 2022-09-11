@@ -18,7 +18,7 @@ const postOrderTraversal = <T>(
     if (currentRoot) currentRoot = currentRoot.right ?? null;
   };
 
-  function isCurrentDueForProcess(
+  function checkRootIsDueProcess(
     current: BinaryTree<T>,
     lastProcessNode: BinaryTree<T> | null
   ) {
@@ -34,7 +34,7 @@ const postOrderTraversal = <T>(
     while (currentRoot === null || !rootMantainedStack.isEmpty()) {
       currentRoot = rootMantainedStack.peek()!;
 
-      if (isCurrentDueForProcess(currentRoot, previousProcessedNode)) {
+      if (checkRootIsDueProcess(currentRoot, previousProcessedNode)) {
         cb(unwrapTreeValue(currentRoot));
         rootMantainedStack.pop();
         previousProcessedNode = currentRoot;
