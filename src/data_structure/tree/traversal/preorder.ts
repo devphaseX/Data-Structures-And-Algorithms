@@ -9,23 +9,18 @@ const preOrderTreeTraversal = <T>(
   const rootMantainedStack = createStack<BinaryTree<T>>(null);
   let currentRoot = treeRoot as BinaryTree<T> | null;
 
-  const shiftCurrentToLeftTree = () => {
-    if (currentRoot) currentRoot = currentRoot.left ?? null;
-  };
-
-  const shiftCurrentToRightTree = () => {
-    if (currentRoot) currentRoot = currentRoot.right ?? null;
-  };
+  const shiftToLeftTree = (current: BinaryTree<T>) => current.left ?? null;
+  const shiftToRightTree = (current: BinaryTree<T>) => current.right ?? null;
 
   while (true) {
     while (currentRoot) {
       cb(unwrapTreeValue(currentRoot));
-      shiftCurrentToLeftTree();
+      currentRoot = shiftToLeftTree(currentRoot);
     }
 
     if (rootMantainedStack.isEmpty()) break;
     currentRoot = rootMantainedStack.pop();
-    shiftCurrentToRightTree();
+    currentRoot = shiftToRightTree(currentRoot);
   }
 };
 

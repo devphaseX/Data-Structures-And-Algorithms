@@ -10,13 +10,9 @@ const postOrderTraversal = <T>(
   let currentRoot = rootTree as BinaryTree<T> | null;
   let previousProcessedNode = null as BinaryTree<T> | null;
 
-  const shiftCurrentToLeftTree = () => {
-    if (currentRoot) currentRoot = currentRoot.left ?? null;
-  };
+  const shiftToLeftTree = (current: BinaryTree<T>) => current.left ?? null;
 
-  const shiftCurrentToRightTree = () => {
-    if (currentRoot) currentRoot = currentRoot.right ?? null;
-  };
+  const shiftToRightTree = (current: BinaryTree<T>) => current.right ?? null;
 
   function checkRootIsDueProcess(
     current: BinaryTree<T>,
@@ -28,7 +24,7 @@ const postOrderTraversal = <T>(
   do {
     while (currentRoot) {
       rootMantainedStack.push(currentRoot);
-      shiftCurrentToLeftTree();
+      currentRoot = shiftToLeftTree(currentRoot);
     }
 
     while (currentRoot === null || !rootMantainedStack.isEmpty()) {
@@ -39,7 +35,7 @@ const postOrderTraversal = <T>(
         rootMantainedStack.pop();
         previousProcessedNode = currentRoot;
         currentRoot = null;
-      } else shiftCurrentToRightTree();
+      } else currentRoot = shiftToRightTree(currentRoot);
     }
   } while (!rootMantainedStack.isEmpty());
 };

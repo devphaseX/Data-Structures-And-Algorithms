@@ -9,23 +9,19 @@ const inorderTraversal = <T>(
   const rootMantainedStack = createStack<BinaryTree<T>>(null);
   let currentRoot = rootTree as BinaryTree<T> | null;
 
-  const shiftCurrentToLeftTree = () => {
-    if (currentRoot) currentRoot = currentRoot.left ?? null;
-  };
+  const shiftToLeftTree = (current: BinaryTree<T>) => current.left ?? null;
 
-  const shiftCurrentToRightTree = () => {
-    if (currentRoot) currentRoot = currentRoot.right ?? null;
-  };
+  const shiftToRightTree = (current: BinaryTree<T>) => current.right ?? null;
 
   while (true) {
     while (currentRoot) {
-      shiftCurrentToLeftTree();
+      currentRoot = shiftToLeftTree(currentRoot);
     }
 
     if (rootMantainedStack.isEmpty()) break;
     currentRoot = rootMantainedStack.pop();
     cb(unwrapTreeValue(currentRoot));
-    shiftCurrentToRightTree();
+    currentRoot = shiftToRightTree(currentRoot);
   }
 };
 
