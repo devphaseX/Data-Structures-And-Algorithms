@@ -833,5 +833,10 @@ export function preventContextBindSevere<T extends object>(
   });
 }
 
+export const not =
+  <Args extends unknown[]>(fn: (...args: Args) => boolean) =>
+  (...args: Args) =>
+    !fn(...args);
+
 export class UnderFlowError extends Error {}
 export class OverFlowError extends Error {}
