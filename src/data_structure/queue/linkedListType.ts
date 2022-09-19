@@ -1,5 +1,5 @@
 import { OverFlowError, preventContextBindSevere } from '../../util/index';
-import { createSinglyLinkedList } from '../linkedList/singlyLinkedList';
+import { createSinglyLinkedList } from '../linkedList/singlyLinkedList.js';
 import type { Queue } from './index.js';
 
 function createQueue<T>(size: number, isResizable?: boolean): Queue<T> {

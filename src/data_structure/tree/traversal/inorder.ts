@@ -1,5 +1,5 @@
 import createStack from '../../stack/index';
-import { unwrapTreeValue } from '../shared';
+import { unwrapNodeTreeValue } from '../shared';
 import type { BinaryTree, TreeTraversalFn } from '../shared.types';
 
 const inorderTraversal = <T>(
@@ -20,7 +20,7 @@ const inorderTraversal = <T>(
 
     if (rootMantainedStack.isEmpty()) break;
     currentRoot = rootMantainedStack.pop();
-    cb(unwrapTreeValue(currentRoot));
+    cb(unwrapNodeTreeValue(currentRoot));
     currentRoot = shiftToRightTree(currentRoot);
   }
 };

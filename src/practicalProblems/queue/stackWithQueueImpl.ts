@@ -1,6 +1,6 @@
-import { Queue } from '../../data_structure/queue/index';
+import { Queue } from '../../data_structure/queue/index.js';
 import createQueue from '../../data_structure/queue/linkedListType.js';
-import { OverFlowError, UnderFlowError } from '../../util/index';
+import { OverFlowError, UnderFlowError } from '../../util/index.js';
 
 function createStackUsingQueue<T>(size: number, isResizable?: boolean) {
   const q1 = createQueue<T>(size);

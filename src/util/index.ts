@@ -840,3 +840,16 @@ export const not =
 
 export class UnderFlowError extends Error {}
 export class OverFlowError extends Error {}
+
+export function getListSymmetricDif<T>(formOne: Array<T>, formTwo: Array<T>) {
+  return formOne.filter((item) => !formTwo.includes(item));
+}
+
+interface RangeBound {
+  start: number;
+  end: number;
+}
+
+export function outOfRange(range: number, bound: RangeBound) {
+  return not(() => range >= bound.start && range <= bound.end)();
+}

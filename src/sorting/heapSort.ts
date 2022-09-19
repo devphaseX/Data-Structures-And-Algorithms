@@ -16,7 +16,7 @@ function heapSort(value: Array<number> | Heap, order?: HeapDataOrder) {
 
   if (heap.type !== HEAP_SYMBOL) {
     throw new TypeError(
-      'The created or passed along structure isnt of heap type.'
+      'The structure passed does not implement the {HEAP_SYMBOL} interface'
     );
   }
   return Array.from({ length: heap.size }, () => heap.delete());

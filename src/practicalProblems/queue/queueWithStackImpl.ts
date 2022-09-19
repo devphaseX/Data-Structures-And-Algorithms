@@ -1,5 +1,5 @@
-import createStack, { Stack } from '../../data_structure/stack/index';
-import { OverFlowError, UnderFlowError } from '../../util/index';
+import createStack, { Stack } from '../../data_structure/stack/index.js';
+import { OverFlowError, UnderFlowError } from '../../util/index.js';
 
 function createQueueUsingStack<T>(size: number, isResizable?: boolean) {
   const s1 = createStack<T>(null, size);

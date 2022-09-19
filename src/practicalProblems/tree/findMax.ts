@@ -2,25 +2,22 @@ import {
   isNodeInternal,
   isNodeLeaf,
   isTreeLeftSkew,
-  unwrapTreeValue,
-} from '../../data_structure/tree/shared';
-import {
+  unwrapNodeTreeValue,
+} from '../../data_structure/tree/shared.js';
+import type {
   BinaryTree,
-  RightSkewTree,
+  SkewTree,
 } from '../../data_structure/tree/shared.types';
 
 function findMax(rootTree: BinaryTree<number>): number {
-  if (isNodeLeaf(rootTree)) return unwrapTreeValue(rootTree);
+  if (isNodeLeaf(rootTree)) return unwrapNodeTreeValue(rootTree);
 
-  if (isNodeInternal(rootTree)) {
-    let left = findMax(rootTree.left);
-    let right = findMax(rootTree.right);
-    return Math.max(left, right);
+  let tree = rootTree as SkewTree<number>;
+  if (isNodeInternal(tree)) {
+    return Math.max(findMax(tree.left), findMax(tree.right));
   }
 
-  return isTreeLeftSkew(rootTree)
-    ? findMax(rootTree.left)
-    : findMax((rootTree as RightSkewTree<number>).right);
+  return isTreeLeftSkew(tree) ? findMax(tree.left) : findMax(tree.right);
 }
 
 export default findMax;

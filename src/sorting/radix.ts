@@ -28,6 +28,8 @@ type UnitNormalise = {
   norminalUnits: Array<FloatableInt>;
 };
 
+const INT_BASE_FORM = 10;
+
 function createBucketStructure(base: number) {
   const bucketBase: BucketStructure = new Map();
   rangeLoop(0, base, (i) => {
@@ -51,19 +53,19 @@ function normalizeNegativeValues(list: Array<number>): NegativeNormalise {
       : originalForm;
   }
 
+  const createNegativeCastPositiveReverter = (min: number) =>
+    lessThan.check(min, 0) ? normalize : identity<number>;
+
   return {
-    revertNegativity: lessThan.check(min, 0) ? normalize : identity<number>,
+    revertNegativity: createNegativeCastPositiveReverter(min),
     negativeNormalisedList: list,
   };
 }
 
-function flattenBucketStructure<T>(structure: BucketStructure) {
-  return flatList<T>(Array.from(structure.values()));
-}
+const flattenBucketStructure = <T>(structure: BucketStructure) =>
+  flatList<T>(Array.from(structure.values()));
 
-function getPhaseValueAt(value: string, unit: number) {
-  return value.toString()[unit];
-}
+const getPhaseValueAt = (value: string, unit: number) => value.toString()[unit];
 
 function normalizeValueToUnit(value: Array<number>): UnitNormalise {
   const floatForms = value.map(getFloatingPoint);
@@ -72,16 +74,16 @@ function normalizeValueToUnit(value: Array<number>): UnitNormalise {
   const decimalRange = maxFraction.toString().length;
 
   function getMaxFraction(value: Array<Floatable>) {
-    const fractions = value.map(({ fraction }) => {
+    const parsedFractionalForms = value.map(({ fraction }) => {
       return +fraction;
     });
 
-    return getMaxNumber(fractions);
+    return getMaxNumber(parsedFractionalForms);
   }
 
-  function getMaxInt(value: Array<Floatable>) {
-    const ints = value.map(({ int }) => +int);
-    return getMaxNumber(ints);
+  function getMaxInt(rawNumericalForms: Array<Floatable>) {
+    const parsedNumericalForms = rawNumericalForms.map(({ int }) => +int);
+    return getMaxNumber(parsedNumericalForms);
   }
 
   function convertFloatToInt(floatable: Floatable) {
@@ -89,7 +91,10 @@ function normalizeValueToUnit(value: Array<number>): UnitNormalise {
       return floatable.normalForm;
     }
 
-    const intForm = floatable.normalForm * 10 ** decimalRange;
+    const castToIntForm = (float: Floatable, decimalRange: number) =>
+      float.normalForm * INT_BASE_FORM ** decimalRange;
+
+    const intForm = castToIntForm(floatable, decimalRange);
     return {
       value: intForm,
       revertToFloat: revert,
@@ -118,7 +123,7 @@ export default function sortUsingRadix(list: Array<number>) {
   let { norminalUnits, unit } = normalizeValueToUnit(negativeNormalisedList);
 
   rangeLoop(0, unit, (forwardUnitPosition) => {
-    const radixBucket = createBucketStructure(10);
+    const radixBucket = createBucketStructure(INT_BASE_FORM);
     const backwardUnitPosition = unit - forwardUnitPosition - 1;
 
     rangeLoop(0, list.length, (valueIndex) => {

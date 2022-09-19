@@ -36,7 +36,7 @@ function reverseLinkedNodeInPair<T>(
     } else break;
   }
 
-  let head = pairsQueue.peek();
+  let head = pairsQueue.peek()!;
   {
     let last!: NodeReference<T>;
 

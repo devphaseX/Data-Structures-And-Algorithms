@@ -29,7 +29,10 @@ type SkewTree<T> = LeftSkewTree<T> | RightSkewTree<T>;
 
 type TreeTraversalFn<T> = (value: T) => void;
 
+type ListBinaryFrom<T> = Array<T>;
+
 export type {
+  ListBinaryFrom,
   BinaryTree,
   TreeTraversalFn,
   InternalBinaryNode,

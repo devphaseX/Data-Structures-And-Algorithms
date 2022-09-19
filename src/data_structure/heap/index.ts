@@ -7,6 +7,7 @@ import {
   hasEmptyList,
   pop,
   unshiftLastItemWithFirst,
+  _isPreSortedBySize,
 } from './../../util/index.js';
 import heapSort from '../../sorting/heapSort.js';
 
@@ -28,7 +29,7 @@ function createHeap(order: HeapDataOrder, data?: number | Array<number>): Heap {
     const lastItemPosition = heapList.length;
     heapList.push(data);
 
-    if (equal.check(getListSize(heapList), 1)) return;
+    if (_isPreSortedBySize(heapList)) return;
     heapList = makeChildComplyToHeapStructure(
       heapList,
       getComparisonFn(order),

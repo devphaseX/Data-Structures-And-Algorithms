@@ -1,5 +1,5 @@
 import createQueue from '../../queue/index';
-import { unwrapTreeValue } from '../shared';
+import { unwrapNodeTreeValue } from '../shared';
 import type { BinaryTree, TreeTraversalFn } from '../shared.types';
 
 const levelorderTraversal = <T>(
@@ -12,7 +12,7 @@ const levelorderTraversal = <T>(
 
   while (!rootMantainedQueue.isEmpty()) {
     currentRoot = rootMantainedQueue.dequeue()!;
-    cb(unwrapTreeValue(currentRoot));
+    cb(unwrapNodeTreeValue(currentRoot));
 
     if (currentRoot.left) rootMantainedQueue.enqueue(currentRoot.left);
     if (currentRoot.right) rootMantainedQueue.enqueue(currentRoot.right);

@@ -1,5 +1,5 @@
 import createStack from '../../stack/index.js';
-import { unwrapTreeValue } from '../shared';
+import { unwrapNodeTreeValue } from '../shared';
 import type { BinaryTree, TreeTraversalFn } from '../shared.types';
 
 const preOrderTreeTraversal = <T>(
@@ -14,7 +14,7 @@ const preOrderTreeTraversal = <T>(
 
   while (true) {
     while (currentRoot) {
-      cb(unwrapTreeValue(currentRoot));
+      cb(unwrapNodeTreeValue(currentRoot));
       currentRoot = shiftToLeftTree(currentRoot);
     }
 

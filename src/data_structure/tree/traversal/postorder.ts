@@ -1,5 +1,5 @@
 import createStack from '../../stack/index';
-import { unwrapTreeValue } from '../shared';
+import { unwrapNodeTreeValue } from '../shared';
 import type { BinaryTree, TreeTraversalFn } from '../shared.types';
 
 const postOrderTraversal = <T>(
@@ -31,7 +31,7 @@ const postOrderTraversal = <T>(
       currentRoot = rootMantainedStack.peek()!;
 
       if (checkRootIsDueProcess(currentRoot, previousProcessedNode)) {
-        cb(unwrapTreeValue(currentRoot));
+        cb(unwrapNodeTreeValue(currentRoot));
         rootMantainedStack.pop();
         previousProcessedNode = currentRoot;
         currentRoot = null;
