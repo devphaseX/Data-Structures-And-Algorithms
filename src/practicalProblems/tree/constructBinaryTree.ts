@@ -178,8 +178,6 @@ function constructBinaryTreeFromPrePostOrder<T>(option: PrePostOrderOption<T>) {
       currentInorder = childTreeInfo.subTree.rightMembers;
     }
   });
-
-  debugger;
   if (constructInfoStack.size === 1) {
     return constructInfoStack.pop().info.root.node;
   }
