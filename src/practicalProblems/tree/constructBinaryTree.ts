@@ -5,12 +5,15 @@ import {
   ListBinaryFrom,
 } from '../../data_structure/tree/shared.types.js';
 import {
+  getListFirstItem,
+  getListLastItem,
+  getListSize,
   getListSymmetricDif,
   iterableLoop,
   outOfRange,
 } from '../../util/index.js';
 
-interface PrePostOrderOption<T> {
+interface InPreOrderOption<T> {
   preorder: Array<T>;
   inorder: Array<T>;
   orderCheck: TraverseTreeCheck<T>;
@@ -115,9 +118,11 @@ const backTrackTraversalTypes: ReadonlyArray<BackTrackTraversalProcessType> = [
   'rightSkew',
 ];
 
+const isEmptyTreeOrder = (order: ListBinaryFrom<any>) => order.length === 0;
+
 const detectLeaf = (tree: TreeMemberInfo<any>) =>
-  tree.subTree.leftMembers.length === 0 &&
-  tree.subTree.rightMembers.length === 0;
+  isEmptyTreeOrder(tree.subTree.leftMembers) &&
+  isEmptyTreeOrder(tree.subTree.rightMembers);
 
 const allowBackTrack = (processType: string | undefined | null) =>
   !processType || backTrackTraversalTypes.includes(processType as any);
@@ -136,7 +141,7 @@ const startBackTrackFromRight = (
   (hasReachLeaf && tree.continueProcess === 'root') ||
   tree.continueProcess === 'rightSkew';
 
-function constructBinaryTreeFromPrePostOrder<T>(option: PrePostOrderOption<T>) {
+function constructBinaryTreeFromPrePostOrder<T>(option: InPreOrderOption<T>) {
   if (!checkTreeOrdersSameness(option.preorder, option.inorder)) {
     throw new TypeError(
       'The list provided for the preorder and inorder has a mismatch'
@@ -200,5 +205,104 @@ function constructBinaryTreeFromPrePostOrder<T>(option: PrePostOrderOption<T>) {
     This might be caused by the invalid provided order in the either preorder or inorder list `
   );
 }
+
+interface PrePosOrderOption<T> {
+  preorder: ListBinaryFrom<T>;
+  postorder: ListBinaryFrom<T>;
+}
+
+const getNthOrderItem = <T>(order: ListBinaryFrom<T>, nth: number) =>
+  order.at(nth);
+
+const getFirstPreorderItem = <T>(preorder: ListBinaryFrom<T>) =>
+  getListFirstItem(preorder);
+const getLastPostorderItem = <T>(postorder: ListBinaryFrom<T>) =>
+  getListLastItem(postorder);
+const getTreeOrderTypeSize = (order: ListBinaryFrom<any>) => getListSize(order);
+
+const checkPrePostOrderValidity = (option: PrePosOrderOption<any>) => {
+  const { postorder, preorder } = option;
+  const preOrderSize = getTreeOrderTypeSize(preorder);
+  const postOrderSize = getTreeOrderTypeSize(postorder);
+  const bothOrderAreEmpty = true;
+
+  return (
+    preOrderSize === postOrderSize &&
+    ((preOrderSize &&
+      getFirstPreorderItem(preorder) === getLastPostorderItem(postorder)) ||
+      bothOrderAreEmpty)
+  );
+};
+
+interface PrePostMembers<T> {
+  preorder: ListBinaryFrom<T>;
+  postorder: ListBinaryFrom<T>;
+}
+interface PrePostTreeMember<T> {
+  leftMembers: PrePostMembers<T>;
+  rightMembers: PrePostMembers<T>;
+}
+const getTreeMembers = <T>(
+  leftMember: T,
+  option: PrePosOrderOption<T>
+): PrePostTreeMember<T> | null => {
+  const { preorder, postorder } = option;
+  const rootPosition = postorder.indexOf(leftMember);
+  if (rootPosition === -1) return null;
+  const leftPostorderMembers = postorder.slice(0, rootPosition);
+  const rightPostorderMembers = postorder.slice(rootPosition + 1, -1);
+
+  function getPreorderMembersBound(postorder: ListBinaryFrom<any>) {
+    const uniqueOrder = new Set(postorder);
+    let lastFoundOrderIndex = -1;
+
+    postorder.some((item, index) => {
+      if (uniqueOrder.has(item)) {
+        lastFoundOrderIndex = index;
+        return true;
+      }
+      return false;
+    });
+
+    return lastFoundOrderIndex;
+  }
+
+  const leftPreorderMembersLastIndex = getPreorderMembersBound(postorder);
+  return {
+    leftMembers: {
+      postorder: leftPostorderMembers,
+      preorder: preorder.slice(1, leftPreorderMembersLastIndex),
+    },
+    rightMembers: {
+      postorder: rightPostorderMembers,
+      preorder: preorder.slice(leftPreorderMembersLastIndex + 1),
+    },
+  };
+};
+
+const constructBinaryTreeFromPrePosOrder = <T>(
+  option: PrePosOrderOption<T>
+) => {
+  if (!checkPrePostOrderValidity(option)) {
+    throw new TypeError();
+  }
+  const preorder = option.preorder;
+
+  let isLeafNode = false;
+  if (
+    isEmptyTreeOrder(preorder) ||
+    (isLeafNode = getTreeOrderTypeSize(preorder) === 1)
+  ) {
+    return isLeafNode ? createBinaryTree(getFirstPreorderItem(preorder)) : null;
+  }
+
+  const rootNode = createBinaryTree(getFirstPreorderItem(preorder));
+  const members = getTreeMembers(getNthOrderItem(preorder, 1)!, option)!;
+  rootNode.left =
+    constructBinaryTreeFromPrePosOrder(members.leftMembers) ?? null;
+  rootNode.right =
+    constructBinaryTreeFromPrePosOrder(members.rightMembers) ?? null;
+  return rootNode;
+};
 
 export { constructBinaryTreeFromPrePostOrder };
