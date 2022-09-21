@@ -35,7 +35,10 @@ const postOrderTraversal = <T>(
         rootMantainedStack.pop();
         previousProcessedNode = currentRoot;
         currentRoot = null;
-      } else currentRoot = shiftToRightTree(currentRoot);
+      } else {
+        currentRoot = shiftToRightTree(currentRoot);
+        break;
+      }
     }
   } while (!rootMantainedStack.isEmpty());
 };
