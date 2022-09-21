@@ -7,7 +7,6 @@ import {
 import {
   getListSymmetricDif,
   iterableLoop,
-  not,
   outOfRange,
 } from '../../util/index.js';
 
@@ -123,10 +122,27 @@ const detectLeaf = (tree: TreeMemberInfo<any>) =>
 const allowBackTrack = (processType: string | undefined | null) =>
   !processType || backTrackTraversalTypes.includes(processType as any);
 
+const startBackTrackFromLeft = (
+  tree: ConstructBinaryTreeInfo<any>,
+  hasReachLeaf: boolean
+) =>
+  (hasReachLeaf && tree.continueProcess === 'right') ||
+  tree.continueProcess === 'leftSkew';
+
+const startBackTrackFromRight = (
+  tree: ConstructBinaryTreeInfo<any>,
+  hasReachLeaf: boolean
+) =>
+  (hasReachLeaf && tree.continueProcess === 'root') ||
+  tree.continueProcess === 'rightSkew';
+
 function constructBinaryTreeFromPrePostOrder<T>(option: PrePostOrderOption<T>) {
   if (!checkTreeOrdersSameness(option.preorder, option.inorder)) {
-    throw new TypeError();
+    throw new TypeError(
+      'The list provided for the preorder and inorder has a mismatch'
+    );
   }
+
   const constructInfoStack = createStack<ConstructBinaryTreeInfo<T>>(null);
   const { inorder, preorder, orderCheck = Object.is } = option;
   let currentInorder = inorder;
@@ -134,38 +150,34 @@ function constructBinaryTreeFromPrePostOrder<T>(option: PrePostOrderOption<T>) {
   iterableLoop<T>(preorder, (item) => {
     let childTreeInfo = getTreeInfo(item, currentInorder, orderCheck);
     if (!childTreeInfo) {
-      return;
+      throw new Error(
+        `This is an internal error which should not be happening. If noticed file a bug issue.`
+      );
     }
 
-    let parentTreeInfo = constructInfoStack.peek();
+    let rootTreeInfo = constructInfoStack.peek();
     let hasReachLeaf = detectLeaf(childTreeInfo);
     let continueBackTrack = false;
-    while (parentTreeInfo && (hasReachLeaf || continueBackTrack)) {
-      const {
-        info: { root: currentTreeRoot },
-        continueProcess,
-      } = parentTreeInfo;
-      let currentTree = childTreeInfo.root.node;
-      const backTrackFromLeft = () =>
-        (hasReachLeaf && continueProcess === 'right') ||
-        continueProcess === 'leftSkew';
-      const backTrackFromRight = () =>
-        (hasReachLeaf && continueProcess === 'root') ||
-        continueProcess === 'rightSkew';
 
-      if (backTrackFromLeft()) {
-        parentTreeInfo.info.root.node.left = currentTree;
-        if (continueProcess !== 'leftSkew') {
-          parentTreeInfo.continueProcess = 'rightSkew';
-          return (currentInorder = parentTreeInfo.info.subTree.rightMembers);
+    while (rootTreeInfo && (hasReachLeaf || continueBackTrack)) {
+      let currentTree = childTreeInfo.root.node;
+      const rootTree = rootTreeInfo.info.root;
+
+      if (startBackTrackFromLeft(rootTreeInfo, hasReachLeaf)) {
+        rootTree.node.left = currentTree;
+        if (rootTreeInfo.continueProcess !== 'leftSkew') {
+          rootTreeInfo.continueProcess = 'rightSkew';
+          return (currentInorder = rootTreeInfo.info.subTree.rightMembers);
         }
-      } else if (backTrackFromRight()) {
-        currentTreeRoot.node.right = currentTree;
+      } else if (startBackTrackFromRight(rootTreeInfo, hasReachLeaf)) {
+        rootTree.node.right = currentTree;
+      } else {
+        throw new Error('Invalid backtracking or traversing process');
       }
       constructInfoStack.pop();
-      childTreeInfo = parentTreeInfo.info;
-      parentTreeInfo = constructInfoStack.peek();
-      continueBackTrack = allowBackTrack(parentTreeInfo?.continueProcess);
+      childTreeInfo = rootTreeInfo.info;
+      rootTreeInfo = constructInfoStack.peek();
+      continueBackTrack = allowBackTrack(rootTreeInfo?.continueProcess);
     }
     const info = createBinaryTreeInfo(childTreeInfo);
     constructInfoStack.push(info);
@@ -178,10 +190,15 @@ function constructBinaryTreeFromPrePostOrder<T>(option: PrePostOrderOption<T>) {
       currentInorder = childTreeInfo.subTree.rightMembers;
     }
   });
+
   if (constructInfoStack.size === 1) {
     return constructInfoStack.pop().info.root.node;
   }
-  throw new TypeError();
+
+  throw new Error(
+    `stack should only remain a single tree which should be the root Tree.
+    This might be caused by the invalid provided order in the either preorder or inorder list `
+  );
 }
 
 export { constructBinaryTreeFromPrePostOrder };
