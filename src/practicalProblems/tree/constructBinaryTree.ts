@@ -228,9 +228,9 @@ const checkPrePostOrderValidity = (option: PrePosOrderOption<any>) => {
 
   return (
     preOrderSize === postOrderSize &&
-    ((preOrderSize &&
-      getFirstPreorderItem(preorder) === getLastPostorderItem(postorder)) ||
-      bothOrderAreEmpty)
+    preOrderSize &&
+    (bothOrderAreEmpty ||
+      getFirstPreorderItem(preorder) === getLastPostorderItem(postorder))
   );
 };
 
