@@ -224,7 +224,7 @@ const checkPrePostOrderValidity = (option: PrePosOrderOption<any>) => {
   const { postorder, preorder } = option;
   const preOrderSize = getTreeOrderTypeSize(preorder);
   const postOrderSize = getTreeOrderTypeSize(postorder);
-  const bothOrderAreEmpty = true;
+  const bothOrderAreEmpty = postOrderSize === 0 && postOrderSize === 0;
 
   return (
     preOrderSize === postOrderSize &&
@@ -249,15 +249,16 @@ const getTreeMembers = <T>(
   const { preorder, postorder } = option;
   const rootPosition = postorder.indexOf(leftMember);
   if (rootPosition === -1) return null;
+
   const leftPostorderMembers = postorder.slice(0, rootPosition);
   const rightPostorderMembers = postorder.slice(rootPosition + 1, -1);
 
-  function getPreorderMembersBound(postorder: ListBinaryFrom<any>) {
-    const uniqueOrder = new Set(postorder);
+  function getLastPreorderFoundMember(postorder: ListBinaryFrom<any>) {
+    const uniqueMembers = new Set(postorder);
     let lastFoundOrderIndex = -1;
 
     postorder.some((item, index) => {
-      if (uniqueOrder.has(item)) {
+      if (uniqueMembers.has(item)) {
         lastFoundOrderIndex = index;
         return true;
       }
@@ -267,15 +268,15 @@ const getTreeMembers = <T>(
     return lastFoundOrderIndex;
   }
 
-  const leftPreorderMembersLastIndex = getPreorderMembersBound(postorder);
+  const lastPreorderFoundMemberIndex = getLastPreorderFoundMember(postorder);
   return {
     leftMembers: {
       postorder: leftPostorderMembers,
-      preorder: preorder.slice(1, leftPreorderMembersLastIndex),
+      preorder: preorder.slice(1, lastPreorderFoundMemberIndex),
     },
     rightMembers: {
       postorder: rightPostorderMembers,
-      preorder: preorder.slice(leftPreorderMembersLastIndex + 1),
+      preorder: preorder.slice(lastPreorderFoundMemberIndex + 1),
     },
   };
 };
@@ -284,7 +285,9 @@ const constructBinaryTreeFromPrePosOrder = <T>(
   option: PrePosOrderOption<T>
 ) => {
   if (!checkPrePostOrderValidity(option)) {
-    throw new TypeError();
+    throw new TypeError(
+      'Both order list i.e preorder or postorder is incompatible.That is a mismatch is found.'
+    );
   }
   const preorder = option.preorder;
 
