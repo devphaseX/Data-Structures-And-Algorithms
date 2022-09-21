@@ -214,9 +214,9 @@ interface PrePosOrderOption<T> {
 const getNthOrderItem = <T>(order: ListBinaryFrom<T>, nth: number) =>
   order.at(nth);
 
-const getFirstPreorderItem = <T>(preorder: ListBinaryFrom<T>) =>
+const getFirstorderItem = <T>(preorder: ListBinaryFrom<T>) =>
   getListFirstItem(preorder);
-const getLastPostorderItem = <T>(postorder: ListBinaryFrom<T>) =>
+const getLastorderItem = <T>(postorder: ListBinaryFrom<T>) =>
   getListLastItem(postorder);
 const getTreeOrderTypeSize = (order: ListBinaryFrom<any>) => getListSize(order);
 
@@ -227,10 +227,9 @@ const checkPrePostOrderValidity = (option: PrePosOrderOption<any>) => {
   const bothOrderAreEmpty = postOrderSize === 0 && postOrderSize === 0;
 
   return (
-    preOrderSize === postOrderSize &&
-    preOrderSize &&
-    (bothOrderAreEmpty ||
-      getFirstPreorderItem(preorder) === getLastPostorderItem(postorder))
+    bothOrderAreEmpty ||
+    (preOrderSize === postOrderSize &&
+      getFirstorderItem(preorder) === getLastorderItem(postorder))
   );
 };
 
@@ -296,10 +295,10 @@ const constructBinaryTreeFromPrePosOrder = <T>(
     isEmptyTreeOrder(preorder) ||
     (isLeafNode = getTreeOrderTypeSize(preorder) === 1)
   ) {
-    return isLeafNode ? createBinaryTree(getFirstPreorderItem(preorder)) : null;
+    return isLeafNode ? createBinaryTree(getFirstorderItem(preorder)) : null;
   }
 
-  const rootNode = createBinaryTree(getFirstPreorderItem(preorder));
+  const rootNode = createBinaryTree(getFirstorderItem(preorder));
   const members = getTreeMembers(getNthOrderItem(preorder, 1)!, option)!;
   rootNode.left =
     constructBinaryTreeFromPrePosOrder(members.leftMembers) ?? null;
