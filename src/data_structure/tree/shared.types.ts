@@ -31,7 +31,15 @@ type TreeTraversalFn<T> = (value: T) => void;
 
 type ListBinaryFrom<T> = Array<T>;
 
+interface BinarySearchTree<T> {
+  insert(value: T): BinaryTree<T>;
+  addChangeImmutable<U>(
+    immutablecontext: (tree: BinarySearchTree<T>) => void
+  ): BinarySearchTree<T>;
+}
+
 export type {
+  BinarySearchTree,
   ListBinaryFrom,
   BinaryTree,
   TreeTraversalFn,
