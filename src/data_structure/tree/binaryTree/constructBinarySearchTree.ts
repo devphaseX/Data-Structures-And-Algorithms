@@ -2,10 +2,6 @@ import { not } from '../../../util/index';
 import levelorderTraversal from '../traversal/levelorder';
 import {
   createBinaryTree,
-<<<<<<< HEAD
-=======
-  isNodeLeaf,
->>>>>>> 67b0486 (safe changes)
   isTreeLeftSkew,
   unwrapNodeTreeValue,
 } from '../shared';
@@ -16,46 +12,6 @@ import type {
   RightSkewTree,
 } from '../shared.types';
 import inorderTraversal from '../traversal/inorder';
-
-interface TreeNodeInfoOption<T> {
-  value: T;
-  checker: (side: 'left' | 'right', current: T) => boolean;
-}
-
-function getBinarySearchPredicate<T>(value: T): Readonly<{
-  value: T;
-  checker: (side: 'left' | 'right', current: T) => boolean;
-}> {
-  return Object.freeze({
-    value,
-    checker: (side, currentValue) => {
-      switch (side) {
-        case 'left':
-          return currentValue <= value;
-        case 'right':
-        default:
-          currentValue >= value;
-          return false;
-      }
-    },
-  });
-}
-// function getBinarySearchPredicate<T>(value: T) : TreeNodeInfoOption<T>{
-//   const checker: TreeNodeInfoOption<T>['checker'] = (
-//     side: 'left' | 'right',
-//     { current, search }
-//   ) => {
-//     switch (side) {
-//       case 'left':
-//         return current <= search;
-//       case 'right':
-//       default:
-//         current >= search;
-//         return false;
-//     }
-//   };
-//   return {value};
-// }
 
 function createBinarySearchTree<T>(
   treeItems?: Array<T> | T
@@ -99,25 +55,12 @@ function createBinarySearchTree<T>(
     node: BinaryTree<T>;
   }
 
-<<<<<<< HEAD
   function provideTreeNodeWithItInfo(value: T): TreeNodeWithInfo<T> | null {
     let ancestorTreeList = Array<BinaryTree<T>>();
     let currentTreeRoot = null;
     let currentTree = currentTreeRoot as BinaryTree<T> | null;
     if (!currentTree) return null;
     let foundTreeWithSearchedValue = false;
-=======
-  function provideTreeNodeWithItInfo(
-    rootTree: BinaryTree<T> | null,
-    option: TreeNodeInfoOption<T>
-  ): TreeNodeWithInfo<T> | null {
-    let ancestorsTree = Array<BinaryTree<T>>();
-    let parentNode = null;
-    let currentTree = rootTree;
-    if (!currentTree) return null;
-    let hasFoundTree = false;
-    const { checker, value } = option;
->>>>>>> 67b0486 (safe changes)
 
     while (true) {
       if (
@@ -129,27 +72,15 @@ function createBinarySearchTree<T>(
         let satistiedBranchRule = false;
         let disposedParentNode = currentTreeRoot;
         if (
-<<<<<<< HEAD
           (satistiedBranchRule =
             currentRootCanLeftBranch(currentTree) &&
             canMoveLeft(currentTree, value))
-=======
-          (hasMatch =
-            currentRootHasLeftChild(currentTree) &&
-            checker('left', unwrapNodeTreeValue(currentTree)))
->>>>>>> 67b0486 (safe changes)
         ) {
           currentTree = currentTree.left;
         } else if (
-<<<<<<< HEAD
           (satistiedBranchRule =
             currentRootCanRightBranch(currentTree) &&
             canMoveRight(currentTree, value))
-=======
-          (hasMatch =
-            currentRootHasRightChild(currentTree) &&
-            checker('right', unwrapNodeTreeValue(currentTree)))
->>>>>>> 67b0486 (safe changes)
         ) {
           currentTreeRoot = currentTree;
           currentTree = currentTree.right;
@@ -172,7 +103,6 @@ function createBinarySearchTree<T>(
     };
   }
 
-<<<<<<< HEAD
   function getNodeInorderPredecessor(successorNode: BinaryTree<T>) {
     let predeccessorRoot = null as BinaryTree<T> | null;
     let predeccessorNode!: BinaryTree<T> | null;
@@ -211,26 +141,6 @@ function createBinarySearchTree<T>(
     }
 
     return node;
-=======
-  function deleteItem(value: T) {
-    const toBeDisposedTreeInfo = provideTreeNodeWithItInfo(
-      rootTree,
-      getBinarySearchPredicate(value)
-    );
-
-    if (!toBeDisposedTreeInfo) return toBeDisposedTreeInfo;
-    if (isNodeLeaf(toBeDisposedTreeInfo.node))
-      return toBeDisposedTreeInfo.node ?? null;
-
-    const { node, immediateParent } = toBeDisposedTreeInfo;
-    if (!immediateParent) {
-      let n = node.left ?? node.right;
-      if (n) {
-        let currentNode = unwrapNodeTreeValue(n);
-      }
-      return node;
-    }
->>>>>>> 67b0486 (safe changes)
   }
 
   function addChangeImmutable(
