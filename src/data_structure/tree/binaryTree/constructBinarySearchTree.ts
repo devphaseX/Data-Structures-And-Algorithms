@@ -42,7 +42,13 @@ function createBinarySearchTree<T>(
     }
   }
 
-  function provideTreeNodeWithItInfo(value: T) {
+  interface TreeNodeWithInfo<T> {
+    ancestors: Array<BinaryTree<T>>;
+    immediateParent: null | BinaryTree<T>;
+    node: BinaryTree<T>;
+  }
+
+  function provideTreeNodeWithItInfo(value: T): TreeNodeWithInfo<T> | null {
     let ancestorsTree = Array<BinaryTree<T>>();
     let parentNode = null;
     let currentTree = parentNode as BinaryTree<T> | null;
