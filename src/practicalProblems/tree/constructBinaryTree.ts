@@ -224,12 +224,11 @@ const checkPrePostOrderValidity = (option: PrePosOrderOption<any>) => {
   const { postorder, preorder } = option;
   const preOrderSize = getTreeOrderTypeSize(preorder);
   const postOrderSize = getTreeOrderTypeSize(postorder);
-  const bothOrderAreEmpty =
-    preOrderSize === postOrderSize && preOrderSize === 0;
+  const bothOrderAreEmpty = preOrderSize === 0;
 
   return (
-    bothOrderAreEmpty ||
-    (preOrderSize === postOrderSize &&
+    preOrderSize === postOrderSize &&
+    (bothOrderAreEmpty ||
       getFirstorderItem(preorder) === getLastorderItem(postorder))
   );
 };
