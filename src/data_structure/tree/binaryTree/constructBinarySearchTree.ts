@@ -20,26 +20,28 @@ function createBinarySearchTree<T>(
 
   if (treeItems) ([treeItems].flat() as Array<T>).forEach(insert);
 
-  const currentRootHasLeftChild = (
+  const currentRootCanLeftBranch = (
     node: BinaryTree<T>
   ): node is LeftSkewTree<T> => !!node.left;
-  const currentRootHasRightChild = not(currentRootHasLeftChild) as (
+  const currentRootCanRightBranch = not(currentRootCanLeftBranch) as (
     node: BinaryTree<T>
   ) => node is RightSkewTree<T>;
+
+  const canMoveLeft = (tree: BinaryTree<T>, value: T) =>
+    unwrapNodeTreeValue(tree) <= value;
+
+  const canMoveRight = not(canMoveLeft);
 
   function insert(value: T) {
     if (!rootTree) rootTree = createBinaryTree(value);
     let currentPossibleRoot = rootTree;
     while (true) {
-      const valueShouldGoLeft = currentPossibleRoot.value < value;
-      if (valueShouldGoLeft && currentRootHasLeftChild(currentPossibleRoot)) {
+      const moveLeft = canMoveLeft(currentPossibleRoot, value);
+      if (moveLeft && currentRootCanLeftBranch(currentPossibleRoot)) {
         currentPossibleRoot = currentPossibleRoot.left;
-      } else if (valueShouldGoLeft) {
+      } else if (moveLeft) {
         return (currentPossibleRoot.left = createBinaryTree(value));
-      } else if (
-        currentPossibleRoot.value > value &&
-        currentRootHasRightChild(currentPossibleRoot)
-      ) {
+      } else if (!moveLeft && currentRootCanRightBranch(currentPossibleRoot)) {
         currentPossibleRoot = currentPossibleRoot.right;
       } else {
         return (currentPossibleRoot.right = createBinaryTree(value));
@@ -54,45 +56,49 @@ function createBinarySearchTree<T>(
   }
 
   function provideTreeNodeWithItInfo(value: T): TreeNodeWithInfo<T> | null {
-    let ancestorsTree = Array<BinaryTree<T>>();
-    let parentNode = null;
-    let currentTree = parentNode as BinaryTree<T> | null;
+    let ancestorTreeList = Array<BinaryTree<T>>();
+    let currentTreeRoot = null;
+    let currentTree = currentTreeRoot as BinaryTree<T> | null;
     if (!currentTree) return null;
-    let hasFoundTree = false;
+    let foundTreeWithSearchedValue = false;
 
     while (true) {
-      if ((hasFoundTree = unwrapNodeTreeValue(currentTree) === value)) break;
+      if (
+        (foundTreeWithSearchedValue =
+          unwrapNodeTreeValue(currentTree) === value)
+      )
+        break;
       else {
-        let hasMatch = false;
-        let disposedParentNode = parentNode;
+        let satistiedBranchRule = false;
+        let disposedParentNode = currentTreeRoot;
         if (
-          (hasMatch =
-            currentRootHasLeftChild(currentTree) &&
-            unwrapNodeTreeValue(currentTree.left) <= value)
+          (satistiedBranchRule =
+            currentRootCanLeftBranch(currentTree) &&
+            canMoveLeft(currentTree, value))
         ) {
           currentTree = currentTree.left;
-          continue;
         } else if (
-          (hasMatch =
-            currentRootHasRightChild(currentTree) &&
-            unwrapNodeTreeValue(currentTree.right) >= value)
+          (satistiedBranchRule =
+            currentRootCanRightBranch(currentTree) &&
+            canMoveRight(currentTree, value))
         ) {
-          parentNode = currentTree;
+          currentTreeRoot = currentTree;
           currentTree = currentTree.right;
-          continue;
         }
 
-        if (hasMatch && disposedParentNode)
-          ancestorsTree.push(disposedParentNode);
+        if (satistiedBranchRule && disposedParentNode) {
+          ancestorTreeList.push(disposedParentNode);
+          continue;
+        }
       }
       break;
     }
 
-    if (!hasFoundTree) return null;
+    if (!foundTreeWithSearchedValue) return null;
 
     return {
-      ancestors: ancestorsTree,
-      immediateParent: parentNode,
+      ancestors: ancestorTreeList,
+      immediateParent: currentTreeRoot,
       node: currentTree,
     };
   }
