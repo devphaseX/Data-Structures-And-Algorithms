@@ -1,6 +1,6 @@
 import { not } from '../../../util/index';
 import levelorderTraversal from '../traversal/levelorder';
-import { createBinaryTree } from '../shared';
+import { createBinaryTree, unwrapNodeTreeValue } from '../shared';
 import type {
   BinarySearchTree,
   BinaryTree,
@@ -41,6 +41,52 @@ function createBinarySearchTree<T>(
       }
     }
   }
+
+  function provideTreeNodeWithItInfo(value: T) {
+    let ancestorsTree = Array<BinaryTree<T>>();
+    let parentNode = null;
+    let currentTree = parentNode as BinaryTree<T> | null;
+    if (!currentTree) return null;
+    let hasFoundTree = false;
+
+    while (true) {
+      if ((hasFoundTree = unwrapNodeTreeValue(currentTree) === value)) break;
+      else {
+        let hasMatch = false;
+        let currentParentNode = parentNode;
+        if (
+          (hasMatch =
+            currentRootHasLeftChild(currentTree) &&
+            unwrapNodeTreeValue(currentTree.left) <= value)
+        ) {
+          currentTree = currentTree.left;
+          continue;
+        } else if (
+          (hasMatch =
+            currentRootHasRightChild(currentTree) &&
+            unwrapNodeTreeValue(currentTree.right) >= value)
+        ) {
+          parentNode = currentTree;
+          currentTree = currentTree.right;
+          continue;
+        }
+
+        if (hasMatch && currentParentNode)
+          ancestorsTree.push(currentParentNode);
+      }
+      break;
+    }
+
+    if (!hasFoundTree) return null;
+
+    return {
+      ancestors: ancestorsTree,
+      immediateParent: parentNode,
+      node: currentTree,
+    };
+  }
+
+  function deleteItem(value: T) {}
 
   function addChangeImmutable(
     immutableContext: (tree: BinarySearchTree<T>) => void
