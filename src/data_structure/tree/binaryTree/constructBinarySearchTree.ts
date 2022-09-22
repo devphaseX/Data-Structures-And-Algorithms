@@ -45,13 +45,15 @@ function createBinarySearchTree<T>(
   function addChangeImmutable(
     immutableContext: (tree: BinarySearchTree<T>) => void
   ): BinarySearchTree<T> {
-    let treeClone = createBinarySearchTree<T>();
-    if (rootTree) {
-      levelorderTraversal(rootTree, treeClone.insert);
-      immutableContext(treeClone);
-      return treeClone;
-    }
+    let treeClone = clone(rootTree);
+    immutableContext(treeClone);
     return treeClone;
+  }
+
+  function clone(rootTree: BinaryTree<T> | null) {
+    let structureSharedTree = createBinarySearchTree<T>();
+    if (rootTree) levelorderTraversal(rootTree, structureSharedTree.insert);
+    return structureSharedTree;
   }
 
   return { insert, addChangeImmutable };
