@@ -53,7 +53,7 @@ function createBinarySearchTree<T>(
       if ((hasFoundTree = unwrapNodeTreeValue(currentTree) === value)) break;
       else {
         let hasMatch = false;
-        let currentParentNode = parentNode;
+        let disposedParentNode = parentNode;
         if (
           (hasMatch =
             currentRootHasLeftChild(currentTree) &&
@@ -71,8 +71,8 @@ function createBinarySearchTree<T>(
           continue;
         }
 
-        if (hasMatch && currentParentNode)
-          ancestorsTree.push(currentParentNode);
+        if (hasMatch && dispoosedParentNode)
+          ancestorsTree.push(dispoosedParentNode);
       }
       break;
     }
