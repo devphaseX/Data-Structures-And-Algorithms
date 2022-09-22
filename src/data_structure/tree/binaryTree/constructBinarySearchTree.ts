@@ -37,11 +37,11 @@ function createBinarySearchTree<T>(
     let currentPossibleRoot = rootTree;
     while (true) {
       const moveLeft = canMoveLeft(currentPossibleRoot, value);
-      if (moveLeft && currentRootCanLeftBranch(currentPossibleRoot)) {
+      if (currentRootCanLeftBranch(currentPossibleRoot) && moveLeft) {
         currentPossibleRoot = currentPossibleRoot.left;
       } else if (moveLeft) {
         return (currentPossibleRoot.left = createBinaryTree(value));
-      } else if (!moveLeft && currentRootCanRightBranch(currentPossibleRoot)) {
+      } else if (currentRootCanRightBranch(currentPossibleRoot)) {
         currentPossibleRoot = currentPossibleRoot.right;
       } else {
         return (currentPossibleRoot.right = createBinaryTree(value));
@@ -103,17 +103,17 @@ function createBinarySearchTree<T>(
     };
   }
 
-  function getNodeInorderPredecessor(node: BinaryTree<T>) {
-    let parent = null as BinaryTree<T> | null;
-    let previousNode!: BinaryTree<T> | null;
+  function getNodeInorderPredecessor(successorNode: BinaryTree<T>) {
+    let predeccessorRoot = null as BinaryTree<T> | null;
+    let predeccessorNode!: BinaryTree<T> | null;
     try {
-      inorderTraversal(node, (value, currentNode) => {
-        if (value === node.value) throw true;
-        parent = previousNode;
-        previousNode = currentNode;
+      inorderTraversal(successorNode, (value, currentNode) => {
+        if (value === successorNode.value) throw true;
+        predeccessorRoot = predeccessorNode;
+        predeccessorNode = currentNode;
       });
     } catch {}
-    return { previousNode, parent };
+    return { predeccessor: predeccessorNode, predeccessorRoot };
   }
 
   function deleteItem(value: T) {
@@ -126,13 +126,13 @@ function createBinarySearchTree<T>(
       return node;
     }
 
-    const { parent, previousNode } = getNodeInorderPredecessor(node);
-    previousNode!.left = node.left;
-    previousNode!.right = node.right;
+    const { predeccessor, predeccessorRoot } = getNodeInorderPredecessor(node);
+    predeccessorRoot!.left = node.left;
+    predeccessorRoot!.right = node.right;
 
-    if (parent) {
-      if (parent.left === previousNode) parent.left = null;
-      else parent.right = null;
+    if (predeccessor) {
+      if (predeccessor.left === predeccessorRoot) predeccessor.left = null;
+      else predeccessor.right = null;
     }
 
     if (immediateParent) {
