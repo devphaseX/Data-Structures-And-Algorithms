@@ -42,7 +42,7 @@ function createBinarySearchTree<T>(
     }
   }
 
-  function addChangeImmutable<U>(
+  function addChangeImmutable(
     immutableContext: (tree: BinarySearchTree<T>) => void
   ): BinarySearchTree<T> {
     let treeClone = createBinarySearchTree<T>();

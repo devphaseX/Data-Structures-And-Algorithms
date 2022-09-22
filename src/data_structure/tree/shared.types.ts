@@ -33,7 +33,7 @@ type ListBinaryFrom<T> = Array<T>;
 
 interface BinarySearchTree<T> {
   insert(value: T): BinaryTree<T>;
-  addChangeImmutable<U>(
+  addChangeImmutable(
     immutablecontext: (tree: BinarySearchTree<T>) => void
   ): BinarySearchTree<T>;
 }
