@@ -151,7 +151,7 @@ function createBinarySearchTree<T>(
     return structureSharedTree;
   }
 
-  return { insert, addChangeImmutable };
+  return { insert, addChangeImmutable, deleteItem };
 }
 
 export { createBinarySearchTree };

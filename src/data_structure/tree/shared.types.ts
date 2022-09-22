@@ -36,6 +36,7 @@ interface BinarySearchTree<T> {
   addChangeImmutable(
     immutablecontext: (tree: BinarySearchTree<T>) => void
   ): BinarySearchTree<T>;
+  deleteItem(value: T): BinaryTree<T> | null;
 }
 
 export type {
