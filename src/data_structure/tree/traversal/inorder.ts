@@ -20,7 +20,7 @@ const inorderTraversal = <T>(
 
     if (rootMantainedStack.isEmpty()) break;
     currentRoot = rootMantainedStack.pop();
-    cb(unwrapNodeTreeValue(currentRoot));
+    cb(unwrapNodeTreeValue(currentRoot), currentRoot);
     currentRoot = shiftToRightTree(currentRoot);
   }
 };

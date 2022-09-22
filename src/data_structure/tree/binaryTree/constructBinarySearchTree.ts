@@ -1,12 +1,17 @@
 import { not } from '../../../util/index';
 import levelorderTraversal from '../traversal/levelorder';
-import { createBinaryTree, unwrapNodeTreeValue } from '../shared';
+import {
+  createBinaryTree,
+  isTreeLeftSkew,
+  unwrapNodeTreeValue,
+} from '../shared';
 import type {
   BinarySearchTree,
   BinaryTree,
   LeftSkewTree,
   RightSkewTree,
 } from '../shared.types';
+import inorderTraversal from '../traversal/inorder';
 
 function createBinarySearchTree<T>(
   treeItems?: Array<T> | T
@@ -92,7 +97,45 @@ function createBinarySearchTree<T>(
     };
   }
 
-  function deleteItem(value: T) {}
+  function getNodeInorderPredecessor(node: BinaryTree<T>) {
+    let parent = null as BinaryTree<T> | null;
+    let previousNode!: BinaryTree<T> | null;
+    try {
+      inorderTraversal(node, (value, currentNode) => {
+        if (value === node.value) throw true;
+        parent = previousNode;
+        previousNode = currentNode;
+      });
+    } catch {}
+    return { previousNode, parent };
+  }
+
+  function deleteItem(value: T) {
+    const toBeDisposedTreeInfo = provideTreeNodeWithItInfo(value);
+    if (!toBeDisposedTreeInfo) return toBeDisposedTreeInfo;
+
+    const { immediateParent, node } = toBeDisposedTreeInfo;
+    if (!immediateParent && isTreeLeftSkew(node)) {
+      rootTree = null;
+      return node;
+    }
+
+    const { parent, previousNode } = getNodeInorderPredecessor(node);
+    previousNode!.left = node.left;
+    previousNode!.right = node.right;
+
+    if (parent) {
+      if (parent.left === previousNode) parent.left = null;
+      else parent.right = null;
+    }
+
+    if (immediateParent) {
+      if (immediateParent.left === node) immediateParent.left = node;
+      else immediateParent.right = node;
+    }
+
+    return node;
+  }
 
   function addChangeImmutable(
     immutableContext: (tree: BinarySearchTree<T>) => void

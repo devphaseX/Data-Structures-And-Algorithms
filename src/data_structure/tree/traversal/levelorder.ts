@@ -12,7 +12,7 @@ const levelorderTraversal = <T>(
 
   while (!rootMantainedQueue.isEmpty()) {
     currentRoot = rootMantainedQueue.dequeue()!;
-    cb(unwrapNodeTreeValue(currentRoot));
+    cb(unwrapNodeTreeValue(currentRoot), currentRoot);
 
     if (currentRoot.left) rootMantainedQueue.enqueue(currentRoot.left);
     if (currentRoot.right) rootMantainedQueue.enqueue(currentRoot.right);

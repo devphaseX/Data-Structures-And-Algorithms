@@ -27,7 +27,7 @@ type RightSkewTree<T> = Valuable<T> & {
 
 type SkewTree<T> = LeftSkewTree<T> | RightSkewTree<T>;
 
-type TreeTraversalFn<T> = (value: T) => void;
+type TreeTraversalFn<T> = (value: T, raw: BinaryTree<T>) => void;
 
 type ListBinaryFrom<T> = Array<T>;
 

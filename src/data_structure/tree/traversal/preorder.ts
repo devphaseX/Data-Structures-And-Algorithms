@@ -14,7 +14,7 @@ const preOrderTreeTraversal = <T>(
 
   while (true) {
     while (currentRoot) {
-      cb(unwrapNodeTreeValue(currentRoot));
+      cb(unwrapNodeTreeValue(currentRoot), currentRoot);
       currentRoot = shiftToLeftTree(currentRoot);
     }
 

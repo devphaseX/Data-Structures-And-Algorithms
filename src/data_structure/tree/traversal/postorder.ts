@@ -31,7 +31,7 @@ const postOrderTraversal = <T>(
       currentRoot = rootMantainedStack.peek()!;
 
       if (checkRootIsDueProcess(currentRoot, previousProcessedNode)) {
-        cb(unwrapNodeTreeValue(currentRoot));
+        cb(unwrapNodeTreeValue(currentRoot), currentRoot);
         rootMantainedStack.pop();
         previousProcessedNode = currentRoot;
         currentRoot = null;
