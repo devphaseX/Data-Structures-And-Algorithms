@@ -71,8 +71,8 @@ function createBinarySearchTree<T>(
           continue;
         }
 
-        if (hasMatch && dispoosedParentNode)
-          ancestorsTree.push(dispoosedParentNode);
+        if (hasMatch && disposedParentNode)
+          ancestorsTree.push(disposedParentNode);
       }
       break;
     }
