@@ -367,7 +367,7 @@ export function _ascendPredicate(itemOne: number, itemTwo: number) {
 export function positionBasedComparer(fixed: number, item: number) {
   if (fixed === item) return 0;
   if (greaterThan.check(fixed, item)) return 1;
-  return -1;
+  return OUT_OF_RANGE;
 }
 
 export function createArrayWithInitial<T>(size: number, _initialData: T) {
@@ -853,3 +853,5 @@ interface RangeBound {
 export function outOfRange(range: number, bound: RangeBound) {
   return not(() => range >= bound.start && range <= bound.end)();
 }
+
+export const OUT_OF_RANGE = -1;

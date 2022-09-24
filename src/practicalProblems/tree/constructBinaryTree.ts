@@ -11,6 +11,7 @@ import {
   getListSymmetricDif,
   iterableLoop,
   outOfRange,
+  OUT_OF_RANGE,
 } from '../../util/index.js';
 
 interface InPreOrderOption<T> {
@@ -247,14 +248,14 @@ const getTreeMembers = <T>(
 ): PrePostTreeMember<T> | null => {
   const { preorder, postorder } = option;
   const rootPosition = postorder.indexOf(leftMember);
-  if (rootPosition === -1) return null;
+  if (rootPosition === OUT_OF_RANGE) return null;
 
   const leftPostorderMembers = postorder.slice(0, rootPosition);
-  const rightPostorderMembers = postorder.slice(rootPosition + 1, -1);
+  const rightPostorderMembers = postorder.slice(rootPosition + 1, -1); //(rootPos+1, -1) starts picking from rootPos + 1 but ends before the last iten
 
   function getLastPreorderFoundMember(postorder: ListBinaryFrom<any>) {
     const uniqueMembers = new Set(postorder);
-    let lastFoundOrderIndex = -1;
+    let lastFoundOrderIndex = OUT_OF_RANGE;
 
     postorder.some((item, index) => {
       if (uniqueMembers.has(item)) {

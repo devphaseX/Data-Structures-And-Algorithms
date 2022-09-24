@@ -1,4 +1,8 @@
-import { OverFlowError, preventContextBindSevere } from '../../util/index.js';
+import {
+  OUT_OF_RANGE,
+  OverFlowError,
+  preventContextBindSevere,
+} from '../../util/index.js';
 import { UnderFlowError } from '../stack/index.js';
 import { Queue } from './index.js';
 
@@ -35,7 +39,7 @@ function _createQueue<T>(size: number, isResizable?: boolean): Queue<T> {
   return preventContextBindSevere<Queue<T>>((unwrapTarget) => {
     const _innerStackRep = new Array<T | null>(size).fill(null);
     let front: number,
-      rear = (front = -1);
+      rear = (front = OUT_OF_RANGE);
 
     const nextRear = () => (rear + 1) % size;
     const nextFront = () => (front + 1) % size;
@@ -55,7 +59,7 @@ function _createQueue<T>(size: number, isResizable?: boolean): Queue<T> {
         return _innerStackRep[front] ?? null;
       },
       isEmpty() {
-        return front === -1;
+        return front === OUT_OF_RANGE;
       },
       isFull() {
         return (rear + 1) % size === front;
@@ -80,7 +84,7 @@ function _createQueue<T>(size: number, isResizable?: boolean): Queue<T> {
         }
         rear = nextRear();
         _innerStackRep[rear] = value;
-        if (front === -1) front = rear;
+        if (front === OUT_OF_RANGE) front = rear;
         return queue.size();
       },
 
@@ -105,7 +109,7 @@ function _createQueue<T>(size: number, isResizable?: boolean): Queue<T> {
         const nextItem = _innerStackRep[front];
 
         if (front === rear) {
-          front = rear = -1;
+          front = rear = OUT_OF_RANGE;
         } else {
           front = nextFront();
         }
