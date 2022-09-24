@@ -3,7 +3,7 @@ import {
   createBinaryTree,
   getTreeMembers,
 } from '../../data_structure/tree/shared.js';
-import {
+import type {
   BinaryTree,
   InPreOrderOption,
   ListBinaryFrom,

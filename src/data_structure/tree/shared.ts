@@ -1,12 +1,5 @@
-import {
-  getListFirstItem,
-  getListSize,
-  not,
-  OUT_OF_RANGE,
-  takeAfter,
-  takeUntil,
-} from '../../util/index.js';
-import {
+import { not, OUT_OF_RANGE, takeAfter, takeUntil } from '../../util/index.js';
+import type {
   BinaryTree,
   InPreOrderOption,
   InternalBinaryNode,
