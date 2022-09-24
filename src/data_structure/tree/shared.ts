@@ -12,7 +12,7 @@ import {
   InternalBinaryNode,
   LeftSkewTree,
   ListBinaryFrom,
-  PrePostTreeMember,
+  PreInTreeMember,
   RightSkewTree,
 } from './shared.types';
 
@@ -43,7 +43,7 @@ function createBinaryTree<T>(value: T): BinaryTree<T> {
 const getTreeMembers = <T>(
   leftMember: T,
   option: InPreOrderOption<T>
-): PrePostTreeMember<T> | null => {
+): PreInTreeMember<T> | null => {
   const { preorder, inorder } = option;
   const rootPosition = inorder.indexOf(leftMember);
   if (rootPosition === OUT_OF_RANGE) return null;

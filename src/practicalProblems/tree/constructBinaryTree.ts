@@ -1,8 +1,13 @@
 import createStack from '../../data_structure/stack/index.js';
-import { createBinaryTree } from '../../data_structure/tree/shared.js';
+import {
+  createBinaryTree,
+  getTreeMembers,
+} from '../../data_structure/tree/shared.js';
 import {
   BinaryTree,
+  InPreOrderOption,
   ListBinaryFrom,
+  TraverseTreeCheck,
 } from '../../data_structure/tree/shared.types.js';
 import {
   getListFirstItem,
@@ -11,16 +16,7 @@ import {
   getListSymmetricDif,
   iterableLoop,
   outOfRange,
-  OUT_OF_RANGE,
-  takeAfter,
-  takeUntil,
 } from '../../util/index.js';
-
-interface InPreOrderOption<T> {
-  preorder: Array<T>;
-  inorder: Array<T>;
-  orderCheck: TraverseTreeCheck<T>;
-}
 
 interface ConstructBinaryTreeInfo<T> {
   info: TreeMemberInfo<T>;
@@ -101,8 +97,6 @@ const createBinaryTreeInfo = <T>(
   info,
   continueProcess: getTreeContinueStatus(info),
 });
-
-type TraverseTreeCheck<T> = (currentRoot: T, currentTraverseRoot: T) => boolean;
 
 const getTreeInfo = <T>(
   value: T,
@@ -209,11 +203,6 @@ function constructBinaryTreeFromPrePostOrder<T>(option: InPreOrderOption<T>) {
   );
 }
 
-interface PrePosOrderOption<T> {
-  preorder: ListBinaryFrom<T>;
-  inorder: ListBinaryFrom<T>;
-}
-
 const getNthOrderItem = <T>(order: ListBinaryFrom<T>, nth: number) =>
   order.at(nth);
 
@@ -223,7 +212,7 @@ const getLastorderItem = <T>(inorder: ListBinaryFrom<T>) =>
   getListLastItem(inorder);
 const getTreeOrderTypeSize = (order: ListBinaryFrom<any>) => getListSize(order);
 
-const checkPrePostOrderValidity = (option: PrePosOrderOption<any>) => {
+const checkPrePostOrderValidity = (option: InPreOrderOption<any>) => {
   const { inorder, preorder } = option;
   const preOrderSize = getTreeOrderTypeSize(preorder);
   const postOrderSize = getTreeOrderTypeSize(inorder);
@@ -236,56 +225,7 @@ const checkPrePostOrderValidity = (option: PrePosOrderOption<any>) => {
   );
 };
 
-interface PrePostMembers<T> {
-  preorder: ListBinaryFrom<T>;
-  inorder: ListBinaryFrom<T>;
-}
-interface PrePostTreeMember<T> {
-  leftMembers: PrePostMembers<T>;
-  rightMembers: PrePostMembers<T>;
-}
-const getTreeMembers = <T>(
-  leftMember: T,
-  option: PrePosOrderOption<T>
-): PrePostTreeMember<T> | null => {
-  const { preorder, inorder } = option;
-  const rootPosition = inorder.indexOf(leftMember);
-  if (rootPosition === OUT_OF_RANGE) return null;
-
-  const leftPostorderMembers = takeUntil(inorder, rootPosition);
-  const rightPostorderMembers = takeAfter(inorder, rootPosition, -1);
-
-  function getLastPreorderFoundMember(inorder: ListBinaryFrom<any>) {
-    const uniqueMembers = new Set(inorder);
-    let lastFoundOrderIndex = OUT_OF_RANGE;
-
-    inorder.some((item, index) => {
-      if (uniqueMembers.has(item)) {
-        lastFoundOrderIndex = index;
-        return true;
-      }
-      return false;
-    });
-
-    return lastFoundOrderIndex;
-  }
-
-  const lastPreorderFoundMemberIndex = getLastPreorderFoundMember(inorder);
-  return {
-    leftMembers: {
-      inorder: leftPostorderMembers,
-      preorder: takeAfter(preorder, 1, lastPreorderFoundMemberIndex),
-    },
-    rightMembers: {
-      inorder: rightPostorderMembers,
-      preorder: takeUntil(preorder, lastPreorderFoundMemberIndex + 1),
-    },
-  };
-};
-
-const constructBinaryTreeFromPrePosOrder = <T>(
-  option: PrePosOrderOption<T>
-) => {
+const constructBinaryTreeFromPrePosOrder = <T>(option: InPreOrderOption<T>) => {
   if (!checkPrePostOrderValidity(option)) {
     throw new TypeError(
       'Both order list i.e preorder or inorder is incompatible.That is a mismatch is found.'
@@ -303,6 +243,7 @@ const constructBinaryTreeFromPrePosOrder = <T>(
 
   const rootNode = createBinaryTree(getFirstorderItem(preorder));
   const members = getTreeMembers(getNthOrderItem(preorder, 1)!, option)!;
+  members.leftMembers;
   rootNode.left =
     constructBinaryTreeFromPrePosOrder(members.leftMembers) ?? null;
   rootNode.right =

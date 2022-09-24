@@ -44,22 +44,23 @@ type TraverseTreeCheck<T> = (currentRoot: T, currentTraverseRoot: T) => boolean;
 interface InPreOrderOption<T> {
   preorder: Array<T>;
   inorder: Array<T>;
+  orderCheck?: TraverseTreeCheck<T>;
 }
 
-interface PrePostMembers<T> {
+interface PreInMembers<T> {
   preorder: ListBinaryFrom<T>;
   inorder: ListBinaryFrom<T>;
 }
-interface PrePostTreeMember<T> {
-  leftMembers: PrePostMembers<T>;
-  rightMembers: PrePostMembers<T>;
+interface PreInTreeMember<T> {
+  leftMembers: PreInMembers<T>;
+  rightMembers: PreInMembers<T>;
 }
 
 export type {
   TraverseTreeCheck,
   InPreOrderOption,
-  PrePostMembers,
-  PrePostTreeMember,
+  PreInMembers,
+  PreInTreeMember,
   BinarySearchTree,
   ListBinaryFrom,
   BinaryTree,
