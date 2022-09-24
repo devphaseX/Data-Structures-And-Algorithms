@@ -39,7 +39,27 @@ interface BinarySearchTree<T> {
   deleteItem(value: T): BinaryTree<T> | null;
 }
 
+type TraverseTreeCheck<T> = (currentRoot: T, currentTraverseRoot: T) => boolean;
+
+interface InPreOrderOption<T> {
+  preorder: Array<T>;
+  inorder: Array<T>;
+}
+
+interface PrePostMembers<T> {
+  preorder: ListBinaryFrom<T>;
+  inorder: ListBinaryFrom<T>;
+}
+interface PrePostTreeMember<T> {
+  leftMembers: PrePostMembers<T>;
+  rightMembers: PrePostMembers<T>;
+}
+
 export type {
+  TraverseTreeCheck,
+  InPreOrderOption,
+  PrePostMembers,
+  PrePostTreeMember,
   BinarySearchTree,
   ListBinaryFrom,
   BinaryTree,

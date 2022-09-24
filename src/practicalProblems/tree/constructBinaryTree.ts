@@ -211,7 +211,7 @@ function constructBinaryTreeFromPrePostOrder<T>(option: InPreOrderOption<T>) {
 
 interface PrePosOrderOption<T> {
   preorder: ListBinaryFrom<T>;
-  postorder: ListBinaryFrom<T>;
+  inorder: ListBinaryFrom<T>;
 }
 
 const getNthOrderItem = <T>(order: ListBinaryFrom<T>, nth: number) =>
@@ -219,26 +219,26 @@ const getNthOrderItem = <T>(order: ListBinaryFrom<T>, nth: number) =>
 
 const getFirstorderItem = <T>(preorder: ListBinaryFrom<T>) =>
   getListFirstItem(preorder);
-const getLastorderItem = <T>(postorder: ListBinaryFrom<T>) =>
-  getListLastItem(postorder);
+const getLastorderItem = <T>(inorder: ListBinaryFrom<T>) =>
+  getListLastItem(inorder);
 const getTreeOrderTypeSize = (order: ListBinaryFrom<any>) => getListSize(order);
 
 const checkPrePostOrderValidity = (option: PrePosOrderOption<any>) => {
-  const { postorder, preorder } = option;
+  const { inorder, preorder } = option;
   const preOrderSize = getTreeOrderTypeSize(preorder);
-  const postOrderSize = getTreeOrderTypeSize(postorder);
+  const postOrderSize = getTreeOrderTypeSize(inorder);
   const bothOrderAreEmpty = preOrderSize === 0;
 
   return (
     preOrderSize === postOrderSize &&
     (bothOrderAreEmpty ||
-      getFirstorderItem(preorder) === getLastorderItem(postorder))
+      getFirstorderItem(preorder) === getLastorderItem(inorder))
   );
 };
 
 interface PrePostMembers<T> {
   preorder: ListBinaryFrom<T>;
-  postorder: ListBinaryFrom<T>;
+  inorder: ListBinaryFrom<T>;
 }
 interface PrePostTreeMember<T> {
   leftMembers: PrePostMembers<T>;
@@ -248,18 +248,18 @@ const getTreeMembers = <T>(
   leftMember: T,
   option: PrePosOrderOption<T>
 ): PrePostTreeMember<T> | null => {
-  const { preorder, postorder } = option;
-  const rootPosition = postorder.indexOf(leftMember);
+  const { preorder, inorder } = option;
+  const rootPosition = inorder.indexOf(leftMember);
   if (rootPosition === OUT_OF_RANGE) return null;
 
-  const leftPostorderMembers = takeUntil(postorder, rootPosition);
-  const rightPostorderMembers = takeAfter(postorder, rootPosition, -1);
+  const leftPostorderMembers = takeUntil(inorder, rootPosition);
+  const rightPostorderMembers = takeAfter(inorder, rootPosition, -1);
 
-  function getLastPreorderFoundMember(postorder: ListBinaryFrom<any>) {
-    const uniqueMembers = new Set(postorder);
+  function getLastPreorderFoundMember(inorder: ListBinaryFrom<any>) {
+    const uniqueMembers = new Set(inorder);
     let lastFoundOrderIndex = OUT_OF_RANGE;
 
-    postorder.some((item, index) => {
+    inorder.some((item, index) => {
       if (uniqueMembers.has(item)) {
         lastFoundOrderIndex = index;
         return true;
@@ -270,14 +270,14 @@ const getTreeMembers = <T>(
     return lastFoundOrderIndex;
   }
 
-  const lastPreorderFoundMemberIndex = getLastPreorderFoundMember(postorder);
+  const lastPreorderFoundMemberIndex = getLastPreorderFoundMember(inorder);
   return {
     leftMembers: {
-      postorder: leftPostorderMembers,
+      inorder: leftPostorderMembers,
       preorder: takeAfter(preorder, 1, lastPreorderFoundMemberIndex),
     },
     rightMembers: {
-      postorder: rightPostorderMembers,
+      inorder: rightPostorderMembers,
       preorder: takeUntil(preorder, lastPreorderFoundMemberIndex + 1),
     },
   };
@@ -288,7 +288,7 @@ const constructBinaryTreeFromPrePosOrder = <T>(
 ) => {
   if (!checkPrePostOrderValidity(option)) {
     throw new TypeError(
-      'Both order list i.e preorder or postorder is incompatible.That is a mismatch is found.'
+      'Both order list i.e preorder or inorder is incompatible.That is a mismatch is found.'
     );
   }
   const preorder = option.preorder;

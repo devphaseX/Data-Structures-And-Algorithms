@@ -1,17 +1,17 @@
-import { not } from '../../../util/index';
-import levelorderTraversal from '../traversal/levelorder';
+import { not } from '../../../../util/index';
+import levelorderTraversal from '../../traversal/levelorder';
 import {
   createBinaryTree,
   isTreeLeftSkew,
   unwrapNodeTreeValue,
-} from '../shared';
+} from '../../shared';
 import type {
   BinarySearchTree,
   BinaryTree,
   LeftSkewTree,
   RightSkewTree,
-} from '../shared.types';
-import inorderTraversal from '../traversal/inorder';
+} from '../../shared.types';
+import inorderTraversal from '../../traversal/inorder';
 
 function createBinarySearchTree<T>(
   treeItems?: Array<T> | T
