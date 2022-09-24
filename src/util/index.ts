@@ -855,3 +855,15 @@ export function outOfRange(range: number, bound: RangeBound) {
 }
 
 export const OUT_OF_RANGE = -1;
+
+export function takeUntil<T>(list: Array<T>, beforeOffset: number) {
+  return slice(list, 0, beforeOffset);
+}
+
+export function takeAfter<T>(
+  list: Array<T>,
+  actualOffset: number,
+  untilOffset = getListSize(list)
+) {
+  return slice(list, actualOffset + 1, untilOffset);
+}

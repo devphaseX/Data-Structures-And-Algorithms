@@ -12,6 +12,8 @@ import {
   iterableLoop,
   outOfRange,
   OUT_OF_RANGE,
+  takeAfter,
+  takeUntil,
 } from '../../util/index.js';
 
 interface InPreOrderOption<T> {
@@ -250,8 +252,8 @@ const getTreeMembers = <T>(
   const rootPosition = postorder.indexOf(leftMember);
   if (rootPosition === OUT_OF_RANGE) return null;
 
-  const leftPostorderMembers = postorder.slice(0, rootPosition);
-  const rightPostorderMembers = postorder.slice(rootPosition + 1, -1); //(rootPos+1, -1) starts picking from rootPos + 1 but ends before the last iten
+  const leftPostorderMembers = takeUntil(postorder, rootPosition);
+  const rightPostorderMembers = takeAfter(postorder, rootPosition, -1);
 
   function getLastPreorderFoundMember(postorder: ListBinaryFrom<any>) {
     const uniqueMembers = new Set(postorder);
@@ -272,11 +274,11 @@ const getTreeMembers = <T>(
   return {
     leftMembers: {
       postorder: leftPostorderMembers,
-      preorder: preorder.slice(1, lastPreorderFoundMemberIndex),
+      preorder: takeAfter(preorder, 1, lastPreorderFoundMemberIndex),
     },
     rightMembers: {
       postorder: rightPostorderMembers,
-      preorder: preorder.slice(lastPreorderFoundMemberIndex + 1),
+      preorder: takeUntil(preorder, lastPreorderFoundMemberIndex + 1),
     },
   };
 };
