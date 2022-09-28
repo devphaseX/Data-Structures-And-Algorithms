@@ -2,6 +2,10 @@ import createStack from '../../data_structure/stack/index.js';
 import {
   createBinaryTree,
   getTreeMembers,
+  isEmptyTreeOrder,
+  isLeftSkewTreeItemsForm,
+  isRightSkewTreeItemsForm,
+  orderItemsorderSame,
 } from '../../data_structure/tree/shared.js';
 import type {
   BinaryTree,
@@ -35,22 +39,6 @@ type BackTrackTraversalProcessType = Exclude<
   'left' | 'right'
 >;
 
-function getTreeFormDifference<T>(
-  firstForm: ListBinaryFrom<T>,
-  secondForm: ListBinaryFrom<T>
-) {
-  return getListSymmetricDif(firstForm, secondForm);
-}
-
-const checkTreeOrdersSameness = <T>(
-  firstForm: ListBinaryFrom<T>,
-  secondForm: ListBinaryFrom<T>
-) =>
-  [
-    getTreeFormDifference(firstForm, secondForm),
-    getTreeFormDifference(secondForm, firstForm),
-  ].every((symDif) => symDif.length === 0);
-
 interface TreeMemberInfo<T> {
   subTree: {
     leftMembers: ListBinaryFrom<T>;
@@ -73,20 +61,12 @@ function createTreeMemberInfo<T>(
   };
 }
 
-function isLeftSkewTree(subTree: TreeMemberInfo<any>['subTree']) {
-  return !!(subTree.leftMembers.length && subTree.rightMembers.length === 0);
-}
-
-function isRightSkewTree(subTree: TreeMemberInfo<any>['subTree']) {
-  return !!(subTree.rightMembers.length && subTree.leftMembers.length === 0);
-}
-
 function getTreeContinueStatus(
   treeInfo: TreeMemberInfo<any>
 ): ContinueTreeTraversalProcessType {
-  return isLeftSkewTree(treeInfo.subTree)
+  return isLeftSkewTreeItemsForm(treeInfo.subTree)
     ? 'leftSkew'
-    : isRightSkewTree(treeInfo.subTree)
+    : isRightSkewTreeItemsForm(treeInfo.subTree)
     ? 'rightSkew'
     : 'right';
 }
@@ -115,8 +95,6 @@ const backTrackTraversalTypes: ReadonlyArray<BackTrackTraversalProcessType> = [
   'rightSkew',
 ];
 
-const isEmptyTreeOrder = (order: ListBinaryFrom<any>) => order.length === 0;
-
 const detectLeaf = (tree: TreeMemberInfo<any>) =>
   isEmptyTreeOrder(tree.subTree.leftMembers) &&
   isEmptyTreeOrder(tree.subTree.rightMembers);
@@ -139,7 +117,7 @@ const startBackTrackFromRight = (
   tree.continueProcess === 'rightSkew';
 
 function constructBinaryTreeFromPrePostOrder<T>(option: InPreOrderOption<T>) {
-  if (!checkTreeOrdersSameness(option.preorder, option.inorder)) {
+  if (!orderItemsorderSame(option.preorder, option.inorder)) {
     throw new TypeError(
       'The list provided for the preorder and inorder has a mismatch'
     );

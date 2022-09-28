@@ -1,4 +1,10 @@
-import { not, OUT_OF_RANGE, takeAfter, takeUntil } from '../../util/index.js';
+import {
+  getListSymmetricDif,
+  not,
+  OUT_OF_RANGE,
+  takeAfter,
+  takeUntil,
+} from '../../util/index.js';
 import type {
   BinaryTree,
   InPreOrderOption,
@@ -7,6 +13,7 @@ import type {
   ListBinaryFrom,
   PreInTreeMember,
   RightSkewTree,
+  TreeMemberInfo,
 } from './shared.types';
 
 function unwrapNodeTreeValue<T>(value: BinaryTree<T>) {
@@ -72,7 +79,38 @@ const getTreeMembers = <T>(
   };
 };
 
+function getTreeItemsFormDifference<T>(
+  firstForm: ListBinaryFrom<T>,
+  secondForm: ListBinaryFrom<T>
+) {
+  return getListSymmetricDif(firstForm, secondForm);
+}
+
+const orderItemsorderSame = <T>(
+  firstForm: ListBinaryFrom<T>,
+  secondForm: ListBinaryFrom<T>
+) =>
+  [
+    getTreeItemsFormDifference(firstForm, secondForm),
+    getTreeItemsFormDifference(secondForm, firstForm),
+  ].every((symDif) => symDif.length === 0);
+
+function isLeftSkewTreeItemsForm(subTree: TreeMemberInfo<any>['subTree']) {
+  return !!(subTree.leftMembers.length && subTree.rightMembers.length === 0);
+}
+
+function isRightSkewTreeItemsForm(subTree: TreeMemberInfo<any>['subTree']) {
+  return !!(subTree.rightMembers.length && subTree.leftMembers.length === 0);
+}
+
+const isEmptyTreeOrder = (order: ListBinaryFrom<any>) => order.length === 0;
+
 export {
+  getTreeItemsFormDifference,
+  orderItemsorderSame,
+  isLeftSkewTreeItemsForm,
+  isRightSkewTreeItemsForm,
+  isEmptyTreeOrder,
   getTreeMembers,
   createBinaryTree,
   unwrapNodeTreeValue,

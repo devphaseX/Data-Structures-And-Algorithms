@@ -55,8 +55,16 @@ interface PreInTreeMember<T> {
   leftMembers: PreInMembers<T>;
   rightMembers: PreInMembers<T>;
 }
+interface TreeMemberInfo<T> {
+  subTree: {
+    leftMembers: ListBinaryFrom<T>;
+    rightMembers: ListBinaryFrom<T>;
+  };
+  root: { node: BinaryTree<T>; position: number };
+}
 
 export type {
+  TreeMemberInfo,
   TraverseTreeCheck,
   InPreOrderOption,
   PreInMembers,
