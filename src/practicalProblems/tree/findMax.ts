@@ -1,5 +1,5 @@
 import {
-  isNodeInternal,
+  isFullNode,
   isNodeLeaf,
   isTreeLeftSkew,
   unwrapNodeTreeValue,
@@ -13,7 +13,7 @@ function findMax(rootTree: BinaryTree<number>): number {
   if (isNodeLeaf(rootTree)) return unwrapNodeTreeValue(rootTree);
 
   let tree = rootTree as SkewTree<number>;
-  if (isNodeInternal(tree)) {
+  if (isFullNode(tree)) {
     return Math.max(findMax(tree.left), findMax(tree.right));
   }
 

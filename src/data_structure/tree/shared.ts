@@ -28,7 +28,10 @@ type InternalBinaryNodePredicateFn<T> = (
   node: BinaryTree<T>
 ) => node is InternalBinaryNode<T>;
 
-const isNodeInternal = not(isNodeLeaf) as InternalBinaryNodePredicateFn<any>;
+const isFullNode = not(isNodeLeaf) as InternalBinaryNodePredicateFn<any>;
+
+const isPartialNode = (node: BinaryTree<any>) =>
+  isTreeLeftSkew(node) || isTreeRightSkew(node);
 
 const isTreeLeftSkew = <T>(node: BinaryTree<T>): node is LeftSkewTree<T> =>
   !!node.left && !node.right;
@@ -115,7 +118,8 @@ export {
   createBinaryTree,
   unwrapNodeTreeValue,
   isNodeLeaf,
-  isNodeInternal,
+  isFullNode,
   isTreeLeftSkew,
   isTreeRightSkew,
+  isPartialNode,
 };
