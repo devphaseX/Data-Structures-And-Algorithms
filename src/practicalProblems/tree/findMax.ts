@@ -9,6 +9,7 @@ import type {
   SkewTree,
 } from '../../data_structure/tree/shared.types';
 import levelorderTraversal from '../../data_structure/tree/traversal/levelorder';
+import { iterWithRecurApproach } from '../../util/index';
 
 function findMaxRecur(rootTree: BinaryTree<number>): number {
   if (isNodeLeaf(rootTree)) return unwrapNodeTreeValue(rootTree);
@@ -32,6 +33,9 @@ function findMaxIter(rootTree: BinaryTree<number>) {
   return max!;
 }
 
-const algApproach = { recur: findMaxRecur, iter: findMaxIter };
+const algApproach = iterWithRecurApproach({
+  recur: findMaxRecur,
+  iter: findMaxIter,
+});
 
 export default algApproach;

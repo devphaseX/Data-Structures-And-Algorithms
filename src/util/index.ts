@@ -867,3 +867,20 @@ export function takeAfter<T>(
 ) {
   return slice(list, actualOffset + 1, untilOffset);
 }
+
+export function defineSolutionApproach<Types extends string[]>(
+  ...approaches: Types
+) {
+  return function <R extends Record<Types[number], unknown>>(records: R) {
+    approaches.forEach((approach) => {
+      if (!(approach in records)) {
+        throw new TypeError(
+          `Unable to find the record for this approach ${approach}`
+        );
+      }
+    });
+    return records;
+  };
+}
+
+export const iterWithRecurApproach = defineSolutionApproach('iter', 'recur');
