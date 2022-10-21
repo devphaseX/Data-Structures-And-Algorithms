@@ -13,6 +13,11 @@ type InternalBinaryNode<T> = Valuable<T> & {
   >;
 };
 
+interface LeafTree<T> extends BinaryTree<T> {
+  left?: null;
+  right?: null;
+}
+
 type LeftSkewTree<T> = Valuable<T> & {
   [K in keyof BinaryTree<T> as K extends 'left' ? K : never]-?: NonNullable<
     BinaryTree<T>[K]
@@ -77,4 +82,5 @@ export type {
   LeftSkewTree,
   RightSkewTree,
   SkewTree,
+  LeafTree,
 };

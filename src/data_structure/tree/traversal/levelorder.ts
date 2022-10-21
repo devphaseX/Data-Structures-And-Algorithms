@@ -23,9 +23,11 @@ interface ExitableTraversalOption {
   exit(): void;
 }
 
-interface ExitableTraversalFn<T> extends TreeTraversalFn<T> {
-  (value: T, raw: BinaryTree<T>, options: ExitableTraversalOption): void;
-}
+type ExitableTraversalFn<T> = (
+  value: T,
+  raw: BinaryTree<T>,
+  options: ExitableTraversalOption
+) => void;
 
 function exitableLevelOrderTraversal<T>(
   tree: BinaryTree<T>,

@@ -17,7 +17,6 @@ import {
   getListFirstItem,
   getListLastItem,
   getListSize,
-  getListSymmetricDif,
   iterableLoop,
   outOfRange,
 } from '../../util/index.js';

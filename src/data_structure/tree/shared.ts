@@ -9,6 +9,7 @@ import type {
   BinaryTree,
   InPreOrderOption,
   InternalBinaryNode,
+  LeafTree,
   LeftSkewTree,
   ListBinaryFrom,
   PreInTreeMember,
@@ -20,7 +21,7 @@ function unwrapNodeTreeValue<T>(value: BinaryTree<T>) {
   return value.value;
 }
 
-function isNodeLeaf(node: BinaryTree<any>) {
+function isNodeLeaf<T>(node: BinaryTree<T>): node is LeafTree<T> {
   return !node.left && !node.right;
 }
 
