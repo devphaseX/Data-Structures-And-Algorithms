@@ -30,7 +30,9 @@ type InternalBinaryNodePredicateFn<T> = (
 
 const isFullNode = not(isNodeLeaf) as InternalBinaryNodePredicateFn<any>;
 
-const isPartialNode = (node: BinaryTree<any>) =>
+const isPartialNode = <T>(
+  node: BinaryTree<T>
+): node is LeftSkewTree<T> | RightSkewTree<T> =>
   isTreeLeftSkew(node) || isTreeRightSkew(node);
 
 const isTreeLeftSkew = <T>(node: BinaryTree<T>): node is LeftSkewTree<T> =>
