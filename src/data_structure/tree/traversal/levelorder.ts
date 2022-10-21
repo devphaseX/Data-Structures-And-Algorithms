@@ -19,4 +19,33 @@ const levelorderTraversal = <T>(
   }
 };
 
+interface ExitableTraversalOption {
+  exit(): void;
+}
+
+interface ExitableTraversalFn<T> extends TreeTraversalFn<T> {
+  (value: T, raw: BinaryTree<T>, options: ExitableTraversalOption): void;
+}
+
+function exitableLevelOrderTraversal<T>(
+  tree: BinaryTree<T>,
+  fn: ExitableTraversalFn<T>
+) {
+  let signaledExit = false;
+  function exit() {
+    signaledExit = true;
+  }
+  try {
+    levelorderTraversal(tree, (unwrappedValue, wrappedNode) => {
+      fn(unwrappedValue, wrappedNode, { exit });
+      if (signaledExit) {
+        throw 0;
+      }
+    });
+  } catch (e) {
+    if (e !== 0) throw e;
+  }
+}
+
+export { exitableLevelOrderTraversal };
 export default levelorderTraversal;
