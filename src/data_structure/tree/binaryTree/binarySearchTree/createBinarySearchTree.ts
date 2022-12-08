@@ -107,13 +107,16 @@ function createBinarySearchTree<T>(
   function getNodeInorderPredecessor(successorNode: BinaryTree<T>) {
     let predeccessorRoot = null as BinaryTree<T> | null;
     let predeccessorNode!: BinaryTree<T> | null;
+    const _internalInterruptError = Symbol();
     try {
       inorderTraversal(successorNode, (value, currentNode) => {
-        if (value === successorNode.value) throw true;
+        if (value === successorNode.value) throw _internalInterruptError;
         predeccessorRoot = predeccessorNode;
         predeccessorNode = currentNode;
       });
-    } catch {}
+    } catch (e) {
+      if (e !== _internalInterruptError) throw e;
+    }
     return { predeccessor: predeccessorNode, predeccessorRoot };
   }
 
