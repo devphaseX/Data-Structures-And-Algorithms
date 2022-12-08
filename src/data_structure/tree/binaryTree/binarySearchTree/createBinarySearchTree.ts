@@ -1,4 +1,4 @@
-import { not } from '../../../../util/index';
+import { not, preventImmutability } from '../../../../util/index';
 import levelorderTraversal from '../../traversal/levelorder';
 import {
   createBinaryTree,
@@ -32,11 +32,19 @@ function createBinarySearchTree<T>(
 
   const canMoveRight = not(canMoveLeft);
 
-  function insert(value: T) {
+  function _insert(
+    value: T,
+    observe?: (value: { node: BinaryTree<T>; value: T }) => void
+  ) {
     if (!rootTree) rootTree = createBinaryTree(value);
     let currentPossibleRoot = rootTree;
     while (true) {
       if (currentPossibleRoot.value === value) return currentPossibleRoot;
+      observe?.({
+        node: preventImmutability(currentPossibleRoot),
+        value: currentPossibleRoot.value,
+      });
+
       const moveLeft = canMoveLeft(currentPossibleRoot, value);
       if (currentRootCanLeftBranch(currentPossibleRoot) && moveLeft) {
         currentPossibleRoot = currentPossibleRoot.left;
@@ -48,6 +56,10 @@ function createBinarySearchTree<T>(
         return (currentPossibleRoot.right = createBinaryTree(value));
       }
     }
+  }
+
+  function insert(value: T) {
+    return _insert(value);
   }
 
   interface TreeNodeWithInfo<T> {
@@ -161,7 +173,7 @@ function createBinarySearchTree<T>(
     return structureSharedTree;
   }
 
-  return { insert, addChangeImmutable, deleteItem };
+  return { insert, addChangeImmutable, deleteItem, __: { insert: _insert } };
 }
 
 export { createBinarySearchTree };

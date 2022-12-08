@@ -36,12 +36,20 @@ type TreeTraversalFn<T> = (value: T, raw: BinaryTree<T>) => void;
 
 type ListBinaryFrom<T> = Array<T>;
 
+interface __InternalBinarySearchTree<T> {
+  insert: (
+    value: T,
+    observe?: (payload: { node: BinaryTree<T>; value: T }) => void
+  ) => BinaryTree<T>;
+}
+
 interface BinarySearchTree<T> {
   insert(value: T): BinaryTree<T>;
   addChangeImmutable(
     immutablecontext: (tree: BinarySearchTree<T>) => void
   ): BinarySearchTree<T>;
   deleteItem(value: T): BinaryTree<T> | null;
+  __: __InternalBinarySearchTree<T>;
 }
 
 type TraverseTreeCheck<T> = (currentRoot: T, currentTraverseRoot: T) => boolean;

@@ -37,15 +37,16 @@ function exitableLevelOrderTraversal<T>(
   function exit() {
     signaledExit = true;
   }
+  const _errorFlag = Symbol();
   try {
     levelorderTraversal(tree, (unwrappedValue, wrappedNode) => {
       fn(unwrappedValue, wrappedNode, { exit });
       if (signaledExit) {
-        throw 0;
+        throw _errorFlag;
       }
     });
   } catch (e) {
-    if (e !== 0) throw e;
+    if (e !== _errorFlag) throw e;
   }
 }
 

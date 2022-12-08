@@ -868,6 +868,21 @@ export function takeAfter<T>(
   return slice(list, actualOffset + 1, untilOffset);
 }
 
+export function preventImmutability<T extends object>(value: T): T {
+  return new Proxy(value, {
+    get(target, p, receiver: any) {
+      let result = Reflect.get(target, p, receiver);
+      if (target === Object(target)) {
+        return preventImmutability(result as any);
+      }
+      return Reflect.get(target, p, receiver);
+    },
+    set() {
+      throw new Error('Immutability is forbidden on this value');
+    },
+  });
+}
+
 export function defineSolutionApproach<Types extends string[]>(
   ...approaches: Types
 ) {
