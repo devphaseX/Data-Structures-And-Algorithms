@@ -28,7 +28,7 @@ function createBinarySearchTree<T>(
   ) => node is RightSkewTree<T>;
 
   const canMoveLeft = (tree: BinaryTree<T>, value: T) =>
-    unwrapNodeTreeValue(tree) <= value;
+    unwrapNodeTreeValue(tree) < value;
 
   const canMoveRight = not(canMoveLeft);
 
@@ -36,6 +36,7 @@ function createBinarySearchTree<T>(
     if (!rootTree) rootTree = createBinaryTree(value);
     let currentPossibleRoot = rootTree;
     while (true) {
+      if (currentPossibleRoot.value === value) return currentPossibleRoot;
       const moveLeft = canMoveLeft(currentPossibleRoot, value);
       if (currentRootCanLeftBranch(currentPossibleRoot) && moveLeft) {
         currentPossibleRoot = currentPossibleRoot.left;
