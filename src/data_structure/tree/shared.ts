@@ -42,6 +42,9 @@ const isTreeLeftSkew = <T>(node: BinaryTree<T>): node is LeftSkewTree<T> =>
 const isTreeRightSkew = <T>(node: BinaryTree<T>): node is RightSkewTree<T> =>
   !node.left && !!node.right;
 
+const isSkewTree = (node: BinaryTree<any>) =>
+  isTreeLeftSkew(node) || isTreeRightSkew(node);
+
 function createBinaryTree<T>(value: T): BinaryTree<T> {
   return { value };
 }
@@ -125,4 +128,5 @@ export {
   isTreeLeftSkew,
   isTreeRightSkew,
   isPartialNode,
+  isSkewTree,
 };

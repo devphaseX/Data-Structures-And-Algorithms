@@ -1,7 +1,8 @@
-import { not, preventImmutability } from '../../../../util/index';
+import { preventImmutability } from '../../../../util/index';
 import levelorderTraversal from '../../traversal/levelorder';
 import {
   createBinaryTree,
+  isSkewTree,
   isTreeLeftSkew,
   isTreeRightSkew,
   unwrapNodeTreeValue,
@@ -187,11 +188,7 @@ function createBinarySearchTree<T>(
     const inorderPredecessorNode = getInorderNodePredecessor(currentRootNode);
 
     let isSkew = false;
-    if (
-      !inorderPredecessorNode ||
-      (isSkew =
-        isTreeLeftSkew(currentRootNode) || isTreeRightSkew(currentRootNode))
-    ) {
+    if (!inorderPredecessorNode || (isSkew = isSkewTree(currentRootNode))) {
       const replacementNode = isSkew
         ? currentRootNode.left ?? currentRootNode.right
         : null;
