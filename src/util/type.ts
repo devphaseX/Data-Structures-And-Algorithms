@@ -72,3 +72,13 @@ export type InferArrayItem<A extends unknown[]> = A extends Array<infer I>
   : unknown;
 
 export type IntialDataFunction<T> = () => T;
+
+export type MakeRequired<T, K extends keyof T> = Omit<T, K> & Required<T>;
+export type MakeRequiredWithNonEmpty<T, K extends keyof T> = MakeRequired<
+  T,
+  K
+> extends infer U
+  ? {
+      [K in keyof U]: NonNullable<U[K]>;
+    }
+  : never;

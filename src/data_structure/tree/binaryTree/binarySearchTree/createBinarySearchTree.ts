@@ -3,6 +3,7 @@ import levelorderTraversal from '../../traversal/levelorder';
 import {
   createBinaryTree,
   isTreeLeftSkew,
+  isTreeRightSkew,
   unwrapNodeTreeValue,
 } from '../../shared';
 import type {
@@ -13,24 +14,70 @@ import type {
 } from '../../shared.types';
 import inorderTraversal from '../../traversal/inorder';
 
+type OrderIndex = -1 | 0 | 1;
 function createBinarySearchTree<T>(
+  nodeComparatorFn: (
+    current: T,
+    another: T,
+    direction: 'left' | 'right'
+  ) => OrderIndex,
   treeItems?: Array<T> | T
 ): BinarySearchTree<T> {
   let rootTree: BinaryTree<T> | null = null;
 
   if (treeItems) ([treeItems].flat() as Array<T>).forEach(insert);
 
+  function nodeOrderResolver(
+    node: BinaryTree<T>,
+    value: T,
+    direction: 'left' | 'right'
+  ) {
+    let orderResult = nodeComparatorFn(
+      unwrapNodeTreeValue(node),
+      value!,
+      direction
+    );
+    switch (orderResult) {
+      case 0:
+        return false;
+
+      case 1:
+        return !!orderResult;
+
+      case -1:
+        return false;
+
+      default: {
+        throw new TypeError(
+          'Invalid comparison order expected [-1, 0, 1] but got ' + orderResult
+        );
+      }
+    }
+  }
+
   const currentRootCanLeftBranch = (
-    node: BinaryTree<T>
-  ): node is LeftSkewTree<T> => !!node.left;
-  const currentRootCanRightBranch = not(currentRootCanLeftBranch) as (
-    node: BinaryTree<T>
-  ) => node is RightSkewTree<T>;
+    node: BinaryTree<T>,
+    value?: T
+  ): node is LeftSkewTree<T> => {
+    return (
+      !!node.left &&
+      ((typeof value !== 'undefined' &&
+        nodeOrderResolver(node, value, 'left')) ||
+        true)
+    );
+  };
 
-  const canMoveLeft = (tree: BinaryTree<T>, value: T) =>
-    unwrapNodeTreeValue(tree) < value;
-
-  const canMoveRight = not(canMoveLeft);
+  const currentRootCanRightBranch = (
+    node: BinaryTree<T>,
+    value?: T
+  ): node is RightSkewTree<T> => {
+    return (
+      (!!node.right &&
+        typeof value !== 'undefined' &&
+        nodeOrderResolver(node, value, 'right')) ||
+      true
+    );
+  };
 
   function _insert(
     value: T,
@@ -45,15 +92,18 @@ function createBinarySearchTree<T>(
         value: currentPossibleRoot.value,
       });
 
-      const moveLeft = canMoveLeft(currentPossibleRoot, value);
-      if (currentRootCanLeftBranch(currentPossibleRoot) && moveLeft) {
+      if (currentRootCanLeftBranch(currentPossibleRoot, value)) {
         currentPossibleRoot = currentPossibleRoot.left;
-      } else if (moveLeft) {
-        return (currentPossibleRoot.left = createBinaryTree(value));
-      } else if (currentRootCanRightBranch(currentPossibleRoot)) {
+      } else if (!currentPossibleRoot.left) {
+        currentPossibleRoot.left = createBinaryTree(value);
+        return preventImmutability(currentPossibleRoot.left);
+      }
+
+      if (currentRootCanRightBranch(currentPossibleRoot, value)) {
         currentPossibleRoot = currentPossibleRoot.right;
       } else {
-        return (currentPossibleRoot.right = createBinaryTree(value));
+        currentPossibleRoot.right = createBinaryTree(value);
+        return preventImmutability(currentPossibleRoot.right);
       }
     }
   }
@@ -62,41 +112,32 @@ function createBinarySearchTree<T>(
     return _insert(value);
   }
 
-  interface TreeNodeWithInfo<T> {
+  interface NodePath<T> {
     ancestors: Array<BinaryTree<T>>;
     immediateParent: null | BinaryTree<T>;
     node: BinaryTree<T>;
   }
 
-  function provideTreeNodeWithItInfo(value: T): TreeNodeWithInfo<T> | null {
+  function getNodeTreeOrderPathInfo(value: T): NodePath<T> | null {
     let ancestorTreeList = Array<BinaryTree<T>>();
-    let currentTreeRoot = null;
-    let currentTree = currentTreeRoot as BinaryTree<T> | null;
-    if (!currentTree) return null;
+    let currentTreeParent = null;
+    let tree = rootTree as BinaryTree<T> | null;
+    if (!tree) return null;
     let foundTreeWithSearchedValue = false;
 
     while (true) {
-      if (
-        (foundTreeWithSearchedValue =
-          unwrapNodeTreeValue(currentTree) === value)
-      )
+      if ((foundTreeWithSearchedValue = unwrapNodeTreeValue(tree) === value))
         break;
       else {
         let satistiedBranchRule = false;
-        let disposedParentNode = currentTreeRoot;
-        if (
-          (satistiedBranchRule =
-            currentRootCanLeftBranch(currentTree) &&
-            canMoveLeft(currentTree, value))
-        ) {
-          currentTree = currentTree.left;
+        let disposedParentNode = currentTreeParent;
+        if ((satistiedBranchRule = currentRootCanLeftBranch(tree, value))) {
+          tree = tree.left;
         } else if (
-          (satistiedBranchRule =
-            currentRootCanRightBranch(currentTree) &&
-            canMoveRight(currentTree, value))
+          (satistiedBranchRule = currentRootCanRightBranch(tree, value))
         ) {
-          currentTreeRoot = currentTree;
-          currentTree = currentTree.right;
+          currentTreeParent = tree;
+          tree = tree.right;
         }
 
         if (satistiedBranchRule && disposedParentNode) {
@@ -111,52 +152,65 @@ function createBinarySearchTree<T>(
 
     return {
       ancestors: ancestorTreeList,
-      immediateParent: currentTreeRoot,
-      node: currentTree,
+      immediateParent: currentTreeParent,
+      node: tree,
     };
   }
 
-  function getNodeInorderPredecessor(successorNode: BinaryTree<T>) {
-    let predeccessorRoot = null as BinaryTree<T> | null;
-    let predeccessorNode!: BinaryTree<T> | null;
-    const _internalInterruptError = Symbol();
+  function getInorderNodePredecessor(currentNode: BinaryTree<T>) {
+    let predecessorNode!: BinaryTree<T> | null;
+    const _internalResultInterrupFlag = Symbol();
+
     try {
-      inorderTraversal(successorNode, (value, currentNode) => {
-        if (value === successorNode.value) throw _internalInterruptError;
-        predeccessorRoot = predeccessorNode;
-        predeccessorNode = currentNode;
+      inorderTraversal(currentNode, (_, currentTraverseNode) => {
+        if (currentTraverseNode === currentNode) {
+          throw _internalResultInterrupFlag;
+        }
+        predecessorNode = currentTraverseNode;
       });
     } catch (e) {
-      if (e !== _internalInterruptError) throw e;
+      if (e !== _internalResultInterrupFlag) throw e;
     }
-    return { predeccessor: predeccessorNode, predeccessorRoot };
+    return predecessorNode;
   }
 
   function deleteItem(value: T) {
-    const toBeDisposedTreeInfo = provideTreeNodeWithItInfo(value);
-    if (!toBeDisposedTreeInfo) return toBeDisposedTreeInfo;
+    const searchedNodePath = getNodeTreeOrderPathInfo(value);
+    if (!searchedNodePath) return searchedNodePath;
 
-    const { immediateParent, node } = toBeDisposedTreeInfo;
-    if (!immediateParent && isTreeLeftSkew(node)) {
+    const { immediateParent, node: currentRootNode } = searchedNodePath;
+    if (!immediateParent) {
       rootTree = null;
-      return node;
+      return currentRootNode;
     }
 
-    const { predeccessor, predeccessorRoot } = getNodeInorderPredecessor(node);
-    predeccessorRoot!.left = node.left;
-    predeccessorRoot!.right = node.right;
+    const inorderPredecessorNode = getInorderNodePredecessor(currentRootNode);
 
-    if (predeccessor) {
-      if (predeccessor.left === predeccessorRoot) predeccessor.left = null;
-      else predeccessor.right = null;
+    let isSkew = false;
+    if (
+      !inorderPredecessorNode ||
+      (isSkew =
+        isTreeLeftSkew(currentRootNode) || isTreeRightSkew(currentRootNode))
+    ) {
+      const replacementNode = isSkew
+        ? currentRootNode.left ?? currentRootNode.right
+        : null;
+
+      if (immediateParent.left === currentRootNode) {
+        immediateParent.left = replacementNode;
+      } else {
+        immediateParent.right = replacementNode;
+      }
+      return currentRootNode;
     }
 
-    if (immediateParent) {
-      if (immediateParent.left === node) immediateParent.left = node;
-      else immediateParent.right = node;
-    }
+    ({
+      left: inorderPredecessorNode.left,
+      right: inorderPredecessorNode.right,
+    } = currentRootNode);
 
-    return node;
+    currentRootNode.left = currentRootNode.right = null;
+    return currentRootNode;
   }
 
   function addChangeImmutable(
@@ -168,7 +222,7 @@ function createBinarySearchTree<T>(
   }
 
   function clone(rootTree: BinaryTree<T> | null) {
-    let structureSharedTree = createBinarySearchTree<T>();
+    let structureSharedTree = createBinarySearchTree<T>(nodeComparatorFn);
     if (rootTree) levelorderTraversal(rootTree, structureSharedTree.insert);
     return structureSharedTree;
   }
