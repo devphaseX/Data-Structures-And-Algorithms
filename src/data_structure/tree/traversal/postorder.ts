@@ -27,7 +27,7 @@ const postOrderTraversal = <T>(
       currentRoot = shiftToLeftTree(currentRoot);
     }
 
-    while (currentRoot === null || !rootMantainedStack.isEmpty()) {
+    while (!currentRoot || !rootMantainedStack.isEmpty()) {
       currentRoot = rootMantainedStack.peek()!;
 
       if (checkRootIsDueProcess(currentRoot, previousProcessedNode)) {

@@ -5,6 +5,7 @@ import {
   slice,
   _defaultSort,
   _isPreSortedBySize,
+  getListFirstItem,
 } from './../util/index.js';
 
 type ComparisonPredicate<T> = (dataOne: T, dataTwo: T) => number;
@@ -12,7 +13,7 @@ function mergeSort<T>(
   list: Array<T>,
   predicateFn: ComparisonPredicate<T>
 ): Array<T>;
-function mergeSort(list: Array<number>): Array<number>;
+function mergeSort<T>(list: Array<T>): Array<T>;
 function mergeSort<T>(
   list: Array<T>,
   predicateFn?: ComparisonPredicate<T>
@@ -29,27 +30,46 @@ function mergeSort<T>(
     return merge(_mergeSort(list, lb, middle), _mergeSort(list, middle, ub));
   }
 
+  const _predicateFn = predicateFn ?? (_defaultSort as ComparisonPredicate<T>);
+  if (
+    _predicateFn !== predicateFn &&
+    list.length &&
+    typeof getListFirstItem(list) !== 'number'
+  ) {
+    throw new Error(
+      `Expected a predicate function for a non numeric value sorting.
+       Resolve issue by providing a predicate function with knowledge about the individual data sorting technique`
+    );
+  }
   function merge(sortOne: Array<T>, sortTwo: Array<T>) {
     const mergeSortedList: Array<T> = [];
 
-    while (getListSize(sortOne) || getListSize(sortTwo)) {
-      if (
-        equal.check(sortOne[0], undefined) ||
-        equal.check(sortTwo[0], undefined)
-      ) {
-        break;
-      }
-      let orderValue =
-        (predicateFn && predicateFn(sortOne[0], sortTwo[0])) ??
-        _defaultSort(sortOne[0] as any, sortTwo[0] as any);
+    let sortOneCurrentIndex = 0;
+    let sortTwoCurrentIndex = 0;
+    const max_bound = Math.max(getListSize(sortOne), getListSize(sortTwo));
 
-      if (orderValue < 0) {
-        mergeSortedList.push(sortOne.shift()!);
+    for (let i = 0; i < max_bound; i++) {
+      if (
+        _predicateFn(
+          sortOne[sortOneCurrentIndex],
+          sortTwo[sortTwoCurrentIndex]
+        ) < 1
+      ) {
+        mergeSortedList.push(sortOne[sortOneCurrentIndex]);
+        sortOneCurrentIndex++;
       } else {
-        mergeSortedList.push(sortTwo.shift()!);
+        mergeSortedList.push(sortTwo[sortTwoCurrentIndex]);
+        sortTwoCurrentIndex++;
       }
     }
-    mergeSortedList.push(...sortOne, ...sortTwo);
+
+    mergeSortedList.push.apply(
+      null,
+      max_bound === sortOneCurrentIndex
+        ? sortTwo.slice(sortTwoCurrentIndex)
+        : sortOne.slice(sortOneCurrentIndex)
+    );
+
     return mergeSortedList;
   }
 

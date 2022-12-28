@@ -3,8 +3,6 @@ import levelorderTraversal from '../../traversal/levelorder';
 import {
   createBinaryTree,
   isSkewTree,
-  isTreeLeftSkew,
-  isTreeRightSkew,
   unwrapNodeTreeValue,
 } from '../../shared';
 import type {
@@ -20,7 +18,7 @@ function createBinarySearchTree<T>(
   nodeComparatorFn: (
     current: T,
     another: T,
-    direction: 'left' | 'right'
+    direction: 'left' | 'right' | 'self'
   ) => OrderIndex,
   treeItems?: Array<T> | T
 ): BinarySearchTree<T> {
@@ -31,7 +29,7 @@ function createBinarySearchTree<T>(
   function nodeOrderResolver(
     node: BinaryTree<T>,
     value: T,
-    direction: 'left' | 'right'
+    direction: 'left' | 'right' | 'self'
   ) {
     let orderResult = nodeComparatorFn(
       unwrapNodeTreeValue(node),
@@ -40,7 +38,7 @@ function createBinarySearchTree<T>(
     );
     switch (orderResult) {
       case 0:
-        return false;
+        return direction === 'self' || false;
 
       case 1:
         return !!orderResult;
@@ -124,12 +122,12 @@ function createBinarySearchTree<T>(
     let currentTreeParent = null;
     let tree = rootTree as BinaryTree<T> | null;
     if (!tree) return null;
-    let foundTreeWithSearchedValue = false;
+    let nodeWithSearchedValue = false;
 
     while (true) {
-      if ((foundTreeWithSearchedValue = unwrapNodeTreeValue(tree) === value))
+      if ((nodeWithSearchedValue = nodeOrderResolver(tree, value, 'self'))) {
         break;
-      else {
+      } else {
         let satistiedBranchRule = false;
         let disposedParentNode = currentTreeParent;
         if ((satistiedBranchRule = currentRootCanLeftBranch(tree, value))) {
@@ -149,7 +147,7 @@ function createBinarySearchTree<T>(
       break;
     }
 
-    if (!foundTreeWithSearchedValue) return null;
+    if (!nodeWithSearchedValue) return null;
 
     return {
       ancestors: ancestorTreeList,
