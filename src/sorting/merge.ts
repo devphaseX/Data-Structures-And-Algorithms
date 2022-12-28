@@ -31,16 +31,15 @@ function mergeSort<T>(
   }
 
   const _predicateFn = predicateFn ?? (_defaultSort as ComparisonPredicate<T>);
-  if (
-    _predicateFn !== predicateFn &&
-    list.length &&
-    typeof getListFirstItem(list) !== 'number'
-  ) {
-    throw new Error(
-      `Expected a predicate function for a non numeric value sorting.
-       Resolve issue by providing a predicate function with knowledge about the individual data sorting technique`
-    );
+  function validateSortItem(item: T) {
+    if (_predicateFn !== predicateFn && typeof item !== 'number') {
+      throw new Error(`A predicate function is needed inorder to resolve item placement order; default [__internal__] predicate
+                       is only applicable to `);
+    }
   }
+
+  validateSortItem(getListFirstItem(list));
+
   function merge(sortOne: Array<T>, sortTwo: Array<T>) {
     const mergeSortedList: Array<T> = [];
 
@@ -49,6 +48,9 @@ function mergeSort<T>(
     const max_bound = Math.max(getListSize(sortOne), getListSize(sortTwo));
 
     for (let i = 0; i < max_bound; i++) {
+      validateSortItem(sortOne[sortOneCurrentIndex]);
+      validateSortItem(sortTwo[sortTwoCurrentIndex]);
+
       if (
         _predicateFn(
           sortOne[sortOneCurrentIndex],
