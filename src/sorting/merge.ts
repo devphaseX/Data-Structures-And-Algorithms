@@ -34,7 +34,7 @@ function mergeSort<T>(
   function validateSortItem(item: T) {
     if (_predicateFn !== predicateFn && typeof item !== 'number') {
       throw new Error(`A predicate function is needed inorder to resolve item placement order; default [__internal__] predicate
-                       is only applicable to `);
+                       is only applicable to to value of numeric type`);
     }
   }
 
