@@ -15,8 +15,10 @@ function heapSort(value: Array<number> | Heap, order?: HeapDataOrder) {
   const heap = Array.isArray(value) ? createHeap(order ?? 'min', value) : value;
 
   if (heap.type !== HEAP_SYMBOL) {
+    const unknownStructureType = {}.toString.call(heap);
     throw new TypeError(
-      'The structure passed does not implement the {HEAP_SYMBOL} interface'
+      `Invalid heap implementable structure expected either an Array containing item or heap structure to consume.
+       But got a structure of type ${unknownStructureType}.Considered converting the structure to an equivalent array form.`
     );
   }
   return Array.from({ length: heap.size }, () => heap.delete());
