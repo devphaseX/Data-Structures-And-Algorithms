@@ -1,7 +1,7 @@
 import { BinaryTree } from '../../data_structure/tree/shared.types';
 import createQueue from '../../data_structure/queue';
 
-function findInternalNodes<T>(tree: BinaryTree<T>) {
+function findInternalFullNodes<T>(tree: BinaryTree<T>) {
   const queue = createQueue<NonNullable<typeof tree> | null>(null);
   queue.enqueue(tree);
   queue.enqueue(null);
@@ -27,4 +27,4 @@ function findInternalNodes<T>(tree: BinaryTree<T>) {
   return leaves;
 }
 
-export { findInternalNodes };
+export { findInternalFullNodes };
