@@ -19,6 +19,11 @@ type QueueInitFn<T> = (
   enqueue: (value: T) => void,
   setInnetQueueSize: (size: number) => void
 ) => void;
+function createQueue<T>(value: null): Queue<T>;
+function createQueue<T>(
+  value: T | Array<T> | QueueInitFn<T>,
+  boundary?: number
+): Queue<T>;
 function createQueue<T>(
   value: T | Array<T> | QueueInitFn<T> | null,
   boundary?: number
