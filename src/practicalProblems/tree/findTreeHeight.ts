@@ -1,8 +1,8 @@
 import { BinaryTree } from '../../data_structure/tree/shared.types';
-import createQueue from '../../data_structure/queue';
 import { iterWithRecurApproach } from '../../util/index';
+import createQueue from '../../data_structure/queue/index';
 
-function findTreeHeightRecur(tree: BinaryTree<any> | null | undefined) {
+function findTreeHeightRecur(tree: BinaryTree<any> | null | undefined): number {
   if (!tree) return 0;
   const leftHeight = findTreeHeightRecur(tree.left);
   const rightHeight = findTreeHeightRecur(tree.right);
