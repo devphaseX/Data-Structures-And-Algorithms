@@ -5,9 +5,9 @@ function getTreeDiameter(tree: BinaryTree<any> | null | undefined) {
     _tree: typeof tree,
     diameter = { count: 0 }
   ): number {
-    if (!tree) return 0;
-    const left = _getTreeDiamter(_tree, diameter);
-    const right = _getTreeDiamter(_tree, diameter);
+    if (!_tree) return 0;
+    const left = _getTreeDiamter(_tree.left, diameter);
+    const right = _getTreeDiamter(_tree.right, diameter);
 
     if (left + right > diameter.count) {
       diameter.count = left + right;
