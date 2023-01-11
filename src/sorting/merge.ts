@@ -30,7 +30,8 @@ function mergeSort<T>(
     return merge(_mergeSort(list, lb, middle), _mergeSort(list, middle, ub));
   }
 
-  const _predicateFn = predicateFn ?? (_defaultSort as ComparisonPredicate<T>);
+  const _predicateFn =
+    predicateFn ?? (_defaultSort as unknown as ComparisonPredicate<T>);
   function validateSortItem(item: T) {
     if (_predicateFn !== predicateFn && typeof item !== 'number') {
       throw new Error(`A predicate function is needed inorder to resolve item placement order; default [__internal__] predicate
