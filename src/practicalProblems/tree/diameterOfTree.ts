@@ -1,7 +1,10 @@
 import { BinaryTree } from '../../data_structure/tree/shared.types';
 
 function getTreeDiameter(tree: BinaryTree<any> | null | undefined) {
-  function _getTreeDiamter(_tree: typeof tree, diameter = { count: 0 }) {
+  function _getTreeDiamter(
+    _tree: typeof tree,
+    diameter = { count: 0 }
+  ): number {
     if (!tree) return 0;
     const left = _getTreeDiamter(_tree, diameter);
     const right = _getTreeDiamter(_tree, diameter);
