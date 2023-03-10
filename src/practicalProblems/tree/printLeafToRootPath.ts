@@ -17,7 +17,7 @@ function getLeafToRootPath<T, U>(
     const currentPath = paths.concat(getRootPathValue(tree));
     _getLeaftToRootPath(tree.left, currentPath);
     _getLeaftToRootPath(tree.right, currentPath);
-    if (!(tree.left || tree.right)) {
+    if (!(tree.left && tree.right)) {
       onPath?.(currentPath);
     }
   }
