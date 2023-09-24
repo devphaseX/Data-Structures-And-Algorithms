@@ -815,8 +815,9 @@ export function preventContextBindSevere<T extends object>(
   function unwrapProxy() {
     if (!isReady) {
       throw new Error(
-        `Access to an unready proxy is not allow. avoid unwrappingProxy during proxy creation.
-         Avoid calling unwrapProxy before the existing proxy function scope`
+        `Access to non finalized proxy not allowed, avoid proxy unwrapping while proxy not
+        fully intialized. Check if you are not calling unwrapProxy before any existing proxied function scope
+        `
       );
     }
 
@@ -878,7 +879,7 @@ export function preventImmutability<T extends object>(value: T): T {
       return Reflect.get(target, p, receiver);
     },
     set() {
-      throw new Error('Immutability is forbidden on this value');
+      throw new Error('Mutation is prevent on this structure');
     },
   });
 }
